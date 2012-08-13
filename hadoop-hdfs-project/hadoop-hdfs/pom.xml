@@ -107,6 +107,13 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>-agentpath:/Applications/YourKit_Java_Profiler_11.0.8.app/bin/mac/libyjpagent.jnilib=sampling,onexit=snapshot,builtinprobes=none</argLine>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo.jspc</groupId>
         <artifactId>jspc-maven-plugin</artifactId>
         <executions>

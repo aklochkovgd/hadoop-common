@@ -701,7 +701,7 @@ public class MiniDFSCluster {
     while (!isNameNodeUp(nnIndex)) {
       try {
         LOG.warn("Waiting for namenode at " + nnIndex + " to start...");
-        Thread.sleep(1000);
+        Thread.sleep(100);
       } catch (InterruptedException e) {
       }
     }
@@ -715,7 +715,7 @@ public class MiniDFSCluster {
       while (!isClusterUp()) {
         try {
           LOG.warn("Waiting for the Mini HDFS Cluster to start...");
-          Thread.sleep(1000);
+          Thread.sleep(100);
         } catch (InterruptedException e) {
         }
       }
