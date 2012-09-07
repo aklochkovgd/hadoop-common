@@ -986,7 +986,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.5.9.201207300726</version>
+            <version>0.5.11-SNAPSHOT</version>
             <configuration>
               <propertyName>jacocoArgLine</propertyName>
             </configuration>
