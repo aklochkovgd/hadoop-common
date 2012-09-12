@@ -48,6 +48,8 @@
 
     <commons-daemon.version>1.0.3</commons-daemon.version>
 
+    <jacoco.version>0.5.9.201207300726</jacoco.version>
+
     <test.build.dir>${project.build.directory}/test-dir</test.build.dir>
     <test.build.data>${test.build.dir}</test.build.data>
   </properties>
@@ -628,6 +630,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.jacoco</groupId>
+        <artifactId>org.jacoco.core</artifactId>
+        <version>${jacoco.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.apache.zookeeper</groupId>
         <artifactId>zookeeper</artifactId>
         <version>3.4.2</version>
@@ -991,7 +999,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.5.11-SNAPSHOT</version>
+            <version>${jacoco.version}</version>
             <configuration>
               <propertyName>jacocoArgLine</propertyName>
             </configuration>
@@ -1014,6 +1022,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+              <!--<argLine>-Xmx1024m ${jacocoArgLine} -Djacoco.probeDataStrategy=org.apache.hadoop.test.DetailedProbeDataStrategy1</argLine>-->
               <argLine>-Xmx1024m ${jacocoArgLine}</argLine>
             </configuration>
           </plugin>
