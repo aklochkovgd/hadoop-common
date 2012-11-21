@@ -399,7 +399,7 @@
             <artifactId>maven-clover2-plugin</artifactId>
             <configuration>
               <includesAllSourceRoots>true</includesAllSourceRoots>
-              <includesTestSourceRoots>true</includesTestSourceRoots>
+              <includesTestSourceRoots>false</includesTestSourceRoots>
               <licenseLocation>${cloverLicenseLocation}</licenseLocation>
               <cloverDatabase>${cloverDatabase}</cloverDatabase>
               <targetPercentage>50%</targetPercentage>
