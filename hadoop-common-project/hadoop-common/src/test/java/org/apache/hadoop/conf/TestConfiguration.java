@@ -27,11 +27,17 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.Socket;
+import java.net.SocketImpl;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -43,9 +49,31 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration.IntegerRanges;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.util.SpySocketImplFactory;
+import org.apache.hadoop.util.SpySocketImplFactory.SocketSpy;
 import org.codehaus.jackson.map.ObjectMapper; 
 
 public class TestConfiguration extends TestCase {
+
+  private static SpySocketImplFactory spySocketFactory;
+  private static List<SocketImpl> allSockets;
+  
+  static {
+      allSockets = Collections.synchronizedList(new ArrayList<SocketImpl>());
+      spySocketFactory = new SpySocketImplFactory(new SocketSpy() {
+
+          @Override
+          public void onSocketCreated(SocketImpl socket) {
+              allSockets.add(socket);
+          }
+          
+      });
+      try {
+        Socket.setSocketImplFactory(spySocketFactory);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+  }
 
   private Configuration conf;
   final static String CONFIG = new File("./test-config.xml").getAbsolutePath();
@@ -56,6 +84,16 @@ public class TestConfiguration extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     conf = new Configuration();
+    allSockets.clear();
+    try {
+        new URL("http://google.com").getContent();
+    } catch (MalformedURLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    }
   }
   
   @Override
@@ -63,6 +101,12 @@ public class TestConfiguration extends TestCase {
     super.tearDown();
     new File(CONFIG).delete();
     new File(CONFIG2).delete();
+    
+    System.out.println("Sockets opened while running the test:");
+    for (SocketImpl impl : allSockets) {
+        System.out.println(spySocketFactory.getSocket(impl).getLocalSocketAddress());
+    }
+    allSockets.clear();
   }
   
   private void startConfig() throws IOException{
