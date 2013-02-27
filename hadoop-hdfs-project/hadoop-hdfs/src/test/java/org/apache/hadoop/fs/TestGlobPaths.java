@@ -53,7 +53,7 @@ public class TestGlobPaths {
   @BeforeClass
   public static void setUp() throws Exception {
     Configuration conf = new HdfsConfiguration();
-    dfsCluster = new MiniDFSCluster.Builder(conf).build();
+    dfsCluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     fs = FileSystem.get(conf);
     USER_DIR = fs.getHomeDirectory().toUri().getPath().toString();
   }

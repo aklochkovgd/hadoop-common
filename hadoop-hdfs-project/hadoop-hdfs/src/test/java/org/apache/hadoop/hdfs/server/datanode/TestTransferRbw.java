@@ -74,7 +74,7 @@ public class TestTransferRbw {
   @Test
   public void testTransferRbw() throws Exception {
     final HdfsConfiguration conf = new HdfsConfiguration();
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf
         ).numDataNodes(REPLICATION).build();
     try {
       cluster.waitActive();

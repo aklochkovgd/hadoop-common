@@ -68,7 +68,7 @@ public class TestFSMainOperationsWebHdfs extends FSMainOperationsBaseTest {
     conf.setBoolean(DFSConfigKeys.DFS_WEBHDFS_ENABLED_KEY, true);
     conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 1024);
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
       cluster.waitActive();
 
       //change root permission to 777

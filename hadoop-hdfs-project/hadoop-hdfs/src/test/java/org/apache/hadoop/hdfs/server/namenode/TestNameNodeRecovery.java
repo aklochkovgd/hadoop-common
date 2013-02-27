@@ -30,8 +30,6 @@ import java.io.RandomAccessFile;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -519,7 +517,7 @@ public class TestNameNodeRecovery {
     }
   }
 
-  static void testNameNodeRecoveryImpl(Corruptor corruptor, boolean finalize)
+  void testNameNodeRecoveryImpl(Corruptor corruptor, boolean finalize)
       throws IOException {
     final String TEST_PATH = "/test/path/dir";
     final String TEST_PATH2 = "/second/dir";
@@ -532,7 +530,7 @@ public class TestNameNodeRecovery {
     FileSystem fileSys = null;
     StorageDirectory sd = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0)
           .manageNameDfsDirs(false).build();
       cluster.waitActive();
       if (!finalize) {
@@ -567,8 +565,7 @@ public class TestNameNodeRecovery {
     // cluster normally before recovery
     try {
       LOG.debug("trying to start normally (this should fail)...");
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0)
           .enableManagedDfsDirsRedundancy(false).format(false).build();
       cluster.waitActive();
       cluster.shutdown();
@@ -592,8 +589,7 @@ public class TestNameNodeRecovery {
     // this should still work fine.
     try {
       LOG.debug("running recovery...");
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0)
           .enableManagedDfsDirsRedundancy(false).format(false)
           .startupOption(recoverStartOpt).build();
     } catch (IOException e) {
@@ -609,8 +605,7 @@ public class TestNameNodeRecovery {
     // Make sure that we can start the cluster normally after recovery
     try {
       LOG.debug("starting cluster normally after recovery...");
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0)
           .enableManagedDfsDirsRedundancy(false).format(false).build();
       LOG.debug("successfully recovered the " + corruptor.getName() +
           " corrupted edit log");

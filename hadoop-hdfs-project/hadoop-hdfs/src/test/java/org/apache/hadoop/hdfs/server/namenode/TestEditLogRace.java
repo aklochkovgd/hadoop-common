@@ -63,9 +63,6 @@ public class TestEditLogRace {
 
   private static final Log LOG = LogFactory.getLog(TestEditLogRace.class);
 
-  private static final String BASE_DIR = MiniDFSCluster.newDfsBaseDir();
-  private static final String NAME_DIR = BASE_DIR + "name1";
-
   // This test creates NUM_THREADS threads and each thread continuously writes
   // transactions
   static final int NUM_THREADS = 16;
@@ -180,7 +177,7 @@ public class TestEditLogRace {
 
     AtomicReference<Throwable> caughtErr = new AtomicReference<Throwable>();
     try {
-      cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(BASE_DIR).numDataNodes(NUM_DATA_NODES).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_DATA_NODES).build();
       cluster.waitActive();
       fileSys = cluster.getFileSystem();
       final FSNamesystem namesystem = cluster.getNamesystem();
@@ -260,7 +257,7 @@ public class TestEditLogRace {
 
     AtomicReference<Throwable> caughtErr = new AtomicReference<Throwable>();
     try {
-      cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(BASE_DIR).numDataNodes(NUM_DATA_NODES).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_DATA_NODES).build();
       cluster.waitActive();
       fileSys = cluster.getFileSystem();
       final FSNamesystem namesystem = cluster.getNamesystem();
@@ -320,8 +317,9 @@ public class TestEditLogRace {
     Configuration conf = new HdfsConfiguration();
     FileSystem.setDefaultUri(conf, "hdfs://localhost:0");
     conf.set(DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY, "0.0.0.0:0");
-    conf.set(DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY, NAME_DIR);
-    conf.set(DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_KEY, NAME_DIR);
+    String nameDir = MiniDFSCluster.getDfsBaseDir(getClass()) + "name1";
+    conf.set(DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY, nameDir);
+    conf.set(DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_KEY, nameDir);
     conf.setBoolean(DFSConfigKeys.DFS_PERMISSIONS_ENABLED_KEY, false); 
     return conf;
   }

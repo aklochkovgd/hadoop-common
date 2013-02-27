@@ -49,7 +49,7 @@ public class TestHeartbeatHandling {
   @Test
   public void testHeartbeat() throws Exception {
     final Configuration conf = new HdfsConfiguration();
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     try {
       cluster.waitActive();
       final FSNamesystem namesystem = cluster.getNamesystem();

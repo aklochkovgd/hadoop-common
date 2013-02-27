@@ -49,7 +49,7 @@ public class TestSocketFactory {
   public void testSocketFactory() throws IOException {
     // Create a standard mini-cluster
     Configuration sconf = new Configuration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(sconf).numDataNodes(1)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), sconf).numDataNodes(1)
         .build();
     final int nameNodePort = cluster.getNameNodePort();
 

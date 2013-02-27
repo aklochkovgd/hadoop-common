@@ -77,7 +77,7 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
     .addNameservice(new MiniDFSNNTopology.NSConf("ns1")
         .addNN(new MiniDFSNNTopology.NNConf("nn1").setIpcPort(10021))
         .addNN(new MiniDFSNNTopology.NNConf("nn2").setIpcPort(10022)));
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .nnTopology(topology)
         .numDataNodes(0)
         .build();

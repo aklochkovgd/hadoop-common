@@ -93,7 +93,7 @@ public class TestNameNodeResourceChecker {
       conf.set(DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_KEY, nameDir.getAbsolutePath());
       conf.setLong(DFSConfigKeys.DFS_NAMENODE_RESOURCE_CHECK_INTERVAL_KEY, 1);
       
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(1).build();
 
       NameNodeResourceChecker mockResourceChecker = Mockito.mock(NameNodeResourceChecker.class);

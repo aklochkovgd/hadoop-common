@@ -88,7 +88,7 @@ public class TestFcHdfsSymlink extends FileContextSymlinkBaseTest {
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_WEBHDFS_ENABLED_KEY, true);
     conf.set(FsPermission.UMASK_LABEL, "000");
-    cluster = new MiniDFSCluster.Builder(conf).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     fc = FileContext.getFileContext(cluster.getURI(0));
     webhdfs = WebHdfsTestUtil.getWebHdfsFileSystem(conf);
     dfs = cluster.getFileSystem();

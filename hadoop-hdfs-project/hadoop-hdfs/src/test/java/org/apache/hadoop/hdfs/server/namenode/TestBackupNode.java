@@ -66,15 +66,13 @@ public class TestBackupNode {
     ((Log4JLogger)BackupImage.LOG).getLogger().setLevel(Level.ALL);
   }
   
-  static final String BASE_DIR = MiniDFSCluster.newDfsBaseDir();
-  
   static final long seed = 0xDEADBEEFL;
   static final int blockSize = 4096;
   static final int fileSize = 8192;
 
   @Before
   public void setUp() throws Exception {
-    File baseDir = new File(BASE_DIR);
+    File baseDir = new File(MiniDFSCluster.getDfsBaseDir(getClass()));
     if(baseDir.exists())
       if(!(FileUtil.fullyDelete(baseDir)))
         throw new IOException("Cannot remove directory: " + baseDir);
@@ -86,8 +84,8 @@ public class TestBackupNode {
     dirB.mkdirs();
   }
 
-  static String getBackupNodeDir(StartupOption t, int idx) {
-    return BASE_DIR + "name" + t.getName() + idx + "/";
+  String getBackupNodeDir(StartupOption t, int idx) {
+    return MiniDFSCluster.getDfsBaseDir(getClass()) + "name" + t.getName() + idx + "/";
   }
 
   BackupNode startBackupNode(Configuration conf,
@@ -146,7 +144,7 @@ public class TestBackupNode {
     BackupNode backup = null;
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(BASE_DIR)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                   .numDataNodes(0).build();
       fileSys = cluster.getFileSystem();
       backup = startBackupNode(conf, StartupOption.BACKUP, 1);
@@ -288,7 +286,7 @@ public class TestBackupNode {
     BackupNode backup = null;
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(BASE_DIR)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                   .numDataNodes(0).build();
       fileSys = cluster.getFileSystem();
       //
@@ -316,7 +314,7 @@ public class TestBackupNode {
       if(fileSys != null) fileSys.close();
       if(cluster != null) cluster.shutdown();
     }
-    File nnCurDir = new File(BASE_DIR, "name1/current/");
+    File nnCurDir = new File(MiniDFSCluster.getDfsBaseDir(getClass()), "name1/current/");
     File bnCurDir = new File(getBackupNodeDir(op, 1), "/current/");
 
     FSImageTestUtil.assertParallelFilesAreIdentical(
@@ -327,7 +325,7 @@ public class TestBackupNode {
       //
       // Restart cluster and verify that file1 still exist.
       //
-      cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(BASE_DIR)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                                 .numDataNodes(numDatanodes)
                                                 .format(false).build();
       fileSys = cluster.getFileSystem();
@@ -410,7 +408,7 @@ public class TestBackupNode {
       // Restart cluster and verify that file2 exists and
       // file1 does not exist.
       //
-      cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(BASE_DIR).numDataNodes(0).format(false).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0).format(false).build();
       fileSys = cluster.getFileSystem();
 
       assertTrue(!fileSys.exists(file1));
@@ -439,7 +437,7 @@ public class TestBackupNode {
     BackupNode backup = null;
     try {
       // Start NameNode and BackupNode
-      cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(BASE_DIR)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                   .numDataNodes(0).format(true).build();
       fileSys = cluster.getFileSystem();
       long txid = cluster.getNameNodeRpc().getTransactionID();

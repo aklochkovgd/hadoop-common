@@ -71,7 +71,7 @@ public class TestStandbyIsHot {
     // We read from the standby to watch block locations
     HAUtil.setAllowStandbyReads(conf, true);
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, 1);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(MiniDFSNNTopology.simpleHATopology())
       .numDataNodes(3)
       .build();
@@ -144,7 +144,7 @@ public class TestStandbyIsHot {
     // We read from the standby to watch block locations
     HAUtil.setAllowStandbyReads(conf, true);
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, 1);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(MiniDFSNNTopology.simpleHATopology())
       .numDataNodes(1)
       .build();

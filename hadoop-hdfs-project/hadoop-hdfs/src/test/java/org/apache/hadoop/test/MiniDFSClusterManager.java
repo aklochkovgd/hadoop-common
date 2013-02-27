@@ -136,7 +136,7 @@ public class MiniDFSClusterManager {
    * configuration and details, if requested.
    */
   public void start() throws IOException, FileNotFoundException {
-    dfs = new MiniDFSCluster.Builder(conf).nameNodePort(nameNodePort)
+    dfs = new MiniDFSCluster.Builder(getClass(), conf).nameNodePort(nameNodePort)
                                           .numDataNodes(numDataNodes)
                                           .startupOption(dfsOpts)
                                           .format(format)

@@ -54,7 +54,7 @@ public class TestRefreshNamenodes {
         .addNameservice(new NSConf("ns1").addNN(
             new NNConf(null).setIpcPort(nnPort1)))
         .setFederation(true);
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .nnTopology(topology)
         .build();
 

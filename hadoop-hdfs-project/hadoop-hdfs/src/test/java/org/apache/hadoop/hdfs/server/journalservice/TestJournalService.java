@@ -52,7 +52,7 @@ public class TestJournalService {
     JournalListener listener = Mockito.mock(JournalListener.class);
     JournalService service = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1).build();
       cluster.waitActive(0);
       service = startJournalService(listener);
       verifyRollLogsCallback(service, listener);

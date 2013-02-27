@@ -79,7 +79,7 @@ public class TestViewFsDefaultValue {
     CONF.setInt(DFS_REPLICATION_KEY, DFS_REPLICATION_DEFAULT + 1);
     CONF.setInt(IO_FILE_BUFFER_SIZE_KEY, IO_FILE_BUFFER_SIZE_DEFAULT);
  
-    cluster = new MiniDFSCluster.Builder(CONF).numDataNodes(DFS_REPLICATION_DEFAULT + 1).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), CONF).numDataNodes(DFS_REPLICATION_DEFAULT + 1).build();
     cluster.waitClusterUp();
     fHdfs = cluster.getFileSystem();
     fileSystemTestHelper.createFile(fHdfs, testFileName);

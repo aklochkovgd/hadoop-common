@@ -62,7 +62,7 @@ public class TestUniformSizeInputFormat {
 
   @BeforeClass
   public static void setup() throws Exception {
-    cluster = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(1)
+    cluster = new MiniDFSCluster.Builder(getClass(), new Configuration()).numDataNodes(1)
                                           .format(true).build();
     totalFileSize = 0;
 

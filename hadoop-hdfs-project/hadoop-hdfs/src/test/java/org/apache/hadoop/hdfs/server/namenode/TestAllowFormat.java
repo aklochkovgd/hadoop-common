@@ -33,7 +33,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
@@ -54,30 +53,30 @@ public class TestAllowFormat {
   public static final String NAME_NODE_HTTP_HOST = "0.0.0.0:";
   private static final Log LOG =
     LogFactory.getLog(TestAllowFormat.class.getName());
-  private static final String DFS_BASE_DIR = MiniDFSCluster.newDfsBaseDir();
   private static Configuration config;
   private static MiniDFSCluster cluster = null;
 
   @BeforeClass
   public static void setUp() throws Exception {
     config = new Configuration();
-    String baseDir = System.getProperty("test.build.data", "build/test/data");
 
+    String baseDir = MiniDFSCluster.getDfsBaseDir(TestAllowFormat.class);
+    
     // Test has multiple name directories.
     // Format should not really prompt us if one of the directories exist,
     // but is empty. So in case the test hangs on an input, it means something
     // could be wrong in the format prompting code. (HDFS-1636)
-    File nameDir1 = new File(DFS_BASE_DIR, "name1");
-    File nameDir2 = new File(DFS_BASE_DIR, "name2");
+    File nameDir1 = new File(baseDir, "name1");
+    File nameDir2 = new File(baseDir, "name2");
 
     // To test multiple directory handling, we pre-create one of the name directories.
     nameDir1.mkdirs();
 
     // Set multiple name directories.
     config.set(DFS_NAMENODE_NAME_DIR_KEY, nameDir1.getPath() + "," + nameDir2.getPath());
-    config.set(DFS_DATANODE_DATA_DIR_KEY, new File(DFS_BASE_DIR, "data").getPath());
+    config.set(DFS_DATANODE_DATA_DIR_KEY, new File(baseDir, "data").getPath());
 
-    config.set(DFS_NAMENODE_CHECKPOINT_DIR_KEY,new File(DFS_BASE_DIR, "secondary").getPath());
+    config.set(DFS_NAMENODE_CHECKPOINT_DIR_KEY,new File(baseDir, "secondary").getPath());
 
     FileSystem.setDefaultUri(config, "hdfs://"+NAME_NODE_HOST + "0");
   }
@@ -106,7 +105,7 @@ public class TestAllowFormat {
     NameNode nn;
     // 1. Create a new cluster and format DFS
     config.setBoolean(DFS_NAMENODE_SUPPORT_ALLOW_FORMAT_KEY, true);
-    cluster = new MiniDFSCluster.Builder(config).dfsBaseDir(DFS_BASE_DIR)
+    cluster = new MiniDFSCluster.Builder(getClass(), config)
                                                 .manageDataDfsDirs(false)
                                                 .manageNameDfsDirs(false)
                                                 .build();

@@ -58,7 +58,7 @@ public class TestOverReplicatedBlocks {
     conf.set(
         DFSConfigKeys.DFS_NAMENODE_REPLICATION_PENDING_TIMEOUT_SEC_KEY,
         Integer.toString(2));
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(3).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(3).build();
     FileSystem fs = cluster.getFileSystem();
 
     try {
@@ -146,7 +146,7 @@ public class TestOverReplicatedBlocks {
     try {
       Configuration conf = new HdfsConfiguration();
       conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, SMALL_BLOCK_SIZE);
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(3).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(3).build();
       fs = cluster.getFileSystem();
       final FSNamesystem namesystem = cluster.getNamesystem();
 
@@ -200,7 +200,7 @@ public class TestOverReplicatedBlocks {
   @Test
   public void testInvalidateOverReplicatedBlock() throws Exception {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(3)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(3)
         .build();
     try {
       final FSNamesystem namesystem = cluster.getNamesystem();

@@ -42,7 +42,7 @@ public class TestDatanodeConfig {
   @BeforeClass
   public static void setUp() throws Exception {
     Configuration conf = new HdfsConfiguration();
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0).build();
     cluster.waitActive();
   }
 

@@ -55,7 +55,7 @@ public class TestHAFsck {
         .addNN(new MiniDFSNNTopology.NNConf("nn1").setHttpPort(10051))
         .addNN(new MiniDFSNNTopology.NNConf("nn2").setHttpPort(10052)));
     
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(topology)
       .numDataNodes(0)
       .build();

@@ -69,7 +69,7 @@ public class TestBalancerWithHANameNodes {
     NNConf nn1Conf = new MiniDFSNNTopology.NNConf("nn1");
     nn1Conf.setIpcPort(NameNode.DEFAULT_PORT);
     Configuration copiedConf = new Configuration(conf);
-    cluster = new MiniDFSCluster.Builder(copiedConf)
+    cluster = new MiniDFSCluster.Builder(getClass(), copiedConf)
         .nnTopology(MiniDFSNNTopology.simpleHATopology())
         .numDataNodes(capacities.length)
         .racks(racks)

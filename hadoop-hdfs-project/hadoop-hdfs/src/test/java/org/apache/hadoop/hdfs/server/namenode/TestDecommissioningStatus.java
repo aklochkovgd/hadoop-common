@@ -86,7 +86,7 @@ public class TestDecommissioningStatus {
     writeConfigFile(localFileSys, excludeFile, null);
     writeConfigFile(localFileSys, includeFile, null);
 
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numDatanodes).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(numDatanodes).build();
     cluster.waitActive();
     fileSys = cluster.getFileSystem();
   }

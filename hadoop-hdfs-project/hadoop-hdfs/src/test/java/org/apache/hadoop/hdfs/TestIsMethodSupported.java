@@ -57,7 +57,7 @@ public class TestIsMethodSupported {
   
   @BeforeClass
   public static void setUp() throws Exception {
-    cluster = (new MiniDFSCluster.Builder(conf))
+    cluster = (new MiniDFSCluster.Builder(getClass(), conf))
         .numDataNodes(1).build();
     nnAddress = cluster.getNameNode().getNameNodeAddress();
     DataNode dn = cluster.getDataNodes().get(0);

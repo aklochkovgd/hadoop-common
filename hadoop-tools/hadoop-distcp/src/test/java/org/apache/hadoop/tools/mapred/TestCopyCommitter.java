@@ -67,7 +67,7 @@ public class TestCopyCommitter {
   public static void create() throws IOException {
     config = getJobForClient().getConfiguration();
     config.setLong(DistCpConstants.CONF_LABEL_TOTAL_BYTES_TO_BE_COPIED, 0);
-    cluster = new MiniDFSCluster.Builder(config).numDataNodes(1).format(true)
+    cluster = new MiniDFSCluster.Builder(getClass(), config).numDataNodes(1).format(true)
                       .build();
   }
 

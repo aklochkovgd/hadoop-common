@@ -45,7 +45,7 @@ public class TestGenericJournalConf {
     conf.set(DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_KEY,
              "dummy://test");
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0).build();
       cluster.waitActive();
     } finally {
       if (cluster != null) {
@@ -69,7 +69,7 @@ public class TestGenericJournalConf {
              "dummy://test");
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0).build();
       cluster.waitActive();
     } finally {
       if (cluster != null) {
@@ -92,7 +92,7 @@ public class TestGenericJournalConf {
     conf.set(DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_KEY,
              "dummy://test");
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0).build();
       cluster.waitActive();
       fail("Should have failed before this point");
     } catch (IllegalArgumentException iae) {
@@ -120,7 +120,7 @@ public class TestGenericJournalConf {
     conf.set(DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_KEY, DUMMY_URI);
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_CHECKED_VOLUMES_MINIMUM_KEY, 0);
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0).build();
       cluster.waitActive();
       
       assertTrue(DummyJournalManager.shouldPromptCalled);

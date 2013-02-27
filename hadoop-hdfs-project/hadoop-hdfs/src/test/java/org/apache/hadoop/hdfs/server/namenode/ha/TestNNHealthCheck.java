@@ -38,7 +38,7 @@ public class TestNNHealthCheck {
     MiniDFSCluster cluster = null;
     try {
       Configuration conf = new Configuration();
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(0)
           .nnTopology(MiniDFSNNTopology.simpleHATopology())
           .build();

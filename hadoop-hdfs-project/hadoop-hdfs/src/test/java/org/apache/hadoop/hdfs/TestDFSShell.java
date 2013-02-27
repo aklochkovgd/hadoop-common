@@ -112,7 +112,7 @@ public class TestDFSShell {
   @Test
   public void testZeroSizeFile() throws IOException {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     FileSystem fs = cluster.getFileSystem();
     assertTrue("Not a HDFS: "+fs.getUri(),
                fs instanceof DistributedFileSystem);
@@ -155,7 +155,7 @@ public class TestDFSShell {
   @Test
   public void testRecrusiveRm() throws IOException {
 	  Configuration conf = new HdfsConfiguration();
-	  MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+	  MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
 	  FileSystem fs = cluster.getFileSystem();
 	  assertTrue("Not a HDFS: " + fs.getUri(), 
 			  fs instanceof DistributedFileSystem);
@@ -181,7 +181,7 @@ public class TestDFSShell {
   @Test
   public void testDu() throws IOException {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     FileSystem fs = cluster.getFileSystem();
     assertTrue("Not a HDFS: "+fs.getUri(),
                 fs instanceof DistributedFileSystem);
@@ -231,7 +231,7 @@ public class TestDFSShell {
   @Test
   public void testPut() throws IOException {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     FileSystem fs = cluster.getFileSystem();
     assertTrue("Not a HDFS: "+fs.getUri(),
                fs instanceof DistributedFileSystem);
@@ -333,7 +333,7 @@ public class TestDFSShell {
     MiniDFSCluster cluster = null;
     PrintStream bak = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
       FileSystem srcFs = cluster.getFileSystem();
       Path root = new Path("/nonexistentfile");
       bak = System.err;
@@ -484,9 +484,9 @@ public class TestDFSShell {
     MiniDFSCluster srcCluster =  null;
     MiniDFSCluster dstCluster = null;
     try{
-      srcCluster = new MiniDFSCluster.Builder(srcConf).numDataNodes(2).build();
+      srcCluster = new MiniDFSCluster.Builder(getClass(), srcConf).numDataNodes(2).build();
       String dstBaseDir = new File(new File(srcCluster.getDfsBaseDir()).getParentFile(), "dfs_tmp_uri/").getAbsolutePath();
-      dstCluster = new MiniDFSCluster.Builder(dstConf).dfsBaseDir(dstBaseDir).numDataNodes(2).build();
+      dstCluster = new MiniDFSCluster.Builder(getClass(), dstConf).dfsBaseDir(dstBaseDir).numDataNodes(2).build();
       FileSystem srcFs = srcCluster.getFileSystem();
       FileSystem dstFs = dstCluster.getFileSystem();
       FsShell shell = new FsShell();
@@ -571,7 +571,7 @@ public class TestDFSShell {
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
       final FileSystem dfs = cluster.getFileSystem();
       textTest(new Path("/texttest").makeQualified(dfs.getUri(),
             dfs.getWorkingDirectory()), conf);
@@ -685,7 +685,7 @@ public class TestDFSShell {
   @Test
   public void testCopyToLocal() throws IOException {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     FileSystem fs = cluster.getFileSystem();
     assertTrue("Not a HDFS: "+fs.getUri(),
                fs instanceof DistributedFileSystem);
@@ -783,7 +783,7 @@ public class TestDFSShell {
   @Test
   public void testCount() throws Exception {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     DistributedFileSystem dfs = (DistributedFileSystem)cluster.getFileSystem();
     FsShell shell = new FsShell();
     shell.setConf(conf);
@@ -959,7 +959,7 @@ public class TestDFSShell {
     conf.set(DFSConfigKeys.DFS_PERMISSIONS_ENABLED_KEY, "true");
     
     //test chmod on DFS
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     fs = cluster.getFileSystem();
     testChmod(conf, fs, "/tmp/chmodTest");
     
@@ -1018,7 +1018,7 @@ public class TestDFSShell {
     Configuration conf = new HdfsConfiguration();
     /* This tests some properties of ChecksumFileSystem as well.
      * Make sure that we create ChecksumDFS */
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     FileSystem fs = cluster.getFileSystem();
     assertTrue("Not a HDFS: "+fs.getUri(),
             fs instanceof DistributedFileSystem);
@@ -1401,7 +1401,7 @@ public class TestDFSShell {
     PrintStream bak = null;
     try {
       final Configuration conf = new HdfsConfiguration();
-      dfs = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+      dfs = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
       FileSystem fs = dfs.getFileSystem();
       Path p = new Path("/foo");
       fs.mkdirs(p);
@@ -1446,7 +1446,7 @@ public class TestDFSShell {
     // Disable block scanner to avoid this race.
     conf.setInt(DFSConfigKeys.DFS_DATANODE_SCAN_PERIOD_HOURS_KEY, -1);
     
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     DistributedFileSystem dfs = (DistributedFileSystem)cluster.getFileSystem();
 
     try {
@@ -1506,7 +1506,7 @@ public class TestDFSShell {
   @Test
   public void testLsr() throws Exception {
     final Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     DistributedFileSystem dfs = (DistributedFileSystem)cluster.getFileSystem();
 
     try {
@@ -1574,7 +1574,7 @@ public class TestDFSShell {
   @Test
   public void testCopyCommandsWithForceOption() throws Exception {
     Configuration conf = new Configuration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1)
         .format(true).build();
     FsShell shell = null;
     FileSystem fs = null;
@@ -1648,7 +1648,7 @@ public class TestDFSShell {
       serverConf.setLong(FS_TRASH_INTERVAL_KEY, 1);
     }
 
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(serverConf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), serverConf)
       .numDataNodes(1).format(true).build();
     Configuration clientConf = new Configuration(serverConf);
 

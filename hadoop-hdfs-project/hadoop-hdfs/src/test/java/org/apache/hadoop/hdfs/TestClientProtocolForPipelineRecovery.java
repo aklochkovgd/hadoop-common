@@ -38,7 +38,7 @@ public class TestClientProtocolForPipelineRecovery {
   @Test public void testGetNewStamp() throws IOException {
     int numDataNodes = 1;
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numDataNodes).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(numDataNodes).build();
     try {
       cluster.waitActive();
       FileSystem fileSys = cluster.getFileSystem();

@@ -175,7 +175,7 @@ public class TestShortCircuitLocalRead {
     if (simulatedStorage) {
       SimulatedFSDataset.setFactory(conf);
     }
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1)
         .format(true).build();
     FileSystem fs = cluster.getFileSystem();
     try {
@@ -235,7 +235,7 @@ public class TestShortCircuitLocalRead {
     final Configuration conf = new Configuration();
     conf.set(DFSConfigKeys.DFS_BLOCK_LOCAL_PATH_ACCESS_USER_KEY,
         "alloweduser1,alloweduser2");
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1)
         .format(true).build();
     cluster.waitActive();
     final DataNode dn = cluster.getDataNodes().get(0);
@@ -320,7 +320,7 @@ public class TestShortCircuitLocalRead {
     if (simulatedStorage) {
       SimulatedFSDataset.setFactory(conf);
     }
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1)
         .format(true).build();
     FileSystem fs = cluster.getFileSystem();
     try {

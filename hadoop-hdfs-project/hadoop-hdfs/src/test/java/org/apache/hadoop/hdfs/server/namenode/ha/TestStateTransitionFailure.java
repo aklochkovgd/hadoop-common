@@ -46,7 +46,7 @@ public class TestStateTransitionFailure {
       // Set an illegal value for the trash emptier interval. This will cause
       // the NN to fail to transition to the active state.
       conf.setLong(CommonConfigurationKeys.FS_TRASH_INTERVAL_KEY, -1);
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .nnTopology(MiniDFSNNTopology.simpleHATopology())
           .numDataNodes(0)
           .checkExitOnShutdown(false)

@@ -59,7 +59,7 @@ public class TestTransferFsImage {
   @Test
   public void testClientSideException() throws IOException {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(0).build();
     NNStorage mockStorage = Mockito.mock(NNStorage.class);
     List<File> localPath = Collections.<File>singletonList(
@@ -89,7 +89,7 @@ public class TestTransferFsImage {
   @Test
   public void testClientSideExceptionOnJustOneDir() throws IOException {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(0).build();
     NNStorage mockStorage = Mockito.mock(NNStorage.class);
     List<File> localPaths = ImmutableList.of(

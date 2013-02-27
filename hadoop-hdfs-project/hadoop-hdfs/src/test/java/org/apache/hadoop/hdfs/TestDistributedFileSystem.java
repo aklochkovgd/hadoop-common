@@ -79,7 +79,7 @@ public class TestDistributedFileSystem {
   @Test
   public void testFileSystemCloseAll() throws Exception {
     Configuration conf = getTestConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0).build();
     URI address = FileSystem.getDefaultUri(conf);
 
     try {
@@ -106,7 +106,7 @@ public class TestDistributedFileSystem {
     Configuration conf = getTestConfiguration();
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
       FileSystem fileSys = cluster.getFileSystem();
       
       // create two files, leaving them open
@@ -155,7 +155,7 @@ public class TestDistributedFileSystem {
     Configuration conf = getTestConfiguration();
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
       FileSystem fileSys = cluster.getFileSystem();
       String file = "/test/fileclosethenseek/file-0";
       Path path = new Path(file);
@@ -196,7 +196,7 @@ public class TestDistributedFileSystem {
     MiniDFSCluster cluster = null;
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
       final String filepathstring = "/test/LeaseChecker/foo";
       final Path[] filepaths = new Path[4];
       for(int i = 0; i < filepaths.length; i++) {
@@ -346,7 +346,7 @@ public class TestDistributedFileSystem {
     int lsLimit = 2;
     final Configuration conf = getTestConfiguration();
     conf.setInt(DFSConfigKeys.DFS_LIST_LIMIT, lsLimit);
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     try {
       final FileSystem fs = cluster.getFileSystem();
       Path dir = new Path("/test");
@@ -450,7 +450,7 @@ public class TestDistributedFileSystem {
     final Configuration conf = getTestConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_WEBHDFS_ENABLED_KEY, true);
 
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     final FileSystem hdfs = cluster.getFileSystem();
 
     final String nnAddr = conf.get(DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY);
@@ -629,7 +629,7 @@ public class TestDistributedFileSystem {
     final Configuration conf = getTestConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_HDFS_BLOCKS_METADATA_ENABLED,
         true);
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .numDataNodes(2).build();
     DistributedFileSystem fs = cluster.getFileSystem();
     // Create two files
@@ -681,7 +681,7 @@ public class TestDistributedFileSystem {
     final Configuration conf = getTestConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_HDFS_BLOCKS_METADATA_ENABLED,
         true);
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .numDataNodes(2).build();
     cluster.getDataNodes();
     DistributedFileSystem fs = cluster.getFileSystem();
@@ -726,7 +726,7 @@ public class TestDistributedFileSystem {
     short repl = 1;
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1).build();
       FileSystem dfs = cluster.getFileSystem();
 
       dfs.mkdirs(testBasePath);

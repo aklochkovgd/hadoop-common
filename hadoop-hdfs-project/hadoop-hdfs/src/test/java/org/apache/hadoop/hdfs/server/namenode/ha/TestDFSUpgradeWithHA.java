@@ -54,7 +54,7 @@ public class TestDFSUpgradeWithHA {
         StartupOption.ROLLBACK })) {
       MiniDFSCluster cluster = null;
       try {
-        cluster = new MiniDFSCluster.Builder(new Configuration())
+        cluster = new MiniDFSCluster.Builder(getClass(), new Configuration())
             .nnTopology(MiniDFSNNTopology.simpleHATopology())
             .startupOption(startOpt)
             .numDataNodes(0)
@@ -79,7 +79,7 @@ public class TestDFSUpgradeWithHA {
   public void testStartingWithUpgradeInProgressFails() throws Exception {
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(new Configuration())
+      cluster = new MiniDFSCluster.Builder(getClass(), new Configuration())
           .nnTopology(MiniDFSNNTopology.simpleHATopology())
           .numDataNodes(0)
           .build();

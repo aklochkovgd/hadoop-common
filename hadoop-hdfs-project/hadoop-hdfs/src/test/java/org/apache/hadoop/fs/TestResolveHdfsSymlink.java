@@ -49,7 +49,7 @@ public class TestResolveHdfsSymlink {
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(
         DFSConfigKeys.DFS_NAMENODE_DELEGATION_TOKEN_ALWAYS_USE_KEY, true);
-    cluster = new MiniDFSCluster.Builder(conf).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     cluster.waitActive();
 
   }

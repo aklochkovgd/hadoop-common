@@ -47,7 +47,7 @@ public class TestDataNodeMetrics {
   public void testDataNodeMetrics() throws Exception {
     Configuration conf = new HdfsConfiguration();
     SimulatedFSDataset.setFactory(conf);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     try {
       FileSystem fs = cluster.getFileSystem();
       final long LONG_FILE_LEN = Integer.MAX_VALUE+1L; 
@@ -68,7 +68,7 @@ public class TestDataNodeMetrics {
     Configuration conf = new HdfsConfiguration();
     final int interval = 1;
     conf.set(DFSConfigKeys.DFS_METRICS_PERCENTILES_INTERVALS_KEY, "" + interval);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     try {
       FileSystem fs = cluster.getFileSystem();
       // Create and read a 1 byte file
@@ -100,7 +100,7 @@ public class TestDataNodeMetrics {
     Configuration conf = new HdfsConfiguration();
     final int interval = 1;
     conf.set(DFSConfigKeys.DFS_METRICS_PERCENTILES_INTERVALS_KEY, "" + interval);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     try {
       cluster.waitActive();
       DistributedFileSystem fs = (DistributedFileSystem) cluster.getFileSystem();
@@ -139,7 +139,7 @@ public class TestDataNodeMetrics {
     final int interval = 1;
     Configuration conf = new HdfsConfiguration();
     conf.set(DFSConfigKeys.DFS_METRICS_PERCENTILES_INTERVALS_KEY, "" + interval);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(
         datanodeCount).build();
     try {
       cluster.waitActive();

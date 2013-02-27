@@ -63,7 +63,7 @@ public class TestEditLogTailer {
 
     HAUtil.setAllowStandbyReads(conf, true);
     
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(MiniDFSNNTopology.simpleHATopology())
       .numDataNodes(0)
       .build();
@@ -127,7 +127,7 @@ public class TestEditLogTailer {
         .addNN(new MiniDFSNNTopology.NNConf("nn1").setIpcPort(10031))
         .addNN(new MiniDFSNNTopology.NNConf("nn2").setIpcPort(10032)));
 
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(topology)
       .numDataNodes(0)
       .build();

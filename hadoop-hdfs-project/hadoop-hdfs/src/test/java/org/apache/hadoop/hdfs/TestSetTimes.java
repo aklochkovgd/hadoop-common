@@ -93,7 +93,7 @@ public class TestSetTimes {
     conf.setInt(DFSConfigKeys.DFS_HEARTBEAT_INTERVAL_KEY, 1);
 
 
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                                .numDataNodes(numDatanodes)
                                                .build();
     cluster.waitActive();
@@ -188,8 +188,7 @@ public class TestSetTimes {
       // shutdown cluster and restart
       cluster.shutdown();
       try {Thread.sleep(2*MAX_IDLE_TIME);} catch (InterruptedException e) {}
-      cluster = new MiniDFSCluster.Builder(conf).nameNodePort(nnport)
-                                                .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).nameNodePort(nnport)
                                                 .format(false)
                                                 .build();
       cluster.waitActive();
@@ -228,7 +227,7 @@ public class TestSetTimes {
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_HEARTBEAT_RECHECK_INTERVAL_KEY, 1000);
     conf.setInt(DFSConfigKeys.DFS_HEARTBEAT_INTERVAL_KEY, 1);
     conf.setInt(DFSConfigKeys.DFS_DATANODE_HANDLER_COUNT_KEY, 50);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                                .numDataNodes(numDatanodes)
                                                .build();
     cluster.waitActive();

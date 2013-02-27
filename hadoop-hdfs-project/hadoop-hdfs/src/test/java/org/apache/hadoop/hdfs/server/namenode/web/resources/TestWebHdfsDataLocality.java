@@ -68,7 +68,7 @@ public class TestWebHdfsDataLocality {
     final int nDataNodes = racks.length;
     LOG.info("nDataNodes=" + nDataNodes + ", racks=" + Arrays.asList(racks));
 
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .numDataNodes(nDataNodes)
         .racks(racks)
         .build();

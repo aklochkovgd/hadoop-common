@@ -96,8 +96,8 @@ public class UpgradeUtilities {
    * version, and time files) and a Datanode (contains version and
    * block files).  This can be a lengthy operation.
    */
-  public UpgradeUtilities(String dfsBaseDir) throws Exception {
-    this.dfsBaseDir = dfsBaseDir;
+  public UpgradeUtilities(Class<?> caller) throws Exception {
+    this.dfsBaseDir = MiniDFSCluster.getDfsBaseDir(caller);
     namenodeStorage = new File(dfsBaseDir, "namenodeMaster");
     datanodeStorage = new File(dfsBaseDir, "datanodeMaster");
     
@@ -113,8 +113,7 @@ public class UpgradeUtilities {
       
       // format and start NameNode and start DataNode
       DFSTestUtil.formatNameNode(config);
-      cluster =  new MiniDFSCluster.Builder(config)
-                                   .dfsBaseDir(dfsBaseDir)
+      cluster =  new MiniDFSCluster.Builder(caller, config)
                                    .numDataNodes(1)
                                    .startupOption(StartupOption.REGULAR)
                                    .format(false)

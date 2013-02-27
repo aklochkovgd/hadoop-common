@@ -59,7 +59,7 @@ public class TestReadWhileWriting {
     conf.setLong(DFSConfigKeys.DFS_HEARTBEAT_INTERVAL_KEY, 1);
 
     // create cluster
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .numDataNodes(4).build();
     try {
       //change the lease limits.

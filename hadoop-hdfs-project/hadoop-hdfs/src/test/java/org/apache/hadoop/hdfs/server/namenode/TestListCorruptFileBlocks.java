@@ -64,7 +64,7 @@ public class TestListCorruptFileBlocks {
       Configuration conf = new HdfsConfiguration();
       conf.setInt(DFSConfigKeys.DFS_DATANODE_DIRECTORYSCAN_INTERVAL_KEY, 1); // datanode scans directories
       conf.setInt(DFSConfigKeys.DFS_BLOCKREPORT_INTERVAL_MSEC_KEY, 3 * 1000); // datanode sends block reports
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       FileSystem fs = cluster.getFileSystem();
 
       // create two files with one block each
@@ -148,7 +148,7 @@ public class TestListCorruptFileBlocks {
       // start populating repl queues immediately 
       conf.setFloat(DFSConfigKeys.DFS_NAMENODE_REPL_QUEUE_THRESHOLD_PCT_KEY,
                     0f);
-      cluster = new MiniDFSCluster.Builder(conf).waitSafeMode(false).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).waitSafeMode(false).build();
       cluster.getNameNodeRpc().setSafeMode(
           HdfsConstants.SafeModeAction.SAFEMODE_LEAVE, false);
       FileSystem fs = cluster.getFileSystem();
@@ -272,7 +272,7 @@ public class TestListCorruptFileBlocks {
 
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       cluster.waitActive();
       fs = cluster.getFileSystem();
       DFSTestUtil util = new DFSTestUtil.Builder().
@@ -382,7 +382,7 @@ public class TestListCorruptFileBlocks {
 
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       cluster.waitActive();
       fs = cluster.getFileSystem();
       DistributedFileSystem dfs = (DistributedFileSystem) fs;
@@ -452,7 +452,7 @@ public class TestListCorruptFileBlocks {
       Configuration conf = new HdfsConfiguration();
       conf.setInt(DFSConfigKeys.DFS_DATANODE_DIRECTORYSCAN_INTERVAL_KEY, 15); // datanode scans directories
       conf.setInt(DFSConfigKeys.DFS_BLOCKREPORT_INTERVAL_MSEC_KEY, 3 * 1000); // datanode sends block reports
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       FileSystem fs = cluster.getFileSystem();
       final int maxCorruptFileBlocks = 
         FSNamesystem.DEFAULT_MAX_CORRUPT_FILEBLOCKS_RETURNED;

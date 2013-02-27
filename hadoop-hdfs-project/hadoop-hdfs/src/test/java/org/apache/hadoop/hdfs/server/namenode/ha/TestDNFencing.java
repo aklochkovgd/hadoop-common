@@ -99,7 +99,7 @@ public class TestDNFencing {
     conf.setClass("dfs.block.replicator.classname", RandomDeleterPolicy.class,
         BlockPlacementPolicy.class); 
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, 1);
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(MiniDFSNNTopology.simpleHATopology())
       .numDataNodes(3)
       .build();

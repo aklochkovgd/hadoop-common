@@ -134,7 +134,7 @@ public class TestFailureOfSharedDir {
     MiniDFSCluster cluster = null;
     File sharedEditsDir = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .nnTopology(MiniDFSNNTopology.simpleHATopology())
         .numDataNodes(0)
         .checkExitOnShutdown(false)

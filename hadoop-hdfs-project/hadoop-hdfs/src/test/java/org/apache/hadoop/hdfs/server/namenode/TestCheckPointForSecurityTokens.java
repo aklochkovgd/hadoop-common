@@ -69,7 +69,7 @@ public class TestCheckPointForSecurityTokens {
       Configuration conf = new HdfsConfiguration();
       conf.setBoolean(
           DFSConfigKeys.DFS_NAMENODE_DELEGATION_TOKEN_ALWAYS_USE_KEY, true);
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numDatanodes).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(numDatanodes).build();
       cluster.waitActive();
       fs = (DistributedFileSystem)(cluster.getFileSystem());
       FSNamesystem namesystem = cluster.getNamesystem();
@@ -114,8 +114,7 @@ public class TestCheckPointForSecurityTokens {
       // restart cluster
       cluster.shutdown();
 
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(numDatanodes)
           .format(false).build();
       cluster.waitActive();
@@ -136,8 +135,7 @@ public class TestCheckPointForSecurityTokens {
       // restart cluster again
       cluster.shutdown();
 
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(numDatanodes)
           .format(false).build();
       cluster.waitActive();
@@ -160,8 +158,7 @@ public class TestCheckPointForSecurityTokens {
       // restart cluster again
       cluster.shutdown();
 
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(numDatanodes)
           .format(false).build();
       cluster.waitActive();

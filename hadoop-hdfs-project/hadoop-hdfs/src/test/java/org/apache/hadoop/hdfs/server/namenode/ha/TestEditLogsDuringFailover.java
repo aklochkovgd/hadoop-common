@@ -65,7 +65,7 @@ public class TestEditLogsDuringFailover {
   public void testStartup() throws Exception {
     Configuration conf = new Configuration();
     HAUtil.setAllowStandbyReads(conf, true);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(MiniDFSNNTopology.simpleHATopology())
       .numDataNodes(0)
       .build();
@@ -132,7 +132,7 @@ public class TestEditLogsDuringFailover {
   private void testFailoverFinalizesAndReadsInProgress(
       boolean partialTxAtEnd) throws Exception {
     Configuration conf = new Configuration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(MiniDFSNNTopology.simpleHATopology())
       .numDataNodes(0)
       .build();

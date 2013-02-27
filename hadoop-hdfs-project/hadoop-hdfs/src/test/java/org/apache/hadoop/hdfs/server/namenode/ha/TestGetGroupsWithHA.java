@@ -36,7 +36,7 @@ public class TestGetGroupsWithHA extends GetGroupsTestBase {
   @Before
   public void setUpNameNode() throws IOException {
     conf = new HdfsConfiguration();
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .nnTopology(MiniDFSNNTopology.simpleHATopology())
         .numDataNodes(0).build();
     HATestUtil.setFailoverConfigurations(cluster, conf);

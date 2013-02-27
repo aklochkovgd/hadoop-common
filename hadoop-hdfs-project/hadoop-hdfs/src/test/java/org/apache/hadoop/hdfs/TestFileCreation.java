@@ -151,7 +151,7 @@ public class TestFileCreation {
     conf.setInt(DFS_CLIENT_WRITE_PACKET_SIZE_KEY, DFS_CLIENT_WRITE_PACKET_SIZE_DEFAULT);
     conf.setInt(DFS_REPLICATION_KEY, DFS_REPLICATION_DEFAULT + 1);
     conf.setInt(IO_FILE_BUFFER_SIZE_KEY, IO_FILE_BUFFER_SIZE_DEFAULT);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
                      .numDataNodes(DFSConfigKeys.DFS_REPLICATION_DEFAULT + 1)
                      .build();
     cluster.waitActive();
@@ -219,7 +219,7 @@ public class TestFileCreation {
     if (simulatedStorage) {
       SimulatedFSDataset.setFactory(conf);
     }
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .checkDataNodeHostConfig(true)
       .build();
     FileSystem fs = cluster.getFileSystem();
@@ -303,7 +303,7 @@ public class TestFileCreation {
     if (simulatedStorage) {
       SimulatedFSDataset.setFactory(conf);
     }
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fs = cluster.getFileSystem();
     FileSystem localfs = FileSystem.getLocal(conf);
 
@@ -366,7 +366,7 @@ public class TestFileCreation {
     Configuration conf = new HdfsConfiguration();
     SimulatedFSDataset.setFactory(conf);
     conf.setBoolean(DFSConfigKeys.DFS_PERMISSIONS_ENABLED_KEY, false);
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fs = cluster.getFileSystem();
     
     UserGroupInformation otherUgi = UserGroupInformation.createUserForTesting(
@@ -423,7 +423,7 @@ public class TestFileCreation {
       SimulatedFSDataset.setFactory(conf);
     }
     // create cluster
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fs = cluster.getFileSystem();
     cluster.waitActive();
     InetSocketAddress addr = new InetSocketAddress("localhost",
@@ -498,7 +498,7 @@ public class TestFileCreation {
       SimulatedFSDataset.setFactory(conf);
     }
     // create cluster
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     DistributedFileSystem dfs = null;
     try {
       cluster.waitActive();
@@ -558,7 +558,7 @@ public class TestFileCreation {
     System.out.println("testFileCreationError3 start");
     Configuration conf = new HdfsConfiguration();
     // create cluster
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0).build();
     DistributedFileSystem dfs = null;
     try {
       cluster.waitActive();
@@ -598,7 +598,7 @@ public class TestFileCreation {
     }
 
     // create cluster
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     DistributedFileSystem fs = null;
     try {
       cluster.waitActive();
@@ -664,8 +664,7 @@ public class TestFileCreation {
         Thread.sleep(2*MAX_IDLE_TIME);
       } catch (InterruptedException e) {
       }
-      cluster = new MiniDFSCluster.Builder(conf).nameNodePort(nnport)
-                                               .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).nameNodePort(nnport)
                                                .format(false)
                                                .build();
       cluster.waitActive();
@@ -677,8 +676,7 @@ public class TestFileCreation {
         Thread.sleep(5000);
       } catch (InterruptedException e) {
       }
-      cluster = new MiniDFSCluster.Builder(conf).nameNodePort(nnport)
-                                                .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).nameNodePort(nnport)
                                                 .format(false)
                                                 .build();
       cluster.waitActive();
@@ -734,7 +732,7 @@ public class TestFileCreation {
     if (simulatedStorage) {
       SimulatedFSDataset.setFactory(conf);
     }
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fs = cluster.getFileSystem();
     DistributedFileSystem dfs = (DistributedFileSystem) fs;
     DFSClient dfsclient = dfs.dfs;
@@ -770,7 +768,7 @@ public class TestFileCreation {
     if (simulatedStorage) {
       SimulatedFSDataset.setFactory(conf);
     }
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fs = cluster.getFileSystem();
     final Path path = new Path("/" + Time.now()
         + "-testFileCreationNonRecursive");
@@ -872,7 +870,7 @@ public class TestFileCreation {
   @Test
   public void testConcurrentFileCreation() throws IOException {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
 
     try {
       FileSystem fs = cluster.getFileSystem();
@@ -906,7 +904,7 @@ public class TestFileCreation {
   public void testFileCreationSyncOnClose() throws IOException {
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFS_DATANODE_SYNCONCLOSE_KEY, true);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
 
     try {
       FileSystem fs = cluster.getFileSystem();
@@ -949,7 +947,7 @@ public class TestFileCreation {
     conf.setInt(DFS_HEARTBEAT_INTERVAL_KEY, 1);
 
     // create cluster
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(DATANODE_NUM).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(DATANODE_NUM).build();
     DistributedFileSystem dfs = null;
     try {
       cluster.waitActive();
@@ -1010,7 +1008,7 @@ public class TestFileCreation {
     Configuration conf = new HdfsConfiguration();
 
     // create cluster
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(DATANODE_NUM).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(DATANODE_NUM).build();
     DistributedFileSystem dfs = null;
     try {
       cluster.waitActive();
@@ -1042,7 +1040,7 @@ public class TestFileCreation {
     conf.setInt("ipc.ping.interval", 10000); // hdfs timeout is now 10 second
 
     // create cluster
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(DATANODE_NUM).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(DATANODE_NUM).build();
     DistributedFileSystem dfs = null;
     try {
       cluster.waitActive();
@@ -1117,7 +1115,7 @@ public class TestFileCreation {
   };
   private void doCreateTest(CreationMethod method) throws Exception {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .numDataNodes(1).build();
     try {
       FileSystem fs = cluster.getFileSystem();

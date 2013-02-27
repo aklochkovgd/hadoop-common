@@ -219,7 +219,7 @@ public class TestPread {
     if (disableTransferTo) {
       conf.setBoolean("dfs.datanode.transferTo.allowed", false);
     }
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(3).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(3).build();
     FileSystem fileSys = cluster.getFileSystem();
     fileSys.setVerifyChecksum(verifyChecksum);
     try {

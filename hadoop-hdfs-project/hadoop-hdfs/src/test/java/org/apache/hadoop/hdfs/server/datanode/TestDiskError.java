@@ -58,7 +58,7 @@ public class TestDiskError {
   public void setUp() throws Exception {
     conf = new HdfsConfiguration();
     conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 512L);
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1).build();
     cluster.waitActive();
     fs = cluster.getFileSystem();
   }

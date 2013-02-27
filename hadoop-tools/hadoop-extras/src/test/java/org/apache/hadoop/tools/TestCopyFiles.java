@@ -740,7 +740,7 @@ public class TestCopyFiles extends TestCase {
     try {
       Configuration conf = new Configuration();
       
-      dfs= new MiniDFSCluster.Builder(conf).numDataNodes(3).format(true).build();
+      dfs= new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(3).format(true).build();
       
       FileSystem fs = dfs.getFileSystem();
       final FsShell shell = new FsShell(conf);

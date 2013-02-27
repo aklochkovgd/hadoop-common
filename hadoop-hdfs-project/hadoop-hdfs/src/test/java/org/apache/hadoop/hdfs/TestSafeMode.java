@@ -65,7 +65,7 @@ public class TestSafeMode {
   public void startUp() throws IOException {
     conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, BLOCK_SIZE);
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1).build();
     cluster.waitActive();      
     fs = cluster.getFileSystem();
     dfs = (DistributedFileSystem)fs;
@@ -110,7 +110,7 @@ public class TestSafeMode {
     cluster.shutdown();
     
     // now bring up just the NameNode.
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).dfsBaseDir(cluster.getDfsBaseDir()).format(false).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0).format(false).build();
     cluster.waitActive();
     dfs = (DistributedFileSystem)cluster.getFileSystem();
     

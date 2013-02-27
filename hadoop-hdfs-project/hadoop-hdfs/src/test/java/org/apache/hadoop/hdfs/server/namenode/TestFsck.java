@@ -133,7 +133,7 @@ public class TestFsck {
       final long precision = 1L;
       conf.setLong(DFSConfigKeys.DFS_NAMENODE_ACCESSTIME_PRECISION_KEY, precision);
       conf.setLong(DFSConfigKeys.DFS_BLOCKREPORT_INTERVAL_MSEC_KEY, 10000L);
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(4).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(4).build();
       fs = cluster.getFileSystem();
       final String fileName = "/srcdat";
       util.createFiles(fs, fileName);
@@ -151,8 +151,7 @@ public class TestFsck {
       cluster.shutdown();
       
       // restart the cluster; bring up namenode but not the data nodes
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(0).format(false).build();
       outStr = runFsck(conf, 1, true, "/");
       // expect the result is corrupt
@@ -211,7 +210,7 @@ public class TestFsck {
     try {
       Configuration conf = new HdfsConfiguration();
       conf.setLong(DFSConfigKeys.DFS_BLOCKREPORT_INTERVAL_MSEC_KEY, 10000L);
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(4).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(4).build();
       fs = cluster.getFileSystem();
       util.createFiles(fs, "/srcdat");
       util.waitReplication(fs, "/srcdat", (short)3);
@@ -236,7 +235,7 @@ public class TestFsck {
     MiniDFSCluster cluster = null;
     try {
       // Create a cluster with the current user, write some files
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(4).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(4).build();
       final MiniDFSCluster c2 = cluster;
       final String dir = "/dfsck";
       final Path dirpath = new Path(dir);
@@ -288,7 +287,7 @@ public class TestFsck {
     MiniDFSCluster cluster = null;
     FileSystem fs = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).
           numDataNodes(NUM_DATANODES).build();
       String topDir = "/srcdat";
       fs = cluster.getFileSystem();
@@ -472,7 +471,7 @@ public class TestFsck {
       Configuration conf = new HdfsConfiguration();
       conf.setLong(DFSConfigKeys.DFS_BLOCKREPORT_INTERVAL_MSEC_KEY, 10000L);
       conf.setInt(DFSConfigKeys.DFS_DATANODE_DIRECTORYSCAN_INTERVAL_KEY, 1);
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(4).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(4).build();
       String topDir = "/srcdat";
       fs = cluster.getFileSystem();
       cluster.waitActive();
@@ -545,7 +544,7 @@ public class TestFsck {
     try {
       Configuration conf = new HdfsConfiguration();
       conf.setLong(DFSConfigKeys.DFS_BLOCKREPORT_INTERVAL_MSEC_KEY, 10000L);
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(4).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(4).build();
       String topDir = "/srcdat";
       String randomString = "HADOOP  ";
       fs = cluster.getFileSystem();
@@ -602,7 +601,7 @@ public class TestFsck {
 
     MiniDFSCluster cluster = null;
     try {
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1).build();
     cluster.waitActive();
     fs = cluster.getFileSystem();
     Path file1 = new Path("/testCorruptBlock");
@@ -671,7 +670,7 @@ public class TestFsck {
     try {
       // bring up a one-node cluster
       Configuration conf = new HdfsConfiguration();
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       String fileName = "/test.txt";
       Path filePath = new Path(fileName);
       FileSystem fs = cluster.getFileSystem();
@@ -709,7 +708,7 @@ public class TestFsck {
 
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       cluster.waitActive();
       fs = cluster.getFileSystem();
       DFSTestUtil util = new DFSTestUtil.Builder().
@@ -778,7 +777,7 @@ public class TestFsck {
     try {
       // bring up a one-node cluster
       Configuration conf = new HdfsConfiguration();
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       String fileName = "/test.txt";
       Path filePath = new Path(fileName);
       FileSystem fs = cluster.getFileSystem();
@@ -830,7 +829,7 @@ public class TestFsck {
     try {
       // Startup a minicluster
       cluster = 
-          new MiniDFSCluster.Builder(conf).numDataNodes(NUM_REPLICAS).build();
+          new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_REPLICAS).build();
       assertNotNull("Failed Cluster Creation", cluster);
       cluster.waitClusterUp();
       dfs = (DistributedFileSystem) cluster.getFileSystem();

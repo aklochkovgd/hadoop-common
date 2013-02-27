@@ -147,7 +147,7 @@ public class TestPendingReplication {
         DFS_REPLICATION_INTERVAL);
     CONF.setInt(DFSConfigKeys.DFS_NAMENODE_REPLICATION_INTERVAL_KEY, 
         DFS_REPLICATION_INTERVAL);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(CONF).numDataNodes(
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), CONF).numDataNodes(
         DATANODE_COUNT).build();
     cluster.waitActive();
     

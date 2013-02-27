@@ -36,7 +36,7 @@ public class TestHDFSFileSystemContract extends FileSystemContractBaseTest {
     Configuration conf = new HdfsConfiguration();
     conf.set(CommonConfigurationKeys.FS_PERMISSIONS_UMASK_KEY,
         FileSystemContractBaseTest.TEST_UMASK);
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     fs = cluster.getFileSystem();
     defaultWorkingDirectory = "/user/" + 
            UserGroupInformation.getCurrentUser().getShortUserName();

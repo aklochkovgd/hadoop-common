@@ -95,7 +95,7 @@ public class TestDeadDatanode {
     Configuration conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_HEARTBEAT_RECHECK_INTERVAL_KEY, 500);
     conf.setLong(DFSConfigKeys.DFS_HEARTBEAT_INTERVAL_KEY, 1L);
-    cluster = new MiniDFSCluster.Builder(conf).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     cluster.waitActive();
 
     String poolId = cluster.getNamesystem().getBlockPoolId();

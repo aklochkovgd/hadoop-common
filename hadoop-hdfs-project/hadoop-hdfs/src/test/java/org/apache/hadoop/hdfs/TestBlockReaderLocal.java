@@ -47,7 +47,7 @@ public class TestBlockReaderLocal {
     conf.set(DFSConfigKeys.DFS_BLOCK_LOCAL_PATH_ACCESS_USER_KEY,
         UserGroupInformation.getCurrentUser().getShortUserName());
 
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1).build();
   }
 
   @AfterClass

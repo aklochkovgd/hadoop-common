@@ -144,7 +144,7 @@ public class TestHdfsHelper extends TestDirHelper {
       conf.set("dfs.block.access.token.enable", "false");
       conf.set("dfs.permissions", "true");
       conf.set("hadoop.security.authentication", "simple");
-      MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(conf);
+      MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(getClass(), conf);
       builder.numDataNodes(2);
       MiniDFSCluster miniHdfs = builder.build();
       FileSystem fileSystem = miniHdfs.getFileSystem();

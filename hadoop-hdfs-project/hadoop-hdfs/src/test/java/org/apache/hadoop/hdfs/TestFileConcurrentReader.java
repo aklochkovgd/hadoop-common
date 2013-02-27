@@ -93,7 +93,7 @@ public class TestFileConcurrentReader {
     if (cluster != null) {
       cluster.shutdown();
     }
-    cluster = new MiniDFSCluster.Builder(conf).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     cluster.waitClusterUp();
     fileSystem = cluster.getFileSystem();
   }

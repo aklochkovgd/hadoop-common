@@ -43,7 +43,7 @@ public class TestNameNodeJspHelper {
   @Before
   public void setUp() throws Exception {
     conf = new HdfsConfiguration();
-    cluster  = new MiniDFSCluster.Builder(conf).build();
+    cluster  = new MiniDFSCluster.Builder(getClass(), conf).build();
     cluster.waitActive();
   }
 

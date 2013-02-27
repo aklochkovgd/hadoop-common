@@ -40,7 +40,7 @@ public class TestDFSShellGenericOptions {
     MiniDFSCluster cluster = null;
     try {
       Configuration conf = new HdfsConfiguration();
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       namenode = FileSystem.getDefaultUri(conf).toString();
       String [] args = new String[4];
       args[2] = "-mkdir";

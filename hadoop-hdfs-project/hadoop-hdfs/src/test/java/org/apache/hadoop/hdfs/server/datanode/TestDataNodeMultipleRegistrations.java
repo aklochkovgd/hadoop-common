@@ -59,7 +59,7 @@ public class TestDataNodeMultipleRegistrations {
    */
   @Test
   public void test2NNRegistration() throws IOException {
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .nnTopology(MiniDFSNNTopology.simpleFederatedTopology(2))
         .build();
     try {
@@ -138,7 +138,7 @@ public class TestDataNodeMultipleRegistrations {
    */
   @Test
   public void testFedSingleNN() throws IOException {
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .nameNodePort(9927).build();
     try {
       NameNode nn1 = cluster.getNameNode();
@@ -190,7 +190,7 @@ public class TestDataNodeMultipleRegistrations {
   
   @Test
   public void testClusterIdMismatch() throws IOException {
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .nnTopology(MiniDFSNNTopology.simpleFederatedTopology(2))
         .build();
     try {
@@ -225,7 +225,7 @@ public class TestDataNodeMultipleRegistrations {
   public void testMiniDFSClusterWithMultipleNN() throws IOException {
     Configuration conf = new HdfsConfiguration();
     // start Federated cluster and add a node.
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(MiniDFSNNTopology.simpleFederatedTopology(2))
       .build();
     
@@ -245,7 +245,7 @@ public class TestDataNodeMultipleRegistrations {
         
     // 2. start with Federation flag set
     conf = new HdfsConfiguration();
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(MiniDFSNNTopology.simpleFederatedTopology(1))
       .build();
     
@@ -265,7 +265,7 @@ public class TestDataNodeMultipleRegistrations {
 
     // 3. start non-federated
     conf = new HdfsConfiguration();
-    cluster = new MiniDFSCluster.Builder(conf).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     
     // add a node
     try {

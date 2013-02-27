@@ -90,7 +90,7 @@ public class TestAuditLogs {
     conf.setBoolean(DFSConfigKeys.DFS_WEBHDFS_ENABLED_KEY, true);
     util = new DFSTestUtil.Builder().setName("TestAuditAllowed").
         setNumFiles(20).build();
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(4).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(4).build();
     fs = cluster.getFileSystem();
     util.createFiles(fs, fileName);
 

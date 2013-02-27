@@ -322,7 +322,7 @@ public class TestFSInputChecker {
     rand.nextBytes(expected);
 
     // test DFS
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fileSys = cluster.getFileSystem();
     try {
       testChecker(fileSys, true);

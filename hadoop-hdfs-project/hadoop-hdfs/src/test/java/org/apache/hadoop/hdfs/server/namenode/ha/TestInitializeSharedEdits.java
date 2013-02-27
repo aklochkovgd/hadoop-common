@@ -65,7 +65,7 @@ public class TestInitializeSharedEdits {
     
     MiniDFSNNTopology topology = MiniDFSNNTopology.simpleHATopology();
     
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(topology)
       .numDataNodes(0)
       .build();

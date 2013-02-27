@@ -77,7 +77,7 @@ public class TestLeaseRecovery {
     MiniDFSCluster cluster = null;
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(5).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(5).build();
       cluster.waitActive();
 
       //create a file

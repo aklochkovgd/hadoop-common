@@ -50,7 +50,7 @@ public class TestUrlStreamHandler {
   public void testDfsUrls() throws IOException {
 
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
     FileSystem fs = cluster.getFileSystem();
 
     // Setup our own factory

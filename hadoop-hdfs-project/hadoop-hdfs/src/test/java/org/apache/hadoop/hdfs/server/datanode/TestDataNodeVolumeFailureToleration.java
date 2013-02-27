@@ -68,7 +68,7 @@ public class TestDataNodeVolumeFailureToleration {
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_HEARTBEAT_RECHECK_INTERVAL_KEY, 1000);
     // Allow a single volume failure (there are two volumes)
     conf.setInt(DFSConfigKeys.DFS_DATANODE_FAILED_VOLUMES_TOLERATED_KEY, 1);
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1).build();
     cluster.waitActive();
     fs = cluster.getFileSystem();
     dataDir = cluster.getDataDirectory();

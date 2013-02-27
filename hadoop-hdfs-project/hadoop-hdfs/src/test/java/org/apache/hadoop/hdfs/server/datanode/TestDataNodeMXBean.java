@@ -35,7 +35,7 @@ public class TestDataNodeMXBean {
   @Test
   public void testDataNodeMXBean() throws Exception {
     Configuration conf = new Configuration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
 
     try {
       List<DataNode> datanodes = cluster.getDataNodes();

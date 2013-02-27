@@ -129,7 +129,7 @@ public class TestDistCh extends junit.framework.TestCase {
 
     conf.set(CapacitySchedulerConfiguration.PREFIX+CapacitySchedulerConfiguration.ROOT+"."+CapacitySchedulerConfiguration.QUEUES, "default");
     conf.set(CapacitySchedulerConfiguration.PREFIX+CapacitySchedulerConfiguration.ROOT+".default."+CapacitySchedulerConfiguration.CAPACITY, "100");
-    final MiniDFSCluster cluster=  new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
+    final MiniDFSCluster cluster=  new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).format(true).build();
     
     final FileSystem fs = cluster.getFileSystem();
     final FsShell shell = new FsShell(conf);

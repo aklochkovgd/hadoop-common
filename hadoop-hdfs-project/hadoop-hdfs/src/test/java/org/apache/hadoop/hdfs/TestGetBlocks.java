@@ -92,7 +92,7 @@ public class TestGetBlocks {
     long staleInterval = 30 * 1000 * 60;
     conf.setLong(DFSConfigKeys.DFS_NAMENODE_STALE_DATANODE_INTERVAL_KEY,
         staleInterval);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .numDataNodes(numDatanodes).racks(racks).build();
 
     cluster.waitActive();
@@ -180,7 +180,7 @@ public class TestGetBlocks {
     final int DEFAULT_BLOCK_SIZE = 1024;
 
     CONF.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, DEFAULT_BLOCK_SIZE);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(CONF).numDataNodes(
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), CONF).numDataNodes(
         REPLICATION_FACTOR).build();
     try {
       cluster.waitActive();

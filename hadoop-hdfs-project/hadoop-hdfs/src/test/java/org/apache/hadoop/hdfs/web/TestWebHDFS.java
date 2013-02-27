@@ -89,7 +89,7 @@ public class TestWebHDFS {
   static void largeFileTest(final long fileLength) throws Exception {
     final Configuration conf = WebHdfsTestUtil.createConf();
 
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .numDataNodes(3)
         .build();
     try {

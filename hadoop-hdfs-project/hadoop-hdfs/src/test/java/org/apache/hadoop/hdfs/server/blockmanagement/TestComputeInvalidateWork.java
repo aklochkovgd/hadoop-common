@@ -39,7 +39,7 @@ public class TestComputeInvalidateWork {
   public void testCompInvalidate() throws Exception {
     final Configuration conf = new HdfsConfiguration();
     final int NUM_OF_DATANODES = 3;
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_OF_DATANODES).build();
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_OF_DATANODES).build();
     try {
       cluster.waitActive();
       final FSNamesystem namesystem = cluster.getNamesystem();

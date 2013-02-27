@@ -307,7 +307,7 @@ public class TestDFSStorageStateRecovery {
   }
   
   private MiniDFSCluster createCluster(Configuration c) throws IOException {
-    return new MiniDFSCluster.Builder(c).dfsBaseDir(dfsBaseDir)
+    return new MiniDFSCluster.Builder(getClass(), c)
                              .numDataNodes(0)
                              .startupOption(StartupOption.REGULAR)
                              .format(false)

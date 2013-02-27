@@ -71,7 +71,7 @@ public class TestFSEditLogLoader {
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
     FileSystem fileSys = null;
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATA_NODES)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_DATA_NODES)
         .enableManagedDfsDirsRedundancy(false).build();
     cluster.waitActive();
     fileSys = cluster.getFileSystem();
@@ -101,8 +101,8 @@ public class TestFSEditLogLoader {
     bld.append("Expected transaction ID was \\d+\n");
     bld.append("Recent opcode offsets: (\\d+\\s*){4}$");
     try {
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir()).numDataNodes(NUM_DATA_NODES)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
+          .numDataNodes(NUM_DATA_NODES)
           .enableManagedDfsDirsRedundancy(false).format(false).build();
       fail("should not be able to start");
     } catch (IOException e) {
@@ -126,7 +126,7 @@ public class TestFSEditLogLoader {
 
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2)
           .build();
       cluster.waitActive();
       FileSystem fs = cluster.getFileSystem();
@@ -141,8 +141,8 @@ public class TestFSEditLogLoader {
       
       conf.setInt(DFSConfigKeys.DFS_NAMENODE_REPLICATION_MIN_KEY, 2);
   
-      cluster = new MiniDFSCluster.Builder(conf)
-        .dfsBaseDir(cluster.getDfsBaseDir()).numDataNodes(2)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
+        .numDataNodes(2)
         .format(false).build();
       cluster.waitActive();
       fs = cluster.getFileSystem();

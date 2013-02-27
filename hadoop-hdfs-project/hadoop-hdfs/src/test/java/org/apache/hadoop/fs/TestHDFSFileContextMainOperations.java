@@ -39,7 +39,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TestHDFSFileContextMainOperations extends
+public final class TestHDFSFileContextMainOperations extends
     FileContextMainOperationsBaseTest {
   private static FileContextTestHelper fileContextTestHelper = new FileContextTestHelper("/tmp/TestHDFSFileContextMainOperations");
   private static MiniDFSCluster cluster;
@@ -49,7 +49,7 @@ public class TestHDFSFileContextMainOperations extends
   @BeforeClass
   public static void clusterSetupAtBegining() throws IOException,
       LoginException, URISyntaxException {
-    cluster = new MiniDFSCluster.Builder(CONF).numDataNodes(2).build();
+    cluster = new MiniDFSCluster.Builder(TestHDFSFileContextMainOperations.class, CONF).numDataNodes(2).build();
     cluster.waitClusterUp();
     fc = FileContext.getFileContext(cluster.getURI(0), CONF);
     defaultWorkingDirectory = fc.makeQualified( new Path("/user/" + 
@@ -58,13 +58,11 @@ public class TestHDFSFileContextMainOperations extends
   }
 
   private static void restartCluster() throws IOException, LoginException {
-    String dfsBaseDir = null;
     if (cluster != null) {
-      dfsBaseDir = cluster.getDfsBaseDir();
       cluster.shutdown();
       cluster = null;
     }
-    cluster = new MiniDFSCluster.Builder(CONF).dfsBaseDir(dfsBaseDir)
+    cluster = new MiniDFSCluster.Builder(TestHDFSFileContextMainOperations.class, CONF)
                                               .numDataNodes(1)
                                               .format(false).build();
     cluster.waitClusterUp();

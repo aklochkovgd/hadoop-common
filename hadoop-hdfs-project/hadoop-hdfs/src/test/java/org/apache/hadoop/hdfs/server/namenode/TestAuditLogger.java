@@ -50,7 +50,7 @@ public class TestAuditLogger {
     Configuration conf = new HdfsConfiguration();
     conf.set(DFS_NAMENODE_AUDIT_LOGGERS_KEY,
         DummyAuditLogger.class.getName());
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
 
     try {
       cluster.waitClusterUp();
@@ -73,7 +73,7 @@ public class TestAuditLogger {
     Configuration conf = new HdfsConfiguration();
     conf.set(DFS_NAMENODE_AUDIT_LOGGERS_KEY,
         BrokenAuditLogger.class.getName());
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
 
     try {
       cluster.waitClusterUp();

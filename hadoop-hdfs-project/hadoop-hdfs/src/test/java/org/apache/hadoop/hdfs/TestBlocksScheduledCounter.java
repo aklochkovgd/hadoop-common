@@ -38,7 +38,7 @@ public class TestBlocksScheduledCounter {
 
   @Test
   public void testBlocksScheduledCounter() throws IOException {
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(new HdfsConfiguration())
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), new HdfsConfiguration())
                                                .build();
 
     cluster.waitActive();

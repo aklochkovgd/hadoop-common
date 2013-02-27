@@ -62,7 +62,7 @@ public class TestSecureNameNode {
           "nn1/localhost@EXAMPLE.COM");
       conf.set(DFSConfigKeys.DFS_NAMENODE_KEYTAB_FILE_KEY, nn1KeytabPath);
 
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_OF_DATANODES)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_OF_DATANODES)
           .build();
       final MiniDFSCluster clusterRef = cluster;
       cluster.waitActive();

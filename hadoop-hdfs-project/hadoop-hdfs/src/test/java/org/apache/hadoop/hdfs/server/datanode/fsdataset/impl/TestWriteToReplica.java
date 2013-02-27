@@ -49,7 +49,7 @@ public class TestWriteToReplica {
   // test close
   @Test
   public void testClose() throws Exception {
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(new HdfsConfiguration()).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), new HdfsConfiguration()).build();
     
     try {
       cluster.waitActive();
@@ -71,7 +71,7 @@ public class TestWriteToReplica {
   // test append
   @Test
   public void testAppend() throws Exception {
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(new HdfsConfiguration()).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), new HdfsConfiguration()).build();
     try {
       cluster.waitActive();
       DataNode dn = cluster.getDataNodes().get(0);
@@ -91,7 +91,7 @@ public class TestWriteToReplica {
   // test writeToRbw
   @Test
   public void testWriteToRbw() throws Exception {
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(new HdfsConfiguration()).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), new HdfsConfiguration()).build();
     try {
       cluster.waitActive();
       DataNode dn = cluster.getDataNodes().get(0);
@@ -111,7 +111,7 @@ public class TestWriteToReplica {
   // test writeToTemporary
   @Test
   public void testWriteToTempoary() throws Exception {
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(new HdfsConfiguration()).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), new HdfsConfiguration()).build();
     try {
       cluster.waitActive();
       DataNode dn = cluster.getDataNodes().get(0);

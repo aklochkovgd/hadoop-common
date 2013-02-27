@@ -68,7 +68,7 @@ public class TestEncryptedTransfer {
     MiniDFSCluster cluster = null;
     try {
       Configuration conf = new Configuration();
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       
       FileSystem fs = getFileSystem(conf);
       writeTestDataToFile(fs);
@@ -79,8 +79,7 @@ public class TestEncryptedTransfer {
       
       setEncryptionConfigKeys(conf);
       
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .manageDataDfsDirs(false)
           .manageNameDfsDirs(false)
           .format(false)
@@ -103,7 +102,7 @@ public class TestEncryptedTransfer {
     MiniDFSCluster cluster = null;
     try {
       Configuration conf = new Configuration();
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       
       FileSystem fs = getFileSystem(conf);
       writeTestDataToFile(fs);
@@ -116,8 +115,7 @@ public class TestEncryptedTransfer {
       // It'll use 3DES by default, but we set it to rc4 here.
       conf.set(DFSConfigKeys.DFS_DATA_ENCRYPTION_ALGORITHM_KEY, "rc4");
       
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .manageDataDfsDirs(false)
           .manageNameDfsDirs(false)
           .format(false)
@@ -140,7 +138,7 @@ public class TestEncryptedTransfer {
     MiniDFSCluster cluster = null;
     try {
       Configuration conf = new Configuration();
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       
       FileSystem fs = getFileSystem(conf);
       writeTestDataToFile(fs);
@@ -151,8 +149,7 @@ public class TestEncryptedTransfer {
       
       setEncryptionConfigKeys(conf);
       
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .manageDataDfsDirs(false)
           .manageNameDfsDirs(false)
           .format(false)
@@ -181,7 +178,7 @@ public class TestEncryptedTransfer {
     MiniDFSCluster cluster = null;
     try {
       Configuration conf = new Configuration();
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       
       FileSystem fs = getFileSystem(conf);
       writeTestDataToFile(fs);
@@ -191,8 +188,7 @@ public class TestEncryptedTransfer {
       
       setEncryptionConfigKeys(conf);
       
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .manageDataDfsDirs(false)
           .manageNameDfsDirs(false)
           .format(false)
@@ -233,7 +229,7 @@ public class TestEncryptedTransfer {
     MiniDFSCluster cluster = null;
     try {
       Configuration conf = new Configuration();
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       
       FileSystem fs = getFileSystem(conf);
       writeTestDataToFile(fs);
@@ -244,8 +240,7 @@ public class TestEncryptedTransfer {
       
       setEncryptionConfigKeys(conf);
       
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .manageDataDfsDirs(false)
           .manageNameDfsDirs(false)
           .format(false)
@@ -278,7 +273,7 @@ public class TestEncryptedTransfer {
     try {
       Configuration conf = new Configuration();
       setEncryptionConfigKeys(conf);
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       
       FileSystem fs = getFileSystem(conf);
       
@@ -307,7 +302,7 @@ public class TestEncryptedTransfer {
     MiniDFSCluster cluster = null;
     try {
       Configuration conf = new Configuration();
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       
       FileSystem fs = getFileSystem(conf);
       writeTestDataToFile(fs);
@@ -318,8 +313,7 @@ public class TestEncryptedTransfer {
       
       setEncryptionConfigKeys(conf);
       
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .manageDataDfsDirs(false)
           .manageNameDfsDirs(false)
           .format(false)
@@ -376,7 +370,7 @@ public class TestEncryptedTransfer {
       Configuration conf = new Configuration();
       setEncryptionConfigKeys(conf);
       
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numDns).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(numDns).build();
       
       FileSystem fs = getFileSystem(conf);
       writeTestDataToFile(fs);
@@ -396,7 +390,7 @@ public class TestEncryptedTransfer {
       Configuration conf = new Configuration();
       setEncryptionConfigKeys(conf);
       
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(3).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(3).build();
       
       FileSystem fs = getFileSystem(conf);
       
@@ -422,7 +416,7 @@ public class TestEncryptedTransfer {
       setEncryptionConfigKeys(conf);
       
       // start up 4 DNs
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(4).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(4).build();
       
       FileSystem fs = getFileSystem(conf);
       

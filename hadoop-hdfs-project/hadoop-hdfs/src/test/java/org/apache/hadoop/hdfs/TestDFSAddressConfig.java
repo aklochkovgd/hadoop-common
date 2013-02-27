@@ -49,7 +49,7 @@ public class TestDFSAddressConfig {
     /*-------------------------------------------------------------------------
      * By default, the DataNode socket address should be localhost (127.0.0.1).
      *------------------------------------------------------------------------*/
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     cluster.waitActive();
 
     ArrayList<DataNode> dns = cluster.getDataNodes();

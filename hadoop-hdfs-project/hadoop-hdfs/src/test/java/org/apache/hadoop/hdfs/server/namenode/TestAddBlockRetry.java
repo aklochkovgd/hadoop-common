@@ -66,7 +66,7 @@ public class TestAddBlockRetry {
   @Before
   public void setUp() throws Exception {
     conf = new Configuration();
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(REPLICATION)
       .build();
     cluster.waitActive();

@@ -64,7 +64,7 @@ public class TestParallelImageWrite {
     FileStatus dirstatus;
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).format(true)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).format(true)
           .numDataNodes(NUM_DATANODES).build();
       String[] nameNodeDirs = conf.getStrings(
           DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY, new String[] {});
@@ -89,8 +89,8 @@ public class TestParallelImageWrite {
       conf.setInt(DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_TXNS_KEY, 1);
 
       // Here we restart the MiniDFScluster without formatting namenode
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir()).format(false)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
+          .format(false)
           .numDataNodes(NUM_DATANODES).build();
       fsn = cluster.getNamesystem();
       FileSystem fs = cluster.getFileSystem();

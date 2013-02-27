@@ -198,7 +198,7 @@ public class TestEditLog {
     MiniDFSCluster cluster = null;
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(0).build();
       cluster.waitActive();
       final FSNamesystem namesystem = cluster.getNamesystem();
 
@@ -228,7 +228,7 @@ public class TestEditLog {
     MiniDFSCluster cluster = null;
     FileSystem fileSys = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATA_NODES).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_DATA_NODES).build();
       cluster.waitActive();
       fileSys = cluster.getFileSystem();
       final FSNamesystem namesystem = cluster.getNamesystem();
@@ -298,7 +298,7 @@ public class TestEditLog {
     FileSystem fileSys = null;
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATA_NODES).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_DATA_NODES).build();
       cluster.waitActive();
       fileSys = cluster.getFileSystem();
       final FSNamesystem namesystem = cluster.getNamesystem();
@@ -431,7 +431,7 @@ public class TestEditLog {
     ExecutorService threadA = Executors.newSingleThreadExecutor();
     ExecutorService threadB = Executors.newSingleThreadExecutor();
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATA_NODES).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_DATA_NODES).build();
       cluster.waitActive();
       fileSys = cluster.getFileSystem();
       final FSNamesystem namesystem = cluster.getNamesystem();
@@ -494,7 +494,7 @@ public class TestEditLog {
     ExecutorService threadA = Executors.newSingleThreadExecutor();
     ExecutorService threadB = Executors.newSingleThreadExecutor();
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATA_NODES).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_DATA_NODES).build();
       cluster.waitActive();
       fileSys = cluster.getFileSystem();
       final FSNamesystem namesystem = cluster.getNamesystem();
@@ -531,7 +531,7 @@ public class TestEditLog {
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
     FileSystem fileSys = null;
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATA_NODES).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_DATA_NODES).build();
     cluster.waitActive();
     fileSys = cluster.getFileSystem();
     final FSNamesystem namesystem = cluster.getNamesystem();
@@ -564,8 +564,7 @@ public class TestEditLog {
     }
     
     try {
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(NUM_DATA_NODES)
           .format(false).build();
       fail("should not be able to start");
@@ -611,7 +610,7 @@ public class TestEditLog {
         LOG.info("\n===========================================\n" +
                  "Starting empty cluster");
         
-        cluster = new MiniDFSCluster.Builder(conf)
+        cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(NUM_DATA_NODES)
           .format(true)
           .build();
@@ -655,8 +654,7 @@ public class TestEditLog {
         // Try to start a new cluster
         LOG.info("\n===========================================\n" +
         "Starting same cluster after simulated crash");
-        cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
+        cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(NUM_DATA_NODES)
           .format(false)
           .build();
@@ -686,8 +684,7 @@ public class TestEditLog {
         // Started successfully. Shut it down and make sure it can restart.
         cluster.shutdown();    
         
-        cluster = new MiniDFSCluster.Builder(conf)
-            .dfsBaseDir(cluster.getDfsBaseDir())
+        cluster = new MiniDFSCluster.Builder(getClass(), conf)
             .numDataNodes(NUM_DATA_NODES)
             .format(false)
             .build();
@@ -749,7 +746,7 @@ public class TestEditLog {
     // start a cluster 
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(NUM_DATA_NODES).build();
     cluster.shutdown();
     
@@ -780,8 +777,7 @@ public class TestEditLog {
     }
     
     try {
-      cluster = new MiniDFSCluster.Builder(conf)
-        .dfsBaseDir(cluster.getDfsBaseDir())
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .numDataNodes(NUM_DATA_NODES)
         .format(false).build();
       if (!shouldSucceed) {
@@ -1408,7 +1404,7 @@ public class TestEditLog {
     MiniDFSCluster cluster = null;
     FileSystem fileSys = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATA_NODES).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(NUM_DATA_NODES).build();
       cluster.waitActive();
       fileSys = cluster.getFileSystem();
       final FSNamesystem namesystem = cluster.getNamesystem();
@@ -1434,7 +1430,7 @@ public class TestEditLog {
     // How long does it take to read through all these edit logs?
     long startTime = Time.now();
     try {
-      cluster = new MiniDFSCluster.Builder(conf).
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).
           numDataNodes(NUM_DATA_NODES).build();
       cluster.waitActive();
     } finally {

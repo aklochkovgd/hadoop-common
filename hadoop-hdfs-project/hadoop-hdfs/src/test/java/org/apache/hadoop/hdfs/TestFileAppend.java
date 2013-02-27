@@ -112,7 +112,7 @@ public class TestFileAppend{
     if (simulatedStorage) {
       SimulatedFSDataset.setFactory(conf);
     }
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fs = cluster.getFileSystem();
     InetSocketAddress addr = new InetSocketAddress("localhost",
                                                    cluster.getNameNodePort());
@@ -184,7 +184,7 @@ public class TestFileAppend{
       SimulatedFSDataset.setFactory(conf);
     }
     fileContents = AppendTestUtil.initBuffer(AppendTestUtil.FILE_SIZE);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fs = cluster.getFileSystem();
     try {
 
@@ -240,7 +240,7 @@ public class TestFileAppend{
       SimulatedFSDataset.setFactory(conf);
     }
     fileContents = AppendTestUtil.initBuffer(AppendTestUtil.FILE_SIZE);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fs = cluster.getFileSystem();
     try {
 
@@ -288,7 +288,7 @@ public class TestFileAppend{
     if (simulatedStorage) {
       SimulatedFSDataset.setFactory(conf);
     }
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fs = cluster.getFileSystem();
     try {
       Path file1 = new Path("/nonexistingfile.dat");
@@ -303,7 +303,7 @@ public class TestFileAppend{
   @Test
   public void testAppendTwice() throws Exception {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     final FileSystem fs1 = cluster.getFileSystem();
     final FileSystem fs2 = AppendTestUtil.createHdfsWithDifferentUsername(conf);
     try {

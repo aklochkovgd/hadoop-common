@@ -66,7 +66,7 @@ public class TestFileCorruption {
         setNumFiles(20).build();
     try {
       Configuration conf = new HdfsConfiguration();
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(3).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(3).build();
       FileSystem fs = cluster.getFileSystem();
       util.createFiles(fs, "/srcdat");
       // Now deliberately remove the blocks
@@ -124,7 +124,7 @@ public class TestFileCorruption {
     MiniDFSCluster cluster = null;
     try {
       Configuration conf = new HdfsConfiguration();
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
       cluster.waitActive();
       
       FileSystem fs = cluster.getFileSystem();

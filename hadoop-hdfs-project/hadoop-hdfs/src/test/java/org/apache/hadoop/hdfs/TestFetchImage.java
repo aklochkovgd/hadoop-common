@@ -48,7 +48,7 @@ public class TestFetchImage {
   public void testFetchImage() throws Exception {
     FETCHED_IMAGE_FILE.mkdirs();
     Configuration conf = new Configuration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fs = null;
     try {
       DFSAdmin dfsAdmin = new DFSAdmin();

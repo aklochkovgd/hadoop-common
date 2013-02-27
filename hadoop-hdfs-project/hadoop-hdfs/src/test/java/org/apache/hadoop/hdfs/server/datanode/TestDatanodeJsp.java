@@ -110,7 +110,7 @@ public class TestDatanodeJsp {
   public void testViewFileJsp() throws IOException {
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(CONF).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), CONF).build();
       cluster.waitActive();
       String paths[] = {
         "/test-file",
@@ -137,7 +137,7 @@ public class TestDatanodeJsp {
   
   @Test
   public void testGenStamp() throws Exception {
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(CONF).numDataNodes(1)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), CONF).numDataNodes(1)
         .build();
     try {
       FileSystem fs = cluster.getFileSystem();

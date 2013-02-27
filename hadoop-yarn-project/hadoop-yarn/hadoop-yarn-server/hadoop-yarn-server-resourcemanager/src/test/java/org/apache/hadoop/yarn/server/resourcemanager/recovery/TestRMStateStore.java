@@ -96,7 +96,7 @@ public class TestRMStateStore {
   @Test
   public void testFSRMStateStore() throws Exception {
     HdfsConfiguration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1).build();
     try {
       TestFSRMStateStoreTester fsTester = new TestFSRMStateStoreTester(cluster);
       testRMStateStore(fsTester);

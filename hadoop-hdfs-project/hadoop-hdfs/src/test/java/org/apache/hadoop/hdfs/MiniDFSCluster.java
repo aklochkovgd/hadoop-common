@@ -154,8 +154,16 @@ public class MiniDFSCluster {
     private boolean checkDataNodeHostConfig = false;
     private String dfsBaseDir = null;
     
+    /**
+     * @deprecated Use {@link #Builder(Class, Configuration)}
+     */
     public Builder(Configuration conf) {
+        this(null, conf);
+    }
+    
+    public Builder(Class<?> caller, Configuration conf) {
       this.conf = conf;
+      this.dfsBaseDir = getDfsBaseDir(caller);
     }
     
     /**
@@ -2159,14 +2167,14 @@ public class MiniDFSCluster {
    * <p/>
    * First the Configuration property {@link #HDFS_MINIDFS_BASEDIR} is fetched.
    * If non-null, this is returned.
-   * If this is null, then {@link #getBaseDirectory()} is called.
+   * If this is null, then {@link #getDfsBaseDir()} is called.
    * @return the base directory for this instance.
    */
   public String getDfsBaseDir() {
     if (dfsBaseDir == null) {
       dfsBaseDir = conf.get(HDFS_MINIDFS_BASEDIR, null);
       if (dfsBaseDir == null) {
-          dfsBaseDir = newDfsBaseDir();
+          dfsBaseDir = getDfsBaseDir(MiniDFSCluster.class);
       }
     }
     return dfsBaseDir;
@@ -2179,8 +2187,8 @@ public class MiniDFSCluster {
    * and returning that directory with a subdir of /dfs plus a random subdir.
    * @return a directory for use as a miniDFS filesystem.
    */
-  public static String newDfsBaseDir() {
-    String uniquePart = MINI_CLUSTER_DEDICATED_DIRS ? "/" + RandomStringUtils.randomAlphanumeric(10) : "";
+  public static String getDfsBaseDir(Class<?> caller) {
+    String uniquePart = MINI_CLUSTER_DEDICATED_DIRS ? "/" + caller.getName() : "";
     return System.getProperty(PROP_TEST_BUILD_DATA, "build/test/data") + uniquePart + "/dfs/";
   }
 

@@ -126,7 +126,7 @@ public class TestInjectionForSimulatedStorage {
       conf.setInt(DFSConfigKeys.DFS_BYTES_PER_CHECKSUM_KEY, checksumSize);
       SimulatedFSDataset.setFactory(conf);
       //first time format
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numDataNodes).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(numDataNodes).build();
       cluster.waitActive();
       String bpid = cluster.getNamesystem().getBlockPoolId();
       DFSClient dfsClient = new DFSClient(new InetSocketAddress("localhost",
@@ -150,9 +150,8 @@ public class TestInjectionForSimulatedStorage {
       SimulatedFSDataset.setFactory(conf);
       conf.set(DFSConfigKeys.DFS_NAMENODE_SAFEMODE_THRESHOLD_PCT_KEY, "0.0f"); 
       
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                   .numDataNodes(numDataNodes * 2)
-                                  .dfsBaseDir(cluster.getDfsBaseDir())
                                   .format(false)
                                   .build();
       cluster.waitActive();

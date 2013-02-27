@@ -59,7 +59,7 @@ public class TestNamenodeCapacityReport {
     conf.setLong(DFSConfigKeys.DFS_DATANODE_DU_RESERVED_KEY, reserved);
     
     try {
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       cluster.waitActive();
       
       final FSNamesystem namesystem = cluster.getNamesystem();

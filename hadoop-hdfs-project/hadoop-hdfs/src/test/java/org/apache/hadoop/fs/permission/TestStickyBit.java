@@ -168,7 +168,7 @@ public class TestStickyBit {
     try {
       Configuration conf = new HdfsConfiguration();
       conf.setBoolean(DFSConfigKeys.DFS_PERMISSIONS_ENABLED_KEY, true);
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(4).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(4).build();
 
       FileSystem hdfs = cluster.getFileSystem();
 
@@ -208,7 +208,7 @@ public class TestStickyBit {
       // Set up cluster for testing
       Configuration conf = new HdfsConfiguration();
       conf.setBoolean(DFSConfigKeys.DFS_PERMISSIONS_ENABLED_KEY, true);
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(4).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(4).build();
       FileSystem hdfs = cluster.getFileSystem();
 
       assertTrue(hdfs instanceof DistributedFileSystem);
@@ -251,12 +251,11 @@ public class TestStickyBit {
    */
   @Test
   public void testStickyBitPersistence() throws IOException {
-    String baseDir = MiniDFSCluster.newDfsBaseDir();
     MiniDFSCluster cluster = null;
     try {
       Configuration conf = new HdfsConfiguration();
       conf.setBoolean(DFSConfigKeys.DFS_PERMISSIONS_ENABLED_KEY, true);
-      cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(baseDir).numDataNodes(4).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(4).build();
       FileSystem hdfs = cluster.getFileSystem();
 
       assertTrue(hdfs instanceof DistributedFileSystem);
@@ -276,7 +275,7 @@ public class TestStickyBit {
       cluster.shutdown();
 
       // Start file system up again
-      cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(baseDir).numDataNodes(4).format(false).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(4).format(false).build();
       hdfs = cluster.getFileSystem();
 
       assertTrue(hdfs.exists(sbSet));

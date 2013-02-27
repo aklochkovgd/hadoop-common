@@ -232,7 +232,7 @@ public class TestDirectoryScanner {
   }
   
   public void runTest(int parallelism) throws Exception {
-    cluster = new MiniDFSCluster.Builder(CONF).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), CONF).build();
     try {
       cluster.waitActive();
       bpid = cluster.getNamesystem().getBlockPoolId();

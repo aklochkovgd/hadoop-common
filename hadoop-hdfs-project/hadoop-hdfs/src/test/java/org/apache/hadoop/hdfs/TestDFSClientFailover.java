@@ -64,7 +64,7 @@ public class TestDFSClientFailover {
   
   @Before
   public void setUpCluster() throws IOException {
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(MiniDFSNNTopology.simpleHATopology())
       .build();
     cluster.transitionToActive(0);

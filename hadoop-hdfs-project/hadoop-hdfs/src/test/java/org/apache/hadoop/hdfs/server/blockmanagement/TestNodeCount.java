@@ -56,7 +56,7 @@ public class TestNodeCount {
     // start a mini dfs cluster of 2 nodes
     final Configuration conf = new HdfsConfiguration();
     final MiniDFSCluster cluster = 
-      new MiniDFSCluster.Builder(conf).numDataNodes(REPLICATION_FACTOR).build();
+      new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(REPLICATION_FACTOR).build();
     try {
       final FSNamesystem namesystem = cluster.getNamesystem();
       final BlockManager bm = namesystem.getBlockManager();

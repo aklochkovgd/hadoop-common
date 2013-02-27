@@ -78,7 +78,7 @@ public class TestFailureToReadEdits {
       .addNameservice(new MiniDFSNNTopology.NSConf("ns1")
         .addNN(new MiniDFSNNTopology.NNConf("nn1").setHttpPort(10041))
         .addNN(new MiniDFSNNTopology.NNConf("nn2").setHttpPort(10042)));
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(topology)
       .numDataNodes(0)
       .checkExitOnShutdown(false)

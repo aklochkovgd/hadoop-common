@@ -72,7 +72,7 @@ public class TestDatanodeRegistration {
     MiniDFSCluster cluster = null;
     try {
       HdfsConfiguration conf = new HdfsConfiguration();
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(8).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(8).build();
       cluster.waitActive();
       
       int initialLookups = sm.lookups;
@@ -115,7 +115,7 @@ public class TestDatanodeRegistration {
     HdfsConfiguration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
       InetSocketAddress addr = new InetSocketAddress(
         "localhost",
         cluster.getNameNodePort());
@@ -161,7 +161,7 @@ public class TestDatanodeRegistration {
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(0)
           .build();
       InetSocketAddress addr = new InetSocketAddress(
@@ -210,7 +210,7 @@ public class TestDatanodeRegistration {
     conf.set(DFSConfigKeys.DFS_NAMENODE_MIN_SUPPORTED_DATANODE_VERSION_KEY, "3.0.0");
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(0)
           .build();
       
@@ -257,7 +257,7 @@ public class TestDatanodeRegistration {
     conf.set(DFSConfigKeys.DFS_DATANODE_MIN_SUPPORTED_NAMENODE_VERSION_KEY, "1.0.0");
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
           .numDataNodes(0)
           .build();
       

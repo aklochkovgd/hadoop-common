@@ -202,7 +202,7 @@ public class TestBalancerWithNodeGroup {
     
     int numOfDatanodes = capacities.length;
     assertEquals(numOfDatanodes, racks.length);
-    MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(getClass(), conf)
                                 .numDataNodes(capacities.length)
                                 .racks(racks)
                                 .simulatedCapacities(capacities);
@@ -269,7 +269,7 @@ public class TestBalancerWithNodeGroup {
     int numOfDatanodes = capacities.length;
     assertEquals(numOfDatanodes, racks.length);
     assertEquals(numOfDatanodes, nodeGroups.length);
-    MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(getClass(), conf)
                                 .numDataNodes(capacities.length)
                                 .racks(racks)
                                 .simulatedCapacities(capacities);
@@ -323,7 +323,7 @@ public class TestBalancerWithNodeGroup {
     int numOfDatanodes = capacities.length;
     assertEquals(numOfDatanodes, racks.length);
     assertEquals(numOfDatanodes, nodeGroups.length);
-    MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(getClass(), conf)
                                 .numDataNodes(capacities.length)
                                 .racks(racks)
                                 .simulatedCapacities(capacities);

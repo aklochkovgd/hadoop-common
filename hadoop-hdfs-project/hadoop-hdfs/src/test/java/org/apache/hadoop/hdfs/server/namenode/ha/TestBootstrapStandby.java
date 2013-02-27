@@ -63,7 +63,7 @@ public class TestBootstrapStandby {
         .addNN(new MiniDFSNNTopology.NNConf("nn1").setHttpPort(10001))
         .addNN(new MiniDFSNNTopology.NNConf("nn2").setHttpPort(10002)));
     
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .nnTopology(topology)
       .numDataNodes(0)
       .build();

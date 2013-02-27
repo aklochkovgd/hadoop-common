@@ -53,7 +53,7 @@ public class TestHDFSCLI extends CLITestHelperDFS {
                         "/rack2", "/rack3", "/rack4", "/rack4" };
     String [] hosts = {"host1", "host2", "host3", "host4",
                        "host5", "host6", "host7", "host8" };
-    dfsCluster = new MiniDFSCluster.Builder(conf).numDataNodes(8)
+    dfsCluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(8)
                                                  .racks(racks)
                                                  .hosts(hosts)
                                                  .build();

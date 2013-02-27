@@ -577,7 +577,7 @@ public class TestReplicationPolicy {
                                   "host4", "host5", "host6"};
     String[] racks = new String[]{"/d1/r1", "/d1/r1", "/d1/r2", 
                                   "/d1/r2", "/d2/r3", "/d2/r3"};
-    MiniDFSCluster miniCluster = new MiniDFSCluster.Builder(conf).racks(racks)
+    MiniDFSCluster miniCluster = new MiniDFSCluster.Builder(getClass(), conf).racks(racks)
         .hosts(hosts).numDataNodes(hosts.length).build();
     miniCluster.waitActive();
     
@@ -779,7 +779,7 @@ public class TestReplicationPolicy {
     int HIGH_PRIORITY = 0;
     Configuration conf = new Configuration();
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_REPLICATION_INTERVAL_KEY, 1);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2)
         .format(true).build();
     try {
       cluster.waitActive();

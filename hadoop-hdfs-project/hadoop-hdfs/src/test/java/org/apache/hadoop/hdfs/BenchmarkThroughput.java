@@ -211,7 +211,7 @@ public class BenchmarkThroughput extends Configured implements Tool {
     }
     MiniDFSCluster cluster = null;
     try {
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                   .racks(new String[]{"/foo"}).build();
       cluster.waitActive();
       FileSystem dfs = cluster.getFileSystem();

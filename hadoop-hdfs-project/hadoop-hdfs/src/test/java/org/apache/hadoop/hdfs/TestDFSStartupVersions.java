@@ -246,7 +246,7 @@ public class TestDFSStartupVersions {
     StorageData[] versions = initializeVersions(util);
     util.createNameNodeStorageDirs(
         conf.getStrings(DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY), "current");
-    cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(dfsBaseDir)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                               .numDataNodes(0)
                                               .format(false)
                                               .manageDataDfsDirs(false)

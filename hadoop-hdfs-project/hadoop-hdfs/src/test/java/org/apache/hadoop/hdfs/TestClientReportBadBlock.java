@@ -78,7 +78,7 @@ public class TestClientReportBadBlock {
     // disable block scanner
     conf.setInt(DFSConfigKeys.DFS_DATANODE_SCAN_PERIOD_HOURS_KEY, -1); 
     
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numDataNodes)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(numDataNodes)
         .build();
     cluster.waitActive();
     dfs = (DistributedFileSystem) cluster.getFileSystem();

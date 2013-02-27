@@ -210,7 +210,7 @@ public class TestStreamFile {
   public void testDoGetShouldWriteTheFileContentIntoServletOutputStream()
       throws Exception {
 
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(CONF).numDataNodes(1)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), CONF).numDataNodes(1)
         .build();
     try {
       Path testFile = createFile();
@@ -240,7 +240,7 @@ public class TestStreamFile {
   public void testDoGetShouldCloseTheDFSInputStreamIfResponseGetOutPutStreamThrowsAnyException()
       throws Exception {
 
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(CONF).numDataNodes(1)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), CONF).numDataNodes(1)
         .build();
     try {
       Path testFile = createFile();

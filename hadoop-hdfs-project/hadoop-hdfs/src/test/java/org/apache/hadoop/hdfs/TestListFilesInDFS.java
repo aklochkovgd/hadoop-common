@@ -39,7 +39,7 @@ public class TestListFilesInDFS extends TestListFiles {
   @BeforeClass
   public static void testSetUp() throws Exception {
     setTestPaths(new Path("/tmp/TestListFilesInDFS"));
-    cluster = new MiniDFSCluster.Builder(conf).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     fs = cluster.getFileSystem();
     fs.delete(TEST_DIR, true);
   }

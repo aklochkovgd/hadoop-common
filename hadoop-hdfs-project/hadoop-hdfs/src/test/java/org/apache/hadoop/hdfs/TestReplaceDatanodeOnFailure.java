@@ -117,7 +117,7 @@ public class TestReplaceDatanodeOnFailure {
 
     final String[] racks = new String[REPLICATION];
     Arrays.fill(racks, RACK0);
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf
         ).racks(racks).numDataNodes(REPLICATION).build();
 
     try {
@@ -241,7 +241,7 @@ public class TestReplaceDatanodeOnFailure {
     
     Assert.assertEquals(ReplaceDatanodeOnFailure.DEFAULT, ReplaceDatanodeOnFailure.get(conf));
 
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf
         ).numDataNodes(1).build();
 
     try {

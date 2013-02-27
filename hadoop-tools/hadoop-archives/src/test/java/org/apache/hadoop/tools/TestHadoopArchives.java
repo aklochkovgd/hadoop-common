@@ -86,7 +86,7 @@ public class TestHadoopArchives {
     conf.set(CapacitySchedulerConfiguration.PREFIX
         + CapacitySchedulerConfiguration.ROOT + ".default."
         + CapacitySchedulerConfiguration.CAPACITY, "100");
-    dfscluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true)
+    dfscluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).format(true)
         .build();
 
     fs = dfscluster.getFileSystem();

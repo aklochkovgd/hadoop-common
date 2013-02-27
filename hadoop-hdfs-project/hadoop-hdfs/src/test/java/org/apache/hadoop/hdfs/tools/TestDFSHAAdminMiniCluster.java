@@ -67,7 +67,7 @@ public class TestDFSHAAdminMiniCluster {
   @Before
   public void setup() throws IOException {
     conf = new Configuration();
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .nnTopology(MiniDFSNNTopology.simpleHATopology()).numDataNodes(0)
         .build();
     tool = new DFSHAAdmin();  

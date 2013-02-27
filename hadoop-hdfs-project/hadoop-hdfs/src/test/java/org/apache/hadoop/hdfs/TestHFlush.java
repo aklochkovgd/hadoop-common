@@ -101,7 +101,7 @@ public class TestHFlush {
   @Test
   public void hSyncUpdateLength_00() throws IOException {
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(
         2).build();
     DistributedFileSystem fileSystem =
         (DistributedFileSystem)cluster.getFileSystem();
@@ -194,7 +194,7 @@ public class TestHFlush {
     final int SECTIONS = 10;
 
     fileContent = AppendTestUtil.initBuffer(AppendTestUtil.FILE_SIZE);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                                .numDataNodes(replicas).build();
     // Make sure we work with DFS in order to utilize all its functionality
     DistributedFileSystem fileSystem =
@@ -276,7 +276,7 @@ public class TestHFlush {
     final Path p = new Path("/pipelineHeartbeat/foo");
     System.out.println("p=" + p);
     
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(DATANODE_NUM).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(DATANODE_NUM).build();
     try {
       DistributedFileSystem fs = (DistributedFileSystem)cluster.getFileSystem();
 
@@ -326,7 +326,7 @@ public class TestHFlush {
 
     System.out.println("p=" + p);
 
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(DATANODE_NUM).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(DATANODE_NUM).build();
     try {
       DistributedFileSystem fs = (DistributedFileSystem)cluster.getFileSystem();
 

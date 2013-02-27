@@ -89,7 +89,7 @@ public class TestStartSecureDataNode {
       conf.set(DFSConfigKeys.DFS_DATANODE_HTTP_ADDRESS_KEY, "127.0.0.1:1006");
       conf.set(DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, "700");
 
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .numDataNodes(NUM_OF_DATANODES)
         .checkDataNodeAddrConfig(true)
         .build();

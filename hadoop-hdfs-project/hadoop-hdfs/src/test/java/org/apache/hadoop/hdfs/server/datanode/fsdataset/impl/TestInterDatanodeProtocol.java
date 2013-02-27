@@ -160,7 +160,7 @@ public class TestInterDatanodeProtocol {
     }
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
         .numDataNodes(3)
         .checkDataNodeHostConfig(true)
         .build();
@@ -316,7 +316,7 @@ public class TestInterDatanodeProtocol {
     MiniDFSCluster cluster = null;
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(3).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(3).build();
       cluster.waitActive();
       String bpid = cluster.getNamesystem().getBlockPoolId();
 

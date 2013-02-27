@@ -135,7 +135,7 @@ public class TestDatanodeBlockScanner {
     long startTime = Time.now();
     
     Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     cluster.waitActive();
     
     FileSystem fs = cluster.getFileSystem();
@@ -148,8 +148,7 @@ public class TestDatanodeBlockScanner {
     DFSTestUtil.createFile(fs, file1, 10, (short)1, 0);
     cluster.shutdown();
 
-    cluster = new MiniDFSCluster.Builder(conf)
-                                .dfsBaseDir(cluster.getDfsBaseDir())
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                 .numDataNodes(1)
                                 .format(false).build();
     cluster.waitActive();
@@ -190,7 +189,7 @@ public class TestDatanodeBlockScanner {
     FileSystem fs = null;
     int rand = random.nextInt(3);
 
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(3).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(3).build();
     cluster.waitActive();
     fs = cluster.getFileSystem();
     Path file1 = new Path("/tmp/testBlockVerification/file1");
@@ -272,7 +271,7 @@ public class TestDatanodeBlockScanner {
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_REPLICATION_CONSIDERLOAD_KEY, false);
     conf.setLong(DFSConfigKeys.DFS_NAMENODE_REPLICATION_PENDING_TIMEOUT_SEC_KEY, 5L);
 
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numDataNodes).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(numDataNodes).build();
     cluster.waitActive();
     FileSystem fs = cluster.getFileSystem();
     Path file1 = new Path("/tmp/testBlockCorruptRecovery/file");
@@ -344,7 +343,7 @@ public class TestDatanodeBlockScanner {
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_REPLICATION_CONSIDERLOAD_KEY, false);
 
     long startTime = Time.now();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                                .numDataNodes(REPLICATION_FACTOR)
                                                .build();
     cluster.waitActive();
@@ -361,8 +360,7 @@ public class TestDatanodeBlockScanner {
 
     // Restart cluster and confirm block is verified on datanode 0,
     // then truncate it on datanode 0.
-    cluster = new MiniDFSCluster.Builder(conf)
-                                .dfsBaseDir(cluster.getDfsBaseDir())
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                 .numDataNodes(REPLICATION_FACTOR)
                                 .format(false)
                                 .build();
@@ -384,8 +382,7 @@ public class TestDatanodeBlockScanner {
 
     // Restart the cluster, add a node, and check that the truncated block is 
     // handled correctly
-    cluster = new MiniDFSCluster.Builder(conf)
-                                .dfsBaseDir(cluster.getDfsBaseDir())
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                 .numDataNodes(REPLICATION_FACTOR)
                                 .format(false)
                                 .build();

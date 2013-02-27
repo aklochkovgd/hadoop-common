@@ -196,7 +196,7 @@ public class TestBlockTokenWithDFS {
     Configuration conf = getConf(numDataNodes);
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numDataNodes).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(numDataNodes).build();
       cluster.waitActive();
       assertEquals(numDataNodes, cluster.getDataNodes().size());
 
@@ -257,7 +257,7 @@ public class TestBlockTokenWithDFS {
     Configuration conf = getConf(numDataNodes);
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numDataNodes).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(numDataNodes).build();
       cluster.waitActive();
       assertEquals(numDataNodes, cluster.getDataNodes().size());
 
@@ -310,7 +310,7 @@ public class TestBlockTokenWithDFS {
     Configuration conf = getConf(numDataNodes);
 
     try {
-      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numDataNodes).build();
+      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(numDataNodes).build();
       cluster.waitActive();
       assertEquals(numDataNodes, cluster.getDataNodes().size());
 

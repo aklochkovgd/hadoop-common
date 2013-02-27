@@ -81,7 +81,7 @@ public class TestJMXGet {
   @Test
   public void testNameNode() throws Exception {
     int numDatanodes = 2;
-    cluster = new MiniDFSCluster.Builder(config).numDataNodes(numDatanodes).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), config).numDataNodes(numDatanodes).build();
     cluster.waitActive();
 
     DFSTestUtil.createFile(cluster.getFileSystem(), new Path("/test1"),
@@ -111,7 +111,7 @@ public class TestJMXGet {
   @Test
   public void testDataNode() throws Exception {
     int numDatanodes = 2;
-    cluster = new MiniDFSCluster.Builder(config).numDataNodes(numDatanodes).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), config).numDataNodes(numDatanodes).build();
     cluster.waitActive();
 
     DFSTestUtil.createFile(cluster.getFileSystem(), new Path("/test"),

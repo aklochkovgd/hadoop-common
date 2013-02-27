@@ -100,9 +100,9 @@ public class TestBalancer {
   /* fill up a cluster with <code>numNodes</code> datanodes 
    * whose used space to be <code>size</code>
    */
-  private ExtendedBlock[] generateBlocks(String dfsBaseDir, Configuration conf, long size,
+  private ExtendedBlock[] generateBlocks(Configuration conf, long size,
       short numNodes) throws IOException, InterruptedException, TimeoutException {
-    cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(dfsBaseDir).numDataNodes(numNodes).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(numNodes).build();
     try {
       cluster.waitActive();
       client = NameNodeProxies.createProxy(conf, cluster.getFileSystem(0).getUri(),
@@ -184,10 +184,8 @@ public class TestBalancer {
     // calculate total space that need to be filled
     final long totalUsedSpace = sum(distribution);
 
-    String dfsBaseDir = MiniDFSCluster.newDfsBaseDir();
-    
     // fill the cluster
-    ExtendedBlock[] blocks = generateBlocks(dfsBaseDir, conf, totalUsedSpace,
+    ExtendedBlock[] blocks = generateBlocks(conf, totalUsedSpace,
         (short) numDatanodes);
 
     // redistribute blocks
@@ -196,7 +194,7 @@ public class TestBalancer {
 
     // restart the cluster: do NOT format the cluster
     conf.set(DFSConfigKeys.DFS_NAMENODE_SAFEMODE_THRESHOLD_PCT_KEY, "0.0f"); 
-    cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(dfsBaseDir)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                               .numDataNodes(numDatanodes)
                                               .format(false)
                                               .racks(racks)
@@ -313,7 +311,7 @@ public class TestBalancer {
       long newCapacity, String newRack, boolean useTool) throws Exception {
     assertEquals(capacities.length, racks.length);
     int numOfDatanodes = capacities.length;
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                 .numDataNodes(capacities.length)
                                 .racks(racks)
                                 .simulatedCapacities(capacities)
@@ -461,7 +459,7 @@ public class TestBalancer {
       throws Exception {
     int numOfDatanodes = capacities.length;
     assertEquals(numOfDatanodes, racks.length);
-    cluster = new MiniDFSCluster.Builder(conf)
+    cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                 .numDataNodes(capacities.length)
                                 .racks(racks)
                                 .simulatedCapacities(capacities)

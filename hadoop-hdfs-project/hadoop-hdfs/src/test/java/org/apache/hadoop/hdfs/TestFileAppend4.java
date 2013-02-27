@@ -146,7 +146,7 @@ public class TestFileAppend4 {
    */
   @Test(timeout=60000)
   public void testRecoverFinalizedBlock() throws Throwable {
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(5).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(5).build();
  
     try {
       cluster.waitActive();
@@ -218,7 +218,7 @@ public class TestFileAppend4 {
    */
   @Test(timeout=60000)
   public void testCompleteOtherLeaseHoldersFile() throws Throwable {
-    cluster = new MiniDFSCluster.Builder(conf).numDataNodes(5).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(5).build();
  
     try {
       cluster.waitActive();
@@ -298,7 +298,7 @@ public class TestFileAppend4 {
   @Test(timeout = 60000)
   public void testUpdateNeededReplicationsForAppendedFile() throws Exception {
     Configuration conf = new Configuration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(1)
         .build();
     DistributedFileSystem fileSystem = null;
     try {

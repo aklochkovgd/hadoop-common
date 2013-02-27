@@ -92,8 +92,7 @@ public class TestDFSFinalize {
    */
   @Test
   public void testFinalize() throws Exception {
-    String dfsBaseDir = MiniDFSCluster.newDfsBaseDir();
-    UpgradeUtilities util = new UpgradeUtilities(dfsBaseDir);
+    UpgradeUtilities util = new UpgradeUtilities(getClass());
     
     for (int numDirs = 1; numDirs <= 2; numDirs++) {
       /* This test requires that "current" directory not change after
@@ -112,7 +111,7 @@ public class TestDFSFinalize {
       util.createNameNodeStorageDirs(nameNodeDirs, "previous");
       util.createDataNodeStorageDirs(dataNodeDirs, "current");
       util.createDataNodeStorageDirs(dataNodeDirs, "previous");
-      cluster = new MiniDFSCluster.Builder(conf).dfsBaseDir(dfsBaseDir)
+      cluster = new MiniDFSCluster.Builder(getClass(), conf)
                                   .format(false)
                                   .manageDataDfsDirs(false)
                                   .manageNameDfsDirs(false)

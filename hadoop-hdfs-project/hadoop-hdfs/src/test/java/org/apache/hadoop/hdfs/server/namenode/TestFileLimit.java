@@ -73,7 +73,7 @@ public class TestFileLimit {
     if (simulatedStorage) {
       SimulatedFSDataset.setFactory(conf);
     }
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     FileSystem fs = cluster.getFileSystem();
     FSNamesystem namesys = cluster.getNamesystem();
     try {

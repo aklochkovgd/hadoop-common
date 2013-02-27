@@ -66,7 +66,7 @@ public class TestMiniDFSCluster {
     File testDataCluster1 = new File(testDataPath, CLUSTER_1);
     String c1Path = testDataCluster1.getAbsolutePath();
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, c1Path);
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
     try {
       assertEquals(c1Path+"/data", cluster.getDataDirectory());
     } finally {
@@ -85,7 +85,7 @@ public class TestMiniDFSCluster {
     Configuration conf = new HdfsConfiguration();
     String c2Path = testDataCluster2.getAbsolutePath();
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, c2Path);
-    MiniDFSCluster cluster2 = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster2 = new MiniDFSCluster.Builder(getClass(), conf).build();
     MiniDFSCluster cluster3 = null;
     try {
       String dataDir2 = cluster2.getDataDirectory();
@@ -93,7 +93,7 @@ public class TestMiniDFSCluster {
       //change the data dir
       conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR,
                testDataCluster3.getAbsolutePath());
-      MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(conf);
+      MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(getClass(), conf);
       cluster3 = builder.build();
       String dataDir3 = cluster3.getDataDirectory();
       assertTrue("Clusters are bound to the same directory: " + dataDir2,
@@ -110,7 +110,7 @@ public class TestMiniDFSCluster {
     File testDataCluster4 = new File(testDataPath, CLUSTER_4);
     String c4Path = testDataCluster4.getAbsolutePath();
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, c4Path);
-    MiniDFSCluster cluster4 = new MiniDFSCluster.Builder(conf).build();
+    MiniDFSCluster cluster4 = new MiniDFSCluster.Builder(getClass(), conf).build();
     try {
       DistributedFileSystem dfs = (DistributedFileSystem) cluster4.getFileSystem();
       dfs.setSafeMode(FSConstants.SafeModeAction.SAFEMODE_ENTER);
@@ -131,7 +131,7 @@ public class TestMiniDFSCluster {
     File testDataCluster5 = new File(testDataPath, CLUSTER_5);
     String c5Path = testDataCluster5.getAbsolutePath();
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, c5Path);
-    MiniDFSCluster cluster5 = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster5 = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(1)
       .checkDataNodeHostConfig(true)
       .build();

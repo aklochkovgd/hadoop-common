@@ -89,7 +89,7 @@ public class TestBlocksWithNotEnoughRacks {
     final Path filePath = new Path("/testFile");
     // All datanodes are on the same rack
     String racks[] = {"/rack1", "/rack1", "/rack1"};
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(racks.length).racks(racks).build();
 
     try {
@@ -122,7 +122,7 @@ public class TestBlocksWithNotEnoughRacks {
     final Path filePath = new Path("/testFile");
 
     String racks[] = {"/rack1", "/rack1", "/rack1", "/rack2"};
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(racks.length).racks(racks).build();
     final FSNamesystem ns = cluster.getNameNode().getNamesystem();
 
@@ -156,7 +156,7 @@ public class TestBlocksWithNotEnoughRacks {
     final Path filePath = new Path("/testFile");
     // All datanodes are on the same rack
     String racks[] = {"/rack1", "/rack1", "/rack1", "/rack1", "/rack1"};
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(racks.length).racks(racks).build();
     final FSNamesystem ns = cluster.getNameNode().getNamesystem();
 
@@ -193,7 +193,7 @@ public class TestBlocksWithNotEnoughRacks {
     final Path filePath = new Path("/testFile");
     // Datanodes are spread across two racks
     String racks[] = {"/rack1", "/rack1", "/rack2", "/rack2"};
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(racks.length).racks(racks).build();
     final FSNamesystem ns = cluster.getNameNode().getNamesystem();
 
@@ -244,7 +244,7 @@ public class TestBlocksWithNotEnoughRacks {
     short REPLICATION_FACTOR = 3;
     final Path filePath = new Path("/testFile");
     String racks[] = {"/rack1", "/rack1", "/rack2", "/rack2"};
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(racks.length).racks(racks).build();
     final FSNamesystem ns = cluster.getNameNode().getNamesystem();
 
@@ -278,7 +278,7 @@ public class TestBlocksWithNotEnoughRacks {
     final Path filePath = new Path("/testFile");
     // Last datanode is on a different rack
     String racks[] = {"/rack1", "/rack1", "/rack1", "/rack2", "/rack2"};
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(racks.length).racks(racks).build();
     final FSNamesystem ns = cluster.getNameNode().getNamesystem();
     final DatanodeManager dm = ns.getBlockManager().getDatanodeManager();
@@ -333,7 +333,7 @@ public class TestBlocksWithNotEnoughRacks {
     final Path filePath = new Path("/testFile");
     // Last datanode is on a different rack
     String racks[] = {"/rack1", "/rack1", "/rack2"};
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(racks.length).racks(racks).build();
     final FSNamesystem ns = cluster.getNameNode().getNamesystem();
     final DatanodeManager dm = ns.getBlockManager().getDatanodeManager();
@@ -398,7 +398,7 @@ public class TestBlocksWithNotEnoughRacks {
 
     // Two blocks and four racks
     String racks[] = {"/rack1", "/rack1", "/rack2", "/rack2"};
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(racks.length).racks(racks).build();
     final FSNamesystem ns = cluster.getNameNode().getNamesystem();
 
@@ -451,7 +451,7 @@ public class TestBlocksWithNotEnoughRacks {
 
     // All hosts are on two racks, only one host on /rack2
     String racks[] = {"/rack1", "/rack2", "/rack1", "/rack1", "/rack1"};
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+    MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
       .numDataNodes(racks.length).racks(racks).build();
     final FSNamesystem ns = cluster.getNameNode().getNamesystem();
 

@@ -54,7 +54,7 @@ public class TestNNMetricFilesInGetListingOps {
 
   @Before
   public void setUp() throws Exception {
-    cluster = new MiniDFSCluster.Builder(CONF).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), CONF).build();
     cluster.waitActive();
     cluster.getNameNode();
     fs = (DistributedFileSystem) cluster.getFileSystem();

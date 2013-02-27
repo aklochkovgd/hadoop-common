@@ -56,7 +56,7 @@ public class BlockReaderTestUtil {
   public BlockReaderTestUtil(int replicationFactor, HdfsConfiguration config) throws Exception {
     this.conf = config;
     conf.setInt(DFSConfigKeys.DFS_REPLICATION_KEY, replicationFactor);
-    cluster = new MiniDFSCluster.Builder(conf).format(true).build();
+    cluster = new MiniDFSCluster.Builder(getClass(), conf).format(true).build();
     cluster.waitActive();
   }
 
