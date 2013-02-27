@@ -42,8 +42,9 @@ public class MiniJournalCluster {
     private boolean format = true;
     private Configuration conf;
     
-    public Builder(Configuration conf) {
+    public Builder(Class<?> caller, Configuration conf) {
       this.conf = conf;
+      this.baseDir = MiniDFSCluster.getDfsBaseDir(caller);
     }
     
     public Builder baseDir(String d) {
@@ -79,7 +80,7 @@ public class MiniJournalCluster {
     if (b.baseDir != null) {
       this.baseDir = new File(b.baseDir);
     } else {
-      this.baseDir = new File(MiniDFSCluster.newDfsBaseDir());
+      this.baseDir = new File(MiniDFSCluster.getDfsBaseDir(MiniJournalCluster.class));
     }
     
     nodes = new JournalNode[b.numJournalNodes];

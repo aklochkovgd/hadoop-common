@@ -54,7 +54,7 @@ public class TestBlockUnderConstruction {
   @BeforeClass
   public static void setUp() throws Exception {
     Configuration conf = new HdfsConfiguration();
-    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(3).build();
+    cluster = new MiniDFSCluster.Builder(TestBlockUnderConstruction.class, conf).numDataNodes(3).build();
     cluster.waitActive();
     hdfs = (DistributedFileSystem)cluster.getFileSystem();
   }

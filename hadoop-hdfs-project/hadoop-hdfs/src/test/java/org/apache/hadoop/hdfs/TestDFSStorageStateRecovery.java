@@ -49,7 +49,6 @@ public class TestDFSStorageStateRecovery {
   private Configuration conf = null;
   private int testCounter = 0;
   private MiniDFSCluster cluster = null;
-  private String dfsBaseDir;
   private UpgradeUtilities util;
   
   // Constants for indexes into test case table below.
@@ -445,8 +444,7 @@ public class TestDFSStorageStateRecovery {
   @Before
   public void setUp() throws Exception {
     LOG.info("Setting up the directory structures.");
-    dfsBaseDir = MiniDFSCluster.newDfsBaseDir();
-    util = new UpgradeUtilities(dfsBaseDir);
+    util = new UpgradeUtilities(getClass());
   }
 
   @After

@@ -34,8 +34,8 @@ public class TestMiniJournalCluster {
   @Test
   public void testStartStop() throws IOException {
     Configuration conf = new Configuration();
-    String baseDir = MiniDFSCluster.newDfsBaseDir();
-    MiniJournalCluster c = new MiniJournalCluster.Builder(conf)
+    String baseDir = MiniDFSCluster.getDfsBaseDir(TestMiniJournalCluster.class);
+    MiniJournalCluster c = new MiniJournalCluster.Builder(getClass(), conf)
       .baseDir(baseDir)
       .build();
     try {

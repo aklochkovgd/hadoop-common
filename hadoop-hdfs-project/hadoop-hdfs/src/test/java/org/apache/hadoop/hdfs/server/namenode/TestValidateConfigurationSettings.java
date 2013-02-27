@@ -96,7 +96,7 @@ public class TestValidateConfigurationSettings {
     conf.set(DFSConfigKeys.DFS_NAMESERVICES, "ns1");
     
     // Set a nameservice-specific configuration for name dir
-    File dir = new File(MiniDFSCluster.newDfsBaseDir(),
+    File dir = new File(MiniDFSCluster.getDfsBaseDir(getClass()),
         "testGenericKeysForNameNodeFormat");
     conf.set(DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY + ".ns1",
         dir.getAbsolutePath());

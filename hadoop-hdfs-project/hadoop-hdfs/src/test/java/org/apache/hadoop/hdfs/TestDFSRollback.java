@@ -135,7 +135,6 @@ public class TestDFSRollback {
    */
   @Test
   public void testRollback() throws Exception {
-    String dfsBaseDir = MiniDFSCluster.newDfsBaseDir();
     UpgradeUtilities util = new UpgradeUtilities(getClass());
 
     File[] baseDirs;

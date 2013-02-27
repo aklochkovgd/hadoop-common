@@ -870,7 +870,7 @@ public class TestDFSClientRetries {
     conf.setInt(MiniDFSCluster.DFS_NAMENODE_SAFEMODE_EXTENSION_TESTING_KEY, 5000);
 
     final short numDatanodes = 3;
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)
+    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(TestDFSClientRetries.class, conf)
         .numDataNodes(numDatanodes)
         .build();
     try {

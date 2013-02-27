@@ -61,7 +61,7 @@ public class TestWebHdfsFileSystemContract extends FileSystemContractBaseTest {
   static {
     conf.setBoolean(DFSConfigKeys.DFS_WEBHDFS_ENABLED_KEY, true);
     try {
-      cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
+      cluster = new MiniDFSCluster.Builder(TestWebHdfsFileSystemContract.class, conf).numDataNodes(2).build();
       cluster.waitActive();
 
       //change root permission to 777

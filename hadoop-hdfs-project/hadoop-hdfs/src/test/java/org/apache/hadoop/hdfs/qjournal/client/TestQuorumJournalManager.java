@@ -85,7 +85,7 @@ public class TestQuorumJournalManager {
     // Don't retry connections - it just slows down the tests.
     conf.setInt(CommonConfigurationKeysPublic.IPC_CLIENT_CONNECT_MAX_RETRIES_KEY, 0);
     
-    cluster = new MiniJournalCluster.Builder(conf)
+    cluster = new MiniJournalCluster.Builder(getClass(), conf)
       .build();
     
     qjm = createSpyingQJM();

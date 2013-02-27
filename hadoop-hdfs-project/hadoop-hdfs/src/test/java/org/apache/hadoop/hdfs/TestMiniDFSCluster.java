@@ -46,7 +46,7 @@ public class TestMiniDFSCluster {
   protected String testDataPath;
   @Before
   public void setUp() {
-    testDataPath = MiniDFSCluster.newDfsBaseDir();
+    testDataPath = MiniDFSCluster.getDfsBaseDir(getClass());
   }
   @After
   public void tearDown() {

@@ -73,7 +73,7 @@ public class TestFileStatus {
   public static void testSetUp() throws Exception {
     conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_LIST_LIMIT, 2);
-    cluster = new MiniDFSCluster.Builder(getClass(), conf).build();
+    cluster = new MiniDFSCluster.Builder(TestFileStatus.class, conf).build();
     fs = cluster.getFileSystem();
     fc = FileContext.getFileContext(cluster.getURI(0), conf);
     hftpfs = cluster.getHftpFileSystem(0);

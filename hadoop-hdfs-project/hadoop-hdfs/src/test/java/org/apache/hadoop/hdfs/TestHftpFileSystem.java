@@ -92,7 +92,7 @@ public class TestHftpFileSystem {
     RAN.setSeed(seed);
 
     config = new Configuration();
-    cluster = new MiniDFSCluster.Builder(getClass(), config).numDataNodes(2).build();
+    cluster = new MiniDFSCluster.Builder(TestHftpFileSystem.class, config).numDataNodes(2).build();
     blockPoolId = cluster.getNamesystem().getBlockPoolId();
     hftpUri = 
       "hftp://" + config.get(DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY);

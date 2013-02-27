@@ -239,8 +239,7 @@ public class TestDFSStartupVersions {
    */
   @Test
   public void testVersions() throws Exception {
-    String dfsBaseDir = MiniDFSCluster.newDfsBaseDir();
-    UpgradeUtilities util = new UpgradeUtilities(dfsBaseDir);
+    UpgradeUtilities util = new UpgradeUtilities(getClass());
     Configuration conf = util.initializeStorageStateConf(1, 
                                                       new HdfsConfiguration());
     StorageData[] versions = initializeVersions(util);

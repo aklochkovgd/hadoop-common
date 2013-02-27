@@ -61,7 +61,7 @@ public class TestViewFileSystemHdfs extends ViewFileSystemBaseTest {
         DFSConfigKeys.DFS_NAMENODE_DELEGATION_TOKEN_ALWAYS_USE_KEY, true);
     
     cluster =
-        new MiniDFSCluster.Builder(getClass(), CONF).nnTopology(
+        new MiniDFSCluster.Builder(TestViewFileSystemHdfs.class, CONF).nnTopology(
                 MiniDFSNNTopology.simpleFederatedTopology(2))
             .numDataNodes(2)
             .build();

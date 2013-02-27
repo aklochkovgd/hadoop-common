@@ -86,7 +86,7 @@ public class TestWebHDFS {
   }
 
   /** Test read and write large files. */
-  static void largeFileTest(final long fileLength) throws Exception {
+  void largeFileTest(final long fileLength) throws Exception {
     final Configuration conf = WebHdfsTestUtil.createConf();
 
     final MiniDFSCluster cluster = new MiniDFSCluster.Builder(getClass(), conf)

@@ -37,7 +37,7 @@ public class TestHDFSTrash {
   @BeforeClass
   public static void setUp() throws Exception {
     Configuration conf = new HdfsConfiguration();
-    cluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2).build();
+    cluster = new MiniDFSCluster.Builder(TestHDFSTrash.class, conf).numDataNodes(2).build();
   }
 
   @AfterClass

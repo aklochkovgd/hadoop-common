@@ -54,7 +54,7 @@ public class TestNNWithQJM {
   
   @Before
   public void startJNs() throws Exception {
-    mjc = new MiniJournalCluster.Builder(conf).build();
+    mjc = new MiniJournalCluster.Builder(getClass(), conf).build();
   }
   
   @After

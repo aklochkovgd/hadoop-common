@@ -95,9 +95,9 @@ public class TestQJMWithFaults {
    * bounds for the other test cases, so they can exhaustively explore
    * the space of potential failures.
    */
-  private static long determineMaxIpcNumber() throws Exception {
+  private long determineMaxIpcNumber() throws Exception {
     Configuration conf = new Configuration();
-    MiniJournalCluster cluster = new MiniJournalCluster.Builder(conf).build();
+    MiniJournalCluster cluster = new MiniJournalCluster.Builder(getClass(), conf).build();
     QuorumJournalManager qjm = null;
     long ret;
     try {
@@ -144,7 +144,7 @@ public class TestQJMWithFaults {
             "Beginning test, failing at " + injectionStr + "\n" +
             "-------------------------------------------\n\n");
         
-        MiniJournalCluster cluster = new MiniJournalCluster.Builder(conf)
+        MiniJournalCluster cluster = new MiniJournalCluster.Builder(getClass(), conf)
           .build();
         QuorumJournalManager qjm = null;
         try {
@@ -216,7 +216,7 @@ public class TestQJMWithFaults {
     
     Random r = new Random(seed);
     
-    MiniJournalCluster cluster = new MiniJournalCluster.Builder(conf)
+    MiniJournalCluster cluster = new MiniJournalCluster.Builder(getClass(), conf)
       .build();
     
     // Format the cluster using a non-faulty QJM.

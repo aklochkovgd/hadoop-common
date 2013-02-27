@@ -78,7 +78,7 @@ public class TestWebHdfsWithMultipleNameNodes {
 
     conf.setBoolean(DFSConfigKeys.DFS_WEBHDFS_ENABLED_KEY, true);
 
-    cluster = new MiniDFSCluster.Builder(getClass(), conf)
+    cluster = new MiniDFSCluster.Builder(TestWebHdfsWithMultipleNameNodes.class, conf)
         .nnTopology(MiniDFSNNTopology.simpleFederatedTopology(nNameNodes))
         .numDataNodes(nDataNodes)
         .build();

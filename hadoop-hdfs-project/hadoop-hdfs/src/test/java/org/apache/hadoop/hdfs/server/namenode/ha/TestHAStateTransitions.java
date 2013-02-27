@@ -383,7 +383,7 @@ public class TestHAStateTransitions {
     testFailoverAfterCrashDuringLogRoll(true);
   }
   
-  private static void testFailoverAfterCrashDuringLogRoll(boolean writeHeader)
+  private void testFailoverAfterCrashDuringLogRoll(boolean writeHeader)
       throws Exception {
     Configuration conf = new Configuration();
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, Integer.MAX_VALUE);
