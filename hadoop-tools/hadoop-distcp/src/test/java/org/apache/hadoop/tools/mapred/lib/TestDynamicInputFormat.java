@@ -54,7 +54,7 @@ public class TestDynamicInputFormat {
 
   @BeforeClass
   public static void setup() throws Exception {
-    cluster = new MiniDFSCluster.Builder(getClass(), getConfigurationForCluster())
+    cluster = new MiniDFSCluster.Builder(TestDynamicInputFormat.class, getConfigurationForCluster())
                   .numDataNodes(1).format(true).build();
 
     for (int i=0; i<N_FILES; ++i)

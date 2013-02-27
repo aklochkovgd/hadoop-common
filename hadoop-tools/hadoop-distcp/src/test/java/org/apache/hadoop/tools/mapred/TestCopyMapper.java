@@ -65,7 +65,7 @@ public class TestCopyMapper {
   @BeforeClass
   public static void setup() throws Exception {
     configuration = getConfigurationForCluster();
-    cluster = new MiniDFSCluster.Builder(getClass(), configuration)
+    cluster = new MiniDFSCluster.Builder(TestCopyMapper.class, configuration)
                 .numDataNodes(1)
                 .format(true)
                 .build();

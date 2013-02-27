@@ -51,7 +51,7 @@ public class TestFileBasedCopyListing {
 
   @BeforeClass
   public static void create() throws IOException {
-    cluster = new MiniDFSCluster.Builder(getClass(), config).numDataNodes(1).format(true)
+    cluster = new MiniDFSCluster.Builder(TestFileBasedCopyListing.class, config).numDataNodes(1).format(true)
                                                 .build();
     fs = cluster.getFileSystem();
     buildExpectedValuesMap();
