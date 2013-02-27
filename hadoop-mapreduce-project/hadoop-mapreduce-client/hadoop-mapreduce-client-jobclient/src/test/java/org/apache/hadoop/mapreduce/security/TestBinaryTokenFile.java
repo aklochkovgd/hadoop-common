@@ -196,7 +196,7 @@ public class TestBinaryTokenFile {
     conf.set(MRConfig.FRAMEWORK_NAME, MRConfig.YARN_FRAMEWORK_NAME);
     conf.set(YarnConfiguration.RM_PRINCIPAL, "jt_id/" + SecurityUtil.HOSTNAME_PATTERN + "@APACHE.ORG");
     
-    final MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(getClass(), conf);
+    final MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(TestBinaryTokenFile.class, conf);
     builder.checkExitOnShutdown(true);
     builder.numDataNodes(numSlaves);
     builder.format(true);

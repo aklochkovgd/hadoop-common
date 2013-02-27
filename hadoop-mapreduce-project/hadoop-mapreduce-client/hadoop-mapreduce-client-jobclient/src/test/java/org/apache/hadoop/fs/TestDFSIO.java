@@ -201,7 +201,7 @@ public class TestDFSIO implements Tool {
   public static void beforeClass() throws Exception {
     bench = new TestDFSIO();
     bench.getConf().setBoolean(DFSConfigKeys.DFS_SUPPORT_APPEND_KEY, true);
-    cluster = new MiniDFSCluster.Builder(getClass(), bench.getConf())
+    cluster = new MiniDFSCluster.Builder(TestDFSIO.class, bench.getConf())
                                 .numDataNodes(2)
                                 .format(true)
                                 .build();

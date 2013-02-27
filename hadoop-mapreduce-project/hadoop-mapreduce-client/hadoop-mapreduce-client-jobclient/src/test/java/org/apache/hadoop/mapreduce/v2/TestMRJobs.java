@@ -92,7 +92,7 @@ public class TestMRJobs {
       throw new RuntimeException("problem getting local fs", io);
     }
     try {
-      dfsCluster = new MiniDFSCluster.Builder(getClass(), conf).numDataNodes(2)
+      dfsCluster = new MiniDFSCluster.Builder(TestMRJobs.class, conf).numDataNodes(2)
         .format(true).racks(null).build();
       remoteFs = dfsCluster.getFileSystem();
     } catch (IOException io) {
