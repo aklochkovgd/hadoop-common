@@ -65,14 +65,11 @@ public class TestHDFSFileContextMainOperations extends
   }
 
   private static void restartCluster() throws IOException, LoginException {
-    String dfsBaseDir = null;
     if (cluster != null) {
-      dfsBaseDir = cluster.getDfsBaseDir();
       cluster.shutdown();
       cluster = null;
     }
-    cluster = new MiniDFSCluster.Builder(CONF).dfsBaseDir(dfsBaseDir)
-                                              .numDataNodes(1)
+    cluster = new MiniDFSCluster.Builder(CONF).numDataNodes(1)
                                               .format(false).build();
     cluster.waitClusterUp();
     fc = FileContext.getFileContext(cluster.getURI(0), CONF);

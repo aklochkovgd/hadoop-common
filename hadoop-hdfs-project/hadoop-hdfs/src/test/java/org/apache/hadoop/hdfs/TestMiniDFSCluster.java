@@ -26,7 +26,7 @@ import java.io.File;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
-import org.junit.After;
+import org.apache.hadoop.test.PathUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,14 +43,10 @@ public class TestMiniDFSCluster {
   private static final String CLUSTER_3 = "cluster3";
   private static final String CLUSTER_4 = "cluster4";
   private static final String CLUSTER_5 = "cluster5";
-  protected String testDataPath;
+  protected File testDataPath;
   @Before
   public void setUp() {
-    testDataPath = MiniDFSCluster.newDfsBaseDir();
-  }
-  @After
-  public void tearDown() {
-    System.setProperty(MiniDFSCluster.PROP_TEST_BUILD_DATA, testDataPath);
+    testDataPath = new File(PathUtils.getTestDir(getClass()), "miniclusters");
   }
 
   /**

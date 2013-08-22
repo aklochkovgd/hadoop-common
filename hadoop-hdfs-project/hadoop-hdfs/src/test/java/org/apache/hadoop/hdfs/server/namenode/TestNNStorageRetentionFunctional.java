@@ -47,6 +47,8 @@ import com.google.common.base.Joiner;
  */
 public class TestNNStorageRetentionFunctional {
 
+  private static File TEST_ROOT_DIR =
+    new File(MiniDFSCluster.getBaseDirectory());
   private static Log LOG = LogFactory.getLog(
       TestNNStorageRetentionFunctional.class);
 
@@ -59,13 +61,12 @@ public class TestNNStorageRetentionFunctional {
   @Test
   public void testPurgingWithNameEditsDirAfterFailure()
       throws Exception {
-    String baseDir = MiniDFSCluster.newDfsBaseDir();
     MiniDFSCluster cluster = null;    
     Configuration conf = new HdfsConfiguration();
     conf.setLong(DFSConfigKeys.DFS_NAMENODE_NUM_EXTRA_EDITS_RETAINED_KEY, 0);
 
-    File sd0 = new File(baseDir, "nn0");
-    File sd1 = new File(baseDir, "nn1");
+    File sd0 = new File(TEST_ROOT_DIR, "nn0");
+    File sd1 = new File(TEST_ROOT_DIR, "nn1");
     File cd0 = new File(sd0, "current");
     File cd1 = new File(sd1, "current");
     conf.set(DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY,
@@ -73,7 +74,6 @@ public class TestNNStorageRetentionFunctional {
 
     try {
       cluster = new MiniDFSCluster.Builder(conf)
-        .dfsBaseDir(baseDir)
         .numDataNodes(0)
         .manageNameDfsDirs(false)
         .format(true).build();

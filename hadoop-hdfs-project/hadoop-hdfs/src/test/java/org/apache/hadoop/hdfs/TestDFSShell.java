@@ -63,10 +63,6 @@ public class TestDFSShell {
   private static AtomicInteger counter = new AtomicInteger();
 
   static final String TEST_ROOT_DIR = PathUtils.getTestDirName(TestDFSShell.class);
-  
-  static {
-      new File(TEST_ROOT_DIR).mkdirs();
-  }
 
   static Path writeFile(FileSystem fs, Path f) throws IOException {
     DataOutputStream out = fs.create(f);
@@ -485,10 +481,12 @@ public class TestDFSShell {
     Configuration dstConf = new HdfsConfiguration();
     MiniDFSCluster srcCluster =  null;
     MiniDFSCluster dstCluster = null;
+    File bak = new File(PathUtils.getTestDir(getClass()), "dfs_tmp_uri");
+    bak.mkdirs();
     try{
       srcCluster = new MiniDFSCluster.Builder(srcConf).numDataNodes(2).build();
-      String dstBaseDir = new File(new File(srcCluster.getDfsBaseDir()).getParentFile(), "dfs_tmp_uri/").getAbsolutePath();
-      dstCluster = new MiniDFSCluster.Builder(dstConf).dfsBaseDir(dstBaseDir).numDataNodes(2).build();
+      dstConf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, bak.getAbsolutePath());
+      dstCluster = new MiniDFSCluster.Builder(dstConf).numDataNodes(2).build();
       FileSystem srcFs = srcCluster.getFileSystem();
       FileSystem dstFs = dstCluster.getFileSystem();
       FsShell shell = new FsShell();
@@ -1529,10 +1527,7 @@ public class TestDFSShell {
       corrupt(files);
 
       // Start the cluster again, but do not reformat, so prior files remain.
-      cluster = new MiniDFSCluster.Builder(conf)
-        .dfsBaseDir(cluster.getDfsBaseDir())
-        .numDataNodes(2)
-        .format(false)
+      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).format(false)
         .build();
       dfs = (DistributedFileSystem)cluster.getFileSystem();
 

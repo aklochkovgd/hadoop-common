@@ -49,7 +49,7 @@ public class TestJournal {
   private static final String JID = "test-journal";
 
   private static final File TEST_LOG_DIR = new File(
-      new File(MiniDFSCluster.newDfsBaseDir()), "TestJournal");
+      new File(MiniDFSCluster.getBaseDirectory()), "TestJournal");
 
   private StorageErrorReporter mockErrorReporter = Mockito.mock(
       StorageErrorReporter.class);

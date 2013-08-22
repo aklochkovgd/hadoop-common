@@ -196,9 +196,7 @@ public class TestSnapshot {
     SnapshotTestHelper.dumpTree2File(fsdir, fsnBefore);
     
     cluster.shutdown();
-    cluster = new MiniDFSCluster.Builder(conf)
-        .dfsBaseDir(cluster.getDfsBaseDir())
-        .format(false)
+    cluster = new MiniDFSCluster.Builder(conf).format(false)
         .numDataNodes(REPLICATION).build();
     cluster.waitActive();
     fsn = cluster.getNamesystem();
@@ -211,9 +209,7 @@ public class TestSnapshot {
     hdfs.saveNamespace();
     hdfs.setSafeMode(SafeModeAction.SAFEMODE_LEAVE);
     cluster.shutdown();
-    cluster = new MiniDFSCluster.Builder(conf)
-        .dfsBaseDir(cluster.getDfsBaseDir())
-        .format(false)
+    cluster = new MiniDFSCluster.Builder(conf).format(false)
         .numDataNodes(REPLICATION).build();
     cluster.waitActive();
     fsn = cluster.getNamesystem();

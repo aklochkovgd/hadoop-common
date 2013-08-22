@@ -565,10 +565,7 @@ public class TestEditLog {
     }
     
     try {
-      cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
-          .numDataNodes(NUM_DATA_NODES)
-          .format(false).build();
+      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATA_NODES).format(false).build();
       fail("should not be able to start");
     } catch (IOException e) {
       // expected
@@ -635,6 +632,7 @@ public class TestEditLog {
 
         LOG.info("Shutting down cluster #1");
         cluster.shutdown();
+        cluster = null;
         
         // Now restore the backup
         FileUtil.fullyDeleteContents(dfsDir);
@@ -658,7 +656,6 @@ public class TestEditLog {
         LOG.info("\n===========================================\n" +
         "Starting same cluster after simulated crash");
         cluster = new MiniDFSCluster.Builder(conf)
-          .dfsBaseDir(cluster.getDfsBaseDir())
           .numDataNodes(NUM_DATA_NODES)
           .format(false)
           .build();
@@ -687,12 +684,12 @@ public class TestEditLog {
         
         // Started successfully. Shut it down and make sure it can restart.
         cluster.shutdown();    
+        cluster = null;
         
         cluster = new MiniDFSCluster.Builder(conf)
-            .dfsBaseDir(cluster.getDfsBaseDir())
-            .numDataNodes(NUM_DATA_NODES)
-            .format(false)
-            .build();
+        .numDataNodes(NUM_DATA_NODES)
+        .format(false)
+        .build();
         cluster.waitActive();
     } finally {
       if (cluster != null) {
@@ -788,9 +785,7 @@ public class TestEditLog {
     
     try {
       cluster = new MiniDFSCluster.Builder(conf)
-        .dfsBaseDir(cluster.getDfsBaseDir())
-        .numDataNodes(NUM_DATA_NODES)
-        .format(false).build();
+        .numDataNodes(NUM_DATA_NODES).format(false).build();
       if (!shouldSucceed) {
         fail("Should not have succeeded in startin cluster");
       }

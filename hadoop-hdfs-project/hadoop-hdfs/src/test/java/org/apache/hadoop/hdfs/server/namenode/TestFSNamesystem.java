@@ -43,11 +43,9 @@ import org.mockito.internal.util.reflection.Whitebox;
 
 public class TestFSNamesystem {
 
-  private final static String BASE_DIR = MiniDFSCluster.newDfsBaseDir();
-  
   @After
   public void cleanUp() {
-    FileUtil.fullyDeleteContents(new File(BASE_DIR));
+    FileUtil.fullyDeleteContents(new File(MiniDFSCluster.getBaseDirectory()));
   }
 
   /**
@@ -71,7 +69,7 @@ public class TestFSNamesystem {
   @Test
   public void testFSNamespaceClearLeases() throws Exception {
     Configuration conf = new HdfsConfiguration();
-    File nameDir = new File(BASE_DIR, "name");
+    File nameDir = new File(MiniDFSCluster.getBaseDirectory(), "name");
     conf.set(DFS_NAMENODE_NAME_DIR_KEY, nameDir.getAbsolutePath());
 
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
