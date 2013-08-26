@@ -729,8 +729,6 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <forkCount>${testsThreadCount}</forkCount>
-              <reuseForks>false</reuseForks>
-              <runOrder>balanced</runOrder>
               <argLine>-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -DminiClusterDedicatedDirs=true</argLine>
               <systemPropertyVariables>
                 <test.build.data>${test.build.data}/${surefire.forkNumber}</test.build.data>
