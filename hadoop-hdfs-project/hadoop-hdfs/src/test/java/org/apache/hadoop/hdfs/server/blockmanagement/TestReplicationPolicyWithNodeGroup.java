@@ -22,7 +22,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,6 +41,7 @@ import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.net.Node;
 import org.apache.hadoop.test.PathUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 public class TestReplicationPolicyWithNodeGroup {
@@ -49,11 +49,11 @@ public class TestReplicationPolicyWithNodeGroup {
   private static final int NUM_OF_DATANODES = 8;
   private static final int NUM_OF_DATANODES_BOUNDARY = 6;
   private static final int NUM_OF_DATANODES_MORE_TARGETS = 12;
-  private static final Configuration CONF = new HdfsConfiguration();
-  private static final NetworkTopology cluster;
-  private static final NameNode namenode;
-  private static final BlockPlacementPolicy replicator;
   private static final String filename = "/dummyfile.txt";
+  private final Configuration CONF = new HdfsConfiguration();
+  private NetworkTopology cluster;
+  private NameNode namenode;
+  private BlockPlacementPolicy replicator;
 
   private final static DatanodeDescriptor dataNodes[] = new DatanodeDescriptor[] {
       DFSTestUtil.getDatanodeDescriptor("1.1.1.1", "/d1/r1/n1"),
@@ -95,27 +95,23 @@ public class TestReplicationPolicyWithNodeGroup {
   private final static DatanodeDescriptor NODE = 
       new DatanodeDescriptor(DFSTestUtil.getDatanodeDescriptor("9.9.9.9", "/d2/r4/n7"));
 
-  static {
-    try {
-      FileSystem.setDefaultUri(CONF, "hdfs://localhost:0");
-      CONF.set(DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY, "0.0.0.0:0");
-      // Set properties to make HDFS aware of NodeGroup.
-      CONF.set("dfs.block.replicator.classname", 
-          "org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementPolicyWithNodeGroup");
-      CONF.set(CommonConfigurationKeysPublic.NET_TOPOLOGY_IMPL_KEY, 
-          "org.apache.hadoop.net.NetworkTopologyWithNodeGroup");
-      
-      File baseDir = PathUtils.getTestDir(TestReplicationPolicyWithNodeGroup.class);
-      
-      CONF.set(DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY,
-          new File(baseDir, "name").getPath());
-      
-      DFSTestUtil.formatNameNode(CONF);
-      namenode = new NameNode(CONF);
-    } catch (IOException e) {
-      e.printStackTrace();
-      throw (RuntimeException)new RuntimeException().initCause(e);
-    }
+  @Before
+  public void setup() throws Exception {
+    FileSystem.setDefaultUri(CONF, "hdfs://localhost:0");
+    CONF.set(DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY, "0.0.0.0:0");
+    // Set properties to make HDFS aware of NodeGroup.
+    CONF.set("dfs.block.replicator.classname", 
+        "org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementPolicyWithNodeGroup");
+    CONF.set(CommonConfigurationKeysPublic.NET_TOPOLOGY_IMPL_KEY, 
+        "org.apache.hadoop.net.NetworkTopologyWithNodeGroup");
+    
+    File baseDir = PathUtils.getTestDir(TestReplicationPolicyWithNodeGroup.class);
+    
+    CONF.set(DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY,
+        new File(baseDir, "name").getPath());
+    
+    DFSTestUtil.formatNameNode(CONF);
+    namenode = new NameNode(CONF);
     final BlockManager bm = namenode.getNamesystem().getBlockManager();
     replicator = bm.getBlockPlacementPolicy();
     cluster = bm.getDatanodeManager().getNetworkTopology();
