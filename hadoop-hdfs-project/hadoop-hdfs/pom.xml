@@ -714,7 +714,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
                   <target>
                     <exec executable="sh">
                       <arg value="-c"/>
-                      <arg value="for i in {1..${testsThreadCount}}; do mkdir -p ${test.build.data}/$i; mkdir -p ${hadoop.tmp.dir}/$i; mkdir -p ${test.cache.data}/$i; done"/>
+                      <arg value="for i in {1..${testsThreadCount}}; do mkdir -p ${test.build.data}/$i; mkdir -p ${hadoop.tmp.dir}/$i; done"/>
                     </exec>
                   </target>
                 </configuration>
@@ -733,7 +733,6 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
               <systemPropertyVariables>
                 <test.build.data>${test.build.data}/${surefire.forkNumber}</test.build.data>
                 <hadoop.tmp.dir>${hadoop.tmp.dir}/${surefire.forkNumber}</hadoop.tmp.dir>
-                <test.cache.data>${test.cache.data}/${surefire.forkNumber}</test.cache.data>
               </systemPropertyVariables>
             </configuration>
           </plugin>
