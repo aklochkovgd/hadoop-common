@@ -304,6 +304,9 @@ Release 2.1.1-beta - UNRELEASED
     HDFS-5069 Include hadoop-nfs and hadoop-hdfs-nfs into hadoop dist for
     NFS deployment (brandonli)
 
+    HDFS-4947 Add NFS server export table to control export by hostname or
+    IP range (Jing Zhao via brandonli)
+
   IMPROVEMENTS
 
     HDFS-4513. Clarify in the WebHDFS REST API that all JSON respsonses may
@@ -382,6 +385,9 @@ Release 2.1.1-beta - UNRELEASED
 
     HDFS-4594. WebHDFS open sets Content-Length header to what is specified by
     length parameter rather than how much data is actually returned. (cnauroth)
+
+    HDFS-5124. DelegationTokenSecretManager#retrievePassword can cause deadlock 
+    in NameNode. (Daryn Sharp via jing9)
 
 Release 2.1.0-beta - 2013-08-22
 
@@ -3431,6 +3437,9 @@ Release 0.23.10 - UNRELEASED
   BUG FIXES
 
     HDFS-4998. TestUnderReplicatedBlocks fails intermittently (kihwal)
+
+    HDFS-4329. DFSShell issues with directories with spaces in name (Cristina
+    L. Abad via jeagles)
 
 Release 0.23.9 - 2013-07-08
 
