@@ -57,12 +57,6 @@
     <!-- Used for building path to native library loaded by tests.  Projects -->
     <!-- at different nesting levels in the source tree may need to override. -->
     <hadoop.common.build.dir>${basedir}/../../hadoop-common-project/hadoop-common/target</hadoop.common.build.dir>
-
-    <custom.surefire.timeout>899</custom.surefire.timeout>
-
-    <!-- Changed version to use the patched surefire/plexus plugin
-         (Note that the custom repository must be defined to use the patched version.) -->
-    <maven-surefire-plugin-version>2.16</maven-surefire-plugin-version>
     <java.security.egd>file:///dev/urandom</java.security.egd>
 
     <!-- ProtocolBuffer version, used to verify the protoc version and -->
@@ -70,25 +64,6 @@
     <protobuf.version>2.5.0</protobuf.version>
     <protoc.path>${env.HADOOP_PROTOC_PATH}</protoc.path>
   </properties>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>aws-nexus</id>
-      <name>aws-nexus-plugins-repo</name>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-      <url>http://ec2-54-235-46-104.compute-1.amazonaws.com:8081/nexus/content/repositories/releases</url>
-      <layout>default</layout>
-    </pluginRepository>
-  </pluginRepositories>
 
   <dependencyManagement>
     <dependencies>
@@ -738,7 +713,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven-surefire-plugin-version}</version>
+          <version>2.16</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -853,7 +828,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <reuseForks>false</reuseForks>
-          <forkedProcessTimeoutInSeconds>${custom.surefire.timeout}</forkedProcessTimeoutInSeconds>
+          <forkedProcessTimeoutInSeconds>900</forkedProcessTimeoutInSeconds>
           <argLine>-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError</argLine>
           <environmentVariables>
             <!-- HADOOP_HOME required for tests on Windows to find winutils -->
