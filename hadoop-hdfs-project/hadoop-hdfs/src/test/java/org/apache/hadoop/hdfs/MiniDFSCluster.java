@@ -2355,13 +2355,16 @@ public class MiniDFSCluster {
     } else {
       if (checkDataNodeAddrConfig) {
         conf.setIfUnset(DFS_DATANODE_ADDRESS_KEY, "127.0.0.1:0");
-        conf.setIfUnset(DFS_DATANODE_HTTP_ADDRESS_KEY, "127.0.0.1:0");
-        conf.setIfUnset(DFS_DATANODE_IPC_ADDRESS_KEY, "127.0.0.1:0");
       } else {
         conf.set(DFS_DATANODE_ADDRESS_KEY, "127.0.0.1:0");
-        conf.set(DFS_DATANODE_HTTP_ADDRESS_KEY, "127.0.0.1:0");
-        conf.set(DFS_DATANODE_IPC_ADDRESS_KEY, "127.0.0.1:0");
       }
+    }
+    if (checkDataNodeAddrConfig) {
+      conf.setIfUnset(DFS_DATANODE_HTTP_ADDRESS_KEY, "127.0.0.1:0");
+      conf.setIfUnset(DFS_DATANODE_IPC_ADDRESS_KEY, "127.0.0.1:0");
+    } else {
+      conf.set(DFS_DATANODE_HTTP_ADDRESS_KEY, "127.0.0.1:0");
+      conf.set(DFS_DATANODE_IPC_ADDRESS_KEY, "127.0.0.1:0");
     }
   }
   
