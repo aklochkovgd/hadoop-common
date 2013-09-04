@@ -33,7 +33,6 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.service.CompositeService;
-import org.apache.hadoop.service.Service;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ShutdownHookManager;
@@ -302,12 +301,6 @@ public class ResourceManager extends CompositeService implements Recoverable {
     return new AsyncDispatcher();
   }
 
-  protected void addIfService(Object object) {
-    if (object instanceof Service) {
-      addService((Service) object);
-    }
-  }
-
   protected AMRMTokenSecretManager createAMRMTokenSecretManager(
       Configuration conf) {
     return new AMRMTokenSecretManager(conf);
@@ -364,6 +357,20 @@ public class ResourceManager extends CompositeService implements Recoverable {
       throw new YarnRuntimeException("Invalid global max attempts configuration"
           + ", " + YarnConfiguration.RM_AM_MAX_ATTEMPTS
           + "=" + globalMaxAppAttempts + ", it should be a positive integer.");
+    }
+
+    // validate expireIntvl >= heartbeatIntvl
+    long expireIntvl = conf.getLong(YarnConfiguration.RM_NM_EXPIRY_INTERVAL_MS,
+        YarnConfiguration.DEFAULT_RM_NM_EXPIRY_INTERVAL_MS);
+    long heartbeatIntvl =
+        conf.getLong(YarnConfiguration.RM_NM_HEARTBEAT_INTERVAL_MS,
+            YarnConfiguration.DEFAULT_RM_NM_HEARTBEAT_INTERVAL_MS);
+    if (expireIntvl < heartbeatIntvl) {
+      throw new YarnRuntimeException("Nodemanager expiry interval should be no"
+          + " less than heartbeat interval, "
+          + YarnConfiguration.RM_NM_EXPIRY_INTERVAL_MS + "=" + expireIntvl
+          + ", " + YarnConfiguration.RM_NM_HEARTBEAT_INTERVAL_MS + "="
+          + heartbeatIntvl);
     }
   }
 

@@ -166,12 +166,14 @@ public class NameNode implements NameNodeStatusMXBean {
    */
   public static final String[] NAMENODE_SPECIFIC_KEYS = {
     DFS_NAMENODE_RPC_ADDRESS_KEY,
+    DFS_NAMENODE_RPC_BIND_HOST_KEY,
     DFS_NAMENODE_NAME_DIR_KEY,
     DFS_NAMENODE_EDITS_DIR_KEY,
     DFS_NAMENODE_SHARED_EDITS_DIR_KEY,
     DFS_NAMENODE_CHECKPOINT_DIR_KEY,
     DFS_NAMENODE_CHECKPOINT_EDITS_DIR_KEY,
     DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,
+    DFS_NAMENODE_SERVICE_RPC_BIND_HOST_KEY,
     DFS_NAMENODE_HTTP_ADDRESS_KEY,
     DFS_NAMENODE_KEYTAB_FILE_KEY,
     DFS_NAMENODE_SECONDARY_HTTP_ADDRESS_KEY,
@@ -180,6 +182,7 @@ public class NameNode implements NameNodeStatusMXBean {
     DFS_NAMENODE_BACKUP_HTTP_ADDRESS_KEY,
     DFS_NAMENODE_BACKUP_SERVICE_RPC_ADDRESS_KEY,
     DFS_NAMENODE_USER_NAME_KEY,
+    DFS_NAMENODE_INTERNAL_SPNEGO_USER_NAME_KEY,
     DFS_HA_FENCE_METHODS_KEY,
     DFS_HA_ZKFC_PORT_KEY,
     DFS_HA_FENCE_METHODS_KEY
@@ -387,6 +390,28 @@ public class NameNode implements NameNodeStatusMXBean {
     return getAddress(conf);
   }
   
+  /** Given a configuration get the bind host of the service rpc server
+   *  If the bind host is not configured returns null.
+   */
+  protected String getServiceRpcServerBindHost(Configuration conf) {
+    String addr = conf.getTrimmed(DFS_NAMENODE_SERVICE_RPC_BIND_HOST_KEY);
+    if (addr == null || addr.isEmpty()) {
+      return null;
+    }
+    return addr;
+  }
+
+  /** Given a configuration get the bind host of the client rpc server
+   *  If the bind host is not configured returns null.
+   */
+  protected String getRpcServerBindHost(Configuration conf) {
+    String addr = conf.getTrimmed(DFS_NAMENODE_RPC_BIND_HOST_KEY);
+    if (addr == null || addr.isEmpty()) {
+      return null;
+    }
+    return addr;
+  }
+   
   /**
    * Modifies the configuration passed to contain the service rpc address setting
    */

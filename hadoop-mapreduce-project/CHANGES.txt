@@ -162,6 +162,8 @@ Release 2.3.0 - UNRELEASED
 
   OPTIMIZATIONS
 
+    MAPREDUCE-5484. YarnChild unnecessarily loads job conf twice (Sandy Ryza)
+
   BUG FIXES
 
     MAPREDUCE-5316. job -list-attempt-ids command does not handle illegal
@@ -242,6 +244,12 @@ Release 2.1.1-beta - UNRELEASED
 
     MAPREDUCE-5476. Changed MR AM recovery code to cleanup staging-directory
     only after unregistering from the RM. (Jian He via vinodkv)
+
+    MAPREDUCE-5483. revert MAPREDUCE-5357. (rkanter via tucu)
+
+    MAPREDUCE-5441. Changed MR AM to return RUNNING state if exiting when RM
+    commands to reboot, so that client can continue to track the overall job.
+    (Jian He via vinodkv)
 
 Release 2.1.0-beta - 2013-08-22
 
