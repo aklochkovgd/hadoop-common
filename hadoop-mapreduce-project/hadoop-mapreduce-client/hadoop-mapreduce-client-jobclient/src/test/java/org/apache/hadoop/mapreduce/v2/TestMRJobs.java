@@ -31,8 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
-import org.apache.commons.io.FileUtils;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.FailingMapper;
@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -102,15 +103,20 @@ public class TestMRJobs {
   
   private FileSystem remoteFs;
   private Path testRootDir;
+  private Path outputRootDir;
   protected static Path appJar;
   
   @Before
   public void setup() throws IOException {
-    testRootDir = PathUtils.getTestPath(getClass()).makeQualified(localFs);
+    FileUtil.fullyDelete(PathUtils.getTestDir(getClass()), true);
+    
+    testRootDir = new Path(PathUtils.getTestPath(getClass()), "tmpDir").makeQualified(localFs);
     if (!localFs.exists(testRootDir)) {
       localFs.mkdirs(testRootDir);
     }
     
+    outputRootDir = new Path(PathUtils.getTestPath(getClass()), "output");
+
     appJar = new Path(testRootDir, "MRAppJar.jar");
       
     try {
@@ -128,7 +134,7 @@ public class TestMRJobs {
     }
 
     if (mrCluster == null) {
-      mrCluster = new MiniMRYarnCluster(TestMRJobs.class.getName(), 3);
+      mrCluster = new MiniMRYarnCluster(getClass().getName(), 3);
       Configuration conf = new Configuration();
       conf.set("fs.defaultFS", remoteFs.getUri().toString());   // use HDFS
       conf.set(MRJobConfig.MR_AM_STAGING_DIR, "/apps_staging_dir");
@@ -240,7 +246,7 @@ public class TestMRJobs {
     mrCluster.getConfig().set(RandomTextWriterJob.TOTAL_BYTES, "3072");
     mrCluster.getConfig().set(RandomTextWriterJob.BYTES_PER_MAP, "1024");
     Job job = randomWriterJob.createJob(mrCluster.getConfig());
-    Path outputDir = new Path(testRootDir, "random-output");
+    Path outputDir = new Path(outputRootDir, "random-output");
     FileOutputFormat.setOutputPath(job, outputDir);
     job.setSpeculativeExecution(false);
     job.addFileToClassPath(appJar); // The AppMaster jar itself.
@@ -355,7 +361,7 @@ public class TestMRJobs {
     job.setMapperClass(FailingMapper.class);
     job.setNumReduceTasks(0);
     
-    FileOutputFormat.setOutputPath(job, new Path(testRootDir,
+    FileOutputFormat.setOutputPath(job, new Path(outputRootDir,
       "failmapper-output"));
     job.addFileToClassPath(appJar); // The AppMaster jar itself.
     job.submit();
