@@ -78,7 +78,7 @@ public class TestMRAppWithCombiner {
     }
 
     if (mrCluster == null) {
-      mrCluster = new MiniMRYarnCluster(TestMRJobs.class.getName(), 3);
+      mrCluster = new MiniMRYarnCluster(TestMRAppWithCombiner.class.getName(), 3);
       Configuration conf = new Configuration();
       mrCluster.init(conf);
       mrCluster.start();
