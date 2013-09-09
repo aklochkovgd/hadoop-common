@@ -116,6 +116,9 @@
     </profile>
     <profile>
       <id>parallel-tests</id>
+      <properties>
+        <hadoop.tmp.dir>${project.build.directory}/test</hadoop.tmp.dir>
+      </properties>
       <build>
         <plugins>
           <plugin>
