@@ -410,7 +410,7 @@ public class TestTextInputFormat {
   /**
    * Test using the gzip codec for reading
    */
-  @Test (timeout=5000)
+  @Test (timeout=15000)
   public void testGzip() throws IOException {
     JobConf job = new JobConf(defaultConf);
     CompressionCodec gzip = new GzipCodec();
@@ -444,7 +444,7 @@ public class TestTextInputFormat {
   /**
    * Test using the gzip codec and an empty input file
    */
-  @Test (timeout=5000)
+  @Test (timeout=15000)
   public void testGzipEmpty() throws IOException {
     JobConf job = new JobConf(defaultConf);
     CompressionCodec gzip = new GzipCodec();
