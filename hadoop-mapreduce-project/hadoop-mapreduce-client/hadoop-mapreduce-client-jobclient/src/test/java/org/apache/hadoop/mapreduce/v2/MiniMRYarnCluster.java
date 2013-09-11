@@ -20,6 +20,7 @@ package org.apache.hadoop.mapreduce.v2;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,6 +38,7 @@ import org.apache.hadoop.mapreduce.v2.jobhistory.JHAdminConfig;
 import org.apache.hadoop.mapreduce.v2.jobhistory.JobHistoryUtils;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.service.Service;
+import org.apache.hadoop.service.ServiceStateChangeListener;
 import org.apache.hadoop.util.JarFinder;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
@@ -163,12 +165,23 @@ public class MiniMRYarnCluster extends MiniYARNCluster {
         }
         historyServer = new JobHistoryServer();
         historyServer.init(getConfig());
+        final AtomicBoolean historyServerStarted = new AtomicBoolean(false);
+        historyServer.registerServiceListener(new ServiceStateChangeListener() {
+
+          @Override
+          public void stateChanged(Service service) {
+            if (service.getServiceState() == STATE.STARTED) {
+              historyServerStarted.set(true);
+            }
+          }
+
+        });
         new Thread() {
           public void run() {
             historyServer.start();
           };
         }.start();
-        while (historyServer.getServiceState() == STATE.INITED) {
+        while (!historyServerStarted.get()) {
           LOG.info("Waiting for HistoryServer to start...");
           Thread.sleep(1500);
         }
@@ -182,9 +195,9 @@ public class MiniMRYarnCluster extends MiniYARNCluster {
       }
       //need to do this because historyServer.init creates a new Configuration
       getConfig().set(JHAdminConfig.MR_HISTORY_ADDRESS,
-                      historyServer.getConfig().get(JHAdminConfig.MR_HISTORY_ADDRESS));
+                      historyServer.getClientService().getConfig().get(JHAdminConfig.MR_HISTORY_ADDRESS));
       getConfig().set(JHAdminConfig.MR_HISTORY_WEBAPP_ADDRESS,
-                      historyServer.getConfig().get(JHAdminConfig.MR_HISTORY_WEBAPP_ADDRESS));
+                      historyServer.getClientService().getConfig().get(JHAdminConfig.MR_HISTORY_WEBAPP_ADDRESS));
 
       LOG.info("MiniMRYARN ResourceManager address: " +
                getConfig().get(YarnConfiguration.RM_ADDRESS));
