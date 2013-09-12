@@ -35,12 +35,10 @@ import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.Shell.ShellCommandExecutor;
-import org.apache.hadoop.yarn.api.protocolrecords.FinishApplicationMasterRequest;
-import org.apache.hadoop.yarn.api.protocolrecords.FinishApplicationMasterResponse;
-import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterRequest;
-import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterResponse;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.event.Dispatcher;
+import org.apache.hadoop.yarn.event.EventHandler;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
 import org.apache.hadoop.yarn.factories.RecordFactory;
@@ -55,9 +53,12 @@ import org.apache.hadoop.yarn.server.nodemanager.NodeHealthCheckerService;
 import org.apache.hadoop.yarn.server.nodemanager.NodeManager;
 import org.apache.hadoop.yarn.server.nodemanager.NodeStatusUpdater;
 import org.apache.hadoop.yarn.server.nodemanager.NodeStatusUpdaterImpl;
-import org.apache.hadoop.yarn.server.resourcemanager.ApplicationMasterService;
 import org.apache.hadoop.yarn.server.resourcemanager.ResourceManager;
 import org.apache.hadoop.yarn.server.resourcemanager.ResourceTrackerService;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEventType;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptRegistrationEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptUnregistrationEvent;
 
 /**
  * Embedded Yarn minicluster for testcases that need to interact with a cluster.
@@ -88,7 +89,7 @@ public class MiniYARNCluster extends CompositeService {
 
   private ResourceManagerWrapper resourceManagerWrapper;
   
-  private ConcurrentMap<String, String> appMasters = new ConcurrentHashMap<String, String>();
+  private ConcurrentMap<ApplicationAttemptId, Long> appMasters = new ConcurrentHashMap<ApplicationAttemptId, Long>();
   
   private File testWorkDir;
 
@@ -220,37 +221,18 @@ public class MiniYARNCluster extends CompositeService {
           protected void doSecureLogin() throws IOException {
             // Don't try to login using keytab in the testcase.
           }
-
-          @Override
-          protected ApplicationMasterService createApplicationMasterService() {
-            return new ApplicationMasterService(this.rmContext, scheduler) {
-
-              @Override
-              public RegisterApplicationMasterResponse registerApplicationMaster(
-                      RegisterApplicationMasterRequest request)
-                      throws YarnException, IOException {
-                RegisterApplicationMasterResponse response = super.registerApplicationMaster(request);
-                appMasters.put(request.getTrackingUrl(), request.getTrackingUrl());
-                return response;
-              }
-
-              @Override
-              public FinishApplicationMasterResponse finishApplicationMaster(
-                      FinishApplicationMasterRequest request)
-                      throws YarnException, IOException {
-                FinishApplicationMasterResponse response = super.finishApplicationMaster(request);
-                appMasters.remove(request.getTrackingUrl());
-                synchronized (appMasters) {
-                  appMasters.notify();
-                }
-                return response;
-              }
-              
-            };
-          };
-          
         };
         resourceManager.init(getConfig());
+        resourceManager.getRMContext().getDispatcher().register(RMAppAttemptEventType.class, 
+                new EventHandler<RMAppAttemptEvent>() {
+                  public void handle(RMAppAttemptEvent event) {
+                    if (event instanceof RMAppAttemptRegistrationEvent) {
+                      appMasters.put(event.getApplicationAttemptId(), event.getTimestamp());
+                    } else if (event instanceof RMAppAttemptUnregistrationEvent) {
+                      appMasters.remove(event.getApplicationAttemptId());
+                    }
+                  }
+            });
         new Thread() {
           public void run() {
             resourceManager.start();
@@ -278,7 +260,7 @@ public class MiniYARNCluster extends CompositeService {
                getConfig().get(YarnConfiguration.RM_WEBAPP_ADDRESS));
     }
 
-    private void waitAppMastersToFinish(long timeoutMillis) throws InterruptedException {
+    private void waitForAppMastersToFinish(long timeoutMillis) throws InterruptedException {
       long started = System.currentTimeMillis();
       while (!appMasters.isEmpty() && System.currentTimeMillis() - started < timeoutMillis) {
         synchronized (appMasters) {
@@ -293,7 +275,7 @@ public class MiniYARNCluster extends CompositeService {
     @Override
     public synchronized void serviceStop() throws Exception {
       if (resourceManager != null) {
-        waitAppMastersToFinish(5000);
+        waitForAppMastersToFinish(5000);
         resourceManager.stop();
       }
       super.serviceStop();
