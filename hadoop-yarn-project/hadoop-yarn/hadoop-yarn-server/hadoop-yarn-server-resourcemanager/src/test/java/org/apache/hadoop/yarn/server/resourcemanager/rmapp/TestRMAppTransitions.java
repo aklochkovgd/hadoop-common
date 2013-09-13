@@ -47,6 +47,8 @@ import org.apache.hadoop.yarn.server.resourcemanager.RMAppManagerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.RMAppManagerEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContextImpl;
+import org.apache.hadoop.yarn.server.resourcemanager.amlauncher.AMLauncherEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.amlauncher.AMLauncherEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.AMLivelinessMonitor;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttempt;
@@ -144,11 +146,18 @@ public class TestRMAppTransitions {
     }
   }  
 
+  private static final class TestAMLauncherEventDispatcher implements
+      EventHandler<AMLauncherEvent> {
+    @Override
+    public void handle(AMLauncherEvent event) {
+    }
+  }
+  
   @Parameterized.Parameters
   public static Collection<Object[]> getTestParameters() {
     return Arrays.asList(new Object[][] {
-        { Boolean.FALSE },
-        { Boolean.TRUE }
+        { Boolean.FALSE }/*,
+        { Boolean.TRUE }*/
     });
   }
 
@@ -191,6 +200,9 @@ public class TestRMAppTransitions {
     
     rmDispatcher.register(SchedulerEventType.class,
         new TestSchedulerEventDispatcher());
+    
+    rmDispatcher.register(AMLauncherEventType.class,
+        new TestAMLauncherEventDispatcher());
     
     rmDispatcher.init(conf);
     rmDispatcher.start();
@@ -632,6 +644,49 @@ public class TestRMAppTransitions {
     application.handle(event);
     rmDispatcher.await();
     assertFailed(application, ".*Failing the application.*");
+  }
+
+  @Test
+  public void testAppRunningRestarted() throws IOException {
+    LOG.info("--- START: testAppRunningRestarted ---");
+
+    RMApp application = testCreateAppRunning(null);
+    RMAppAttempt appAttempt = application.getCurrentAppAttempt();
+    int expectedAttemptId = 1;
+    Assert.assertEquals(expectedAttemptId, 
+        appAttempt.getAppAttemptId().getAttemptId());
+    Assert.assertTrue(maxAppAttempts > 1);
+    for (int i=1; i<maxAppAttempts; i++) {
+      RMAppEvent event = 
+          new RMAppFailedAttemptEvent(application.getApplicationId(), 
+              RMAppEventType.RESTART, "");
+      application.handle(event);
+      rmDispatcher.await();
+      assertAppState(RMAppState.SUBMITTED, application);
+      appAttempt = application.getCurrentAppAttempt();
+      Assert.assertEquals(++expectedAttemptId, 
+          appAttempt.getAppAttemptId().getAttemptId());
+      event = 
+          new RMAppEvent(application.getApplicationId(), 
+              RMAppEventType.APP_ACCEPTED);
+      application.handle(event);
+      rmDispatcher.await();
+      assertAppState(RMAppState.ACCEPTED, application);
+      event = 
+          new RMAppEvent(application.getApplicationId(), 
+              RMAppEventType.ATTEMPT_REGISTERED);
+      application.handle(event);
+      rmDispatcher.await();
+      assertAppState(RMAppState.RUNNING, application);
+    }
+
+    RMAppEvent event = 
+        new RMAppFailedAttemptEvent(application.getApplicationId(), 
+            RMAppEventType.RESTART, "");
+    application.handle(event);
+    rmDispatcher.await();
+    assertAppState(RMAppState.SUBMITTED, application);
+    Assert.assertEquals(expectedAttemptId, appAttempt.getAppAttemptId().getAttemptId());
   }
 
   @Test

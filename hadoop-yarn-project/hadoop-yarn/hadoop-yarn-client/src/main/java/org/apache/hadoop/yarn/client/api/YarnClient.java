@@ -96,6 +96,23 @@ public abstract class YarnClient extends AbstractService {
 
   /**
    * <p>
+   * Restart an application identified by given ID.
+   * </p>
+   * 
+   * @param applicationId
+   *          {@link ApplicationId} of the application that needs to be restarted
+   * @throws YarnException
+   *           in case of errors or if YARN rejects the request due to
+   *           access-control restrictions, recovery not being non supported
+   *           or amount of attempts reached maximum configured value.
+   * @throws IOException
+   * @see #getQueueAclsInfo()
+   */
+  public abstract void restartApplication(ApplicationId appId)
+      throws YarnException, IOException;
+
+  /**
+   * <p>
    * Kill an application identified by given ID.
    * </p>
    * 
@@ -360,4 +377,5 @@ public abstract class YarnClient extends AbstractService {
    */
   public abstract List<QueueUserACLInfo> getQueueAclsInfo() throws YarnException,
       IOException;
+
 }

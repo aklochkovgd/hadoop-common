@@ -169,6 +169,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       .addTransition(RMAppAttemptState.NEW, RMAppAttemptState.SUBMITTED,
           RMAppAttemptEventType.START, new AttemptStartedTransition())
       .addTransition(RMAppAttemptState.NEW, RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.RESTART,
+          new FinalTransition(RMAppAttemptState.KILLED, false))
+      .addTransition(RMAppAttemptState.NEW, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
           new BaseFinalTransition(RMAppAttemptState.KILLED))
       .addTransition(RMAppAttemptState.NEW, RMAppAttemptState.FAILED,
@@ -186,6 +189,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           RMAppAttemptEventType.APP_ACCEPTED, 
           new ScheduleTransition())
       .addTransition(RMAppAttemptState.SUBMITTED, RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.RESTART,
+          new FinalTransition(RMAppAttemptState.KILLED, false))
+      .addTransition(RMAppAttemptState.SUBMITTED, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
           new BaseFinalTransition(RMAppAttemptState.KILLED))
       .addTransition(RMAppAttemptState.SUBMITTED, RMAppAttemptState.FAILED,
@@ -198,6 +204,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           RMAppAttemptEventType.CONTAINER_ALLOCATED,
           new AMContainerAllocatedTransition())
       .addTransition(RMAppAttemptState.SCHEDULED, RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.RESTART,
+          new FinalTransition(RMAppAttemptState.KILLED, false))
+      .addTransition(RMAppAttemptState.SCHEDULED, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
           new BaseFinalTransition(RMAppAttemptState.KILLED))
           
@@ -209,6 +218,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           RMAppAttemptState.ALLOCATED_SAVING,
           RMAppAttemptEventType.CONTAINER_ACQUIRED, 
           new ContainerAcquiredTransition())
+      .addTransition(RMAppAttemptState.ALLOCATED_SAVING, 
+          RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.RESTART,
+          new FinalTransition(RMAppAttemptState.KILLED, false))
        // App could be killed by the client. So need to handle this. 
       .addTransition(RMAppAttemptState.ALLOCATED_SAVING, 
           RMAppAttemptState.KILLED,
@@ -225,6 +238,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           RMAppAttemptState.FAILED,
           RMAppAttemptEventType.REGISTERED,
           new UnexpectedAMRegisteredTransition())
+      .addTransition(RMAppAttemptState.LAUNCHED_UNMANAGED_SAVING, 
+          RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.RESTART,
+          new FinalTransition(RMAppAttemptState.KILLED, false))
       // App could be killed by the client. So need to handle this. 
       .addTransition(RMAppAttemptState.LAUNCHED_UNMANAGED_SAVING, 
           RMAppAttemptState.KILLED,
@@ -240,6 +257,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           RMAppAttemptEventType.LAUNCHED, new AMLaunchedTransition())
       .addTransition(RMAppAttemptState.ALLOCATED, RMAppAttemptState.FAILED,
           RMAppAttemptEventType.LAUNCH_FAILED, new LaunchFailedTransition())
+      .addTransition(RMAppAttemptState.ALLOCATED, RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.RESTART,
+          new FinalTransition(RMAppAttemptState.KILLED, false))
       .addTransition(RMAppAttemptState.ALLOCATED, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL, new KillAllocatedAMTransition())
           
@@ -257,6 +277,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           RMAppAttemptState.LAUNCHED, RMAppAttemptState.FAILED,
           RMAppAttemptEventType.EXPIRE,
           EXPIRED_TRANSITION)
+      .addTransition(RMAppAttemptState.LAUNCHED, RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.RESTART,
+          new FinalTransition(RMAppAttemptState.KILLED, false))
       .addTransition(RMAppAttemptState.LAUNCHED, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
           new FinalTransition(RMAppAttemptState.KILLED))
@@ -284,6 +307,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           EXPIRED_TRANSITION)
       .addTransition(
           RMAppAttemptState.RUNNING, RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.RESTART,
+          new FinalTransition(RMAppAttemptState.KILLED, false))
+      .addTransition(
+          RMAppAttemptState.RUNNING, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
           new FinalTransition(RMAppAttemptState.KILLED))
 
@@ -293,6 +320,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           RMAppAttemptState.FAILED,
           EnumSet.of(
               RMAppAttemptEventType.EXPIRE,
+              RMAppAttemptEventType.RESTART,
               RMAppAttemptEventType.KILL,
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.STATUS_UPDATE,
@@ -312,6 +340,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.STATUS_UPDATE,
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
+              RMAppAttemptEventType.RESTART,
               RMAppAttemptEventType.KILL))
 
       // Transitions from FINISHED State
@@ -323,6 +352,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
               RMAppAttemptEventType.CONTAINER_FINISHED,
+              RMAppAttemptEventType.RESTART,
               RMAppAttemptEventType.KILL))
 
       // Transitions from KILLED State
@@ -341,6 +371,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.CONTAINER_FINISHED,
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.KILL,
+              RMAppAttemptEventType.RESTART,
               RMAppAttemptEventType.STATUS_UPDATE))
               
       // Transitions from RECOVERED State
@@ -359,6 +390,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.ATTEMPT_SAVED,
               RMAppAttemptEventType.CONTAINER_FINISHED,
               RMAppAttemptEventType.UNREGISTERED,
+              RMAppAttemptEventType.RESTART,
               RMAppAttemptEventType.KILL,
               RMAppAttemptEventType.STATUS_UPDATE))
     .installTopology();
@@ -860,9 +892,15 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private static class BaseFinalTransition extends BaseTransition {
 
     private final RMAppAttemptState finalAttemptState;
+    private final boolean updateAppState;
+
+    public BaseFinalTransition(RMAppAttemptState finalAttemptState, boolean updateAppState) {
+      this.finalAttemptState = finalAttemptState;
+      this.updateAppState = updateAppState;
+    }
 
     public BaseFinalTransition(RMAppAttemptState finalAttemptState) {
-      this.finalAttemptState = finalAttemptState;
+      this(finalAttemptState, true);
     }
 
     @Override
@@ -910,7 +948,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         break;
       }
 
-      appAttempt.eventHandler.handle(appEvent);
+      if (updateAppState) {
+        appAttempt.eventHandler.handle(appEvent);
+      }
       appAttempt.eventHandler.handle(new AppRemovedSchedulerEvent(appAttemptId,
         finalAttemptState));
 
@@ -1041,7 +1081,11 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private static class FinalTransition extends BaseFinalTransition {
 
     public FinalTransition(RMAppAttemptState finalAttemptState) {
-      super(finalAttemptState);
+      this(finalAttemptState, true);
+    }
+
+    public FinalTransition(RMAppAttemptState finalAttemptState, boolean finishApp) {
+      super(finalAttemptState, finishApp);
     }
 
     @Override

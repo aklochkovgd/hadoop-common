@@ -63,6 +63,8 @@ import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationAccessType;
@@ -329,6 +331,55 @@ public class ClientRMService extends AbstractService implements
     return response;
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  public RestartApplicationResponse restartApplication(
+      RestartApplicationRequest request) throws YarnException {
+
+    ApplicationId applicationId = request.getApplicationId();
+
+    UserGroupInformation callerUGI;
+    try {
+      callerUGI = UserGroupInformation.getCurrentUser();
+    } catch (IOException ie) {
+      LOG.info("Error getting UGI ", ie);
+      RMAuditLogger.logFailure("UNKNOWN", AuditConstants.RESTART_APP_REQUEST,
+          "UNKNOWN", "ClientRMService" , "Error getting UGI",
+          applicationId);
+      throw RPCUtil.getRemoteException(ie);
+    }
+
+    RMApp application = this.rmContext.getRMApps().get(applicationId);
+    if (application == null) {
+      RMAuditLogger.logFailure(callerUGI.getUserName(),
+          AuditConstants.RESTART_APP_REQUEST, "UNKNOWN", "ClientRMService",
+          "Trying to restart an absent application", applicationId);
+      throw new ApplicationNotFoundException("Trying to restart an absent"
+          + " application " + applicationId);
+    }
+
+    if (!checkAccess(callerUGI, application.getUser(),
+        ApplicationAccessType.MODIFY_APP, applicationId)) {
+      RMAuditLogger.logFailure(callerUGI.getShortUserName(),
+          AuditConstants.RESTART_APP_REQUEST,
+          "User doesn't have permissions to "
+              + ApplicationAccessType.MODIFY_APP.toString(), "ClientRMService",
+          AuditConstants.UNAUTHORIZED_USER, applicationId);
+      throw RPCUtil.getRemoteException(new AccessControlException("User "
+          + callerUGI.getShortUserName() + " cannot perform operation "
+          + ApplicationAccessType.MODIFY_APP.name() + " on " + applicationId));
+    }
+
+    this.rmContext.getDispatcher().getEventHandler().handle(
+        new RMAppEvent(applicationId, RMAppEventType.RESTART));
+
+    RMAuditLogger.logSuccess(callerUGI.getShortUserName(), 
+        AuditConstants.RESTART_APP_REQUEST, "ClientRMService" , applicationId);
+    RestartApplicationResponse response = recordFactory
+        .newRecordInstance(RestartApplicationResponse.class);
+    return response;
+  }
+  
   @SuppressWarnings("unchecked")
   @Override
   public KillApplicationResponse forceKillApplication(

@@ -161,6 +161,10 @@ public class RMAppImpl implements RMApp, Recoverable {
         EnumSet.of(RMAppState.SUBMITTED, RMAppState.FAILED),
         RMAppEventType.ATTEMPT_FAILED,
         new AttemptFailedTransition(RMAppState.SUBMITTED))
+    .addTransition(RMAppState.ACCEPTED,
+        EnumSet.of(RMAppState.SUBMITTED, RMAppState.FAILED),
+        RMAppEventType.RESTART,
+        new AppRestartedTransition(RMAppState.SUBMITTED))
     .addTransition(RMAppState.ACCEPTED, RMAppState.KILLED,
         RMAppEventType.KILL, new KillAppAndAttemptTransition())
 
@@ -171,6 +175,10 @@ public class RMAppImpl implements RMApp, Recoverable {
         RMAppEventType.ATTEMPT_FINISHING, new RMAppFinishingTransition())
     .addTransition(RMAppState.RUNNING, RMAppState.FINISHED,
         RMAppEventType.ATTEMPT_FINISHED, FINISHED_TRANSITION)
+    .addTransition(RMAppState.RUNNING,
+        EnumSet.of(RMAppState.SUBMITTED, RMAppState.FAILED),
+        RMAppEventType.RESTART,
+        new AppRestartedTransition(RMAppState.SUBMITTED))
     .addTransition(RMAppState.RUNNING,
         EnumSet.of(RMAppState.SUBMITTED, RMAppState.FAILED),
         RMAppEventType.ATTEMPT_FAILED,
@@ -756,6 +764,45 @@ public class RMAppImpl implements RMApp, Recoverable {
         FINAL_TRANSITION.transition(app, event);
         return RMAppState.FAILED;
       }
+    }
+
+  }
+
+  private static final class AppRestartedTransition implements
+      MultipleArcTransition<RMAppImpl, RMAppEvent, RMAppState> {
+
+    private final RMAppState initialState;
+
+    public AppRestartedTransition(RMAppState initialState) {
+      this.initialState = initialState;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public RMAppState transition(RMAppImpl app, RMAppEvent event) {
+      boolean retryAllowed = true;
+      String msg = null;
+      if (app.submissionContext.getUnmanagedAM()) {
+        // RM does not manage the AM. Do not retry
+        retryAllowed = false;
+        msg = "Unmanaged application " + app.getApplicationId()
+            + " can not be restarted.";
+      } else if (app.attempts.size() >= app.maxAppAttempts) {
+        retryAllowed = false;
+        msg = "Application " + app.getApplicationId() + " can not be restarted "
+            + "due to number of attempts reached configured maximum of "
+            + app.maxAppAttempts;
+      }
+
+      if (retryAllowed) {
+        app.handler.handle(new RMAppAttemptEvent(app.currentAttempt.getAppAttemptId(),
+                RMAppAttemptEventType.RESTART));
+        app.createNewAttempt(true);
+      } else {
+        LOG.info(msg);
+        app.diagnostics.append(msg);
+      }
+      return initialState;
     }
 
   }

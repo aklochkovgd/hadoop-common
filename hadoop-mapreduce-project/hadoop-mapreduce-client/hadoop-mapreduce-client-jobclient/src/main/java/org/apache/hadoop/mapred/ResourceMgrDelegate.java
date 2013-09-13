@@ -279,6 +279,12 @@ public class ResourceMgrDelegate extends YarnClient {
   }
 
   @Override
+  public void restartApplication(ApplicationId appId) throws YarnException,
+          IOException {
+    client.restartApplication(appId);
+  }
+
+  @Override
   public void killApplication(ApplicationId applicationId)
       throws YarnException, IOException {
     client.killApplication(applicationId);

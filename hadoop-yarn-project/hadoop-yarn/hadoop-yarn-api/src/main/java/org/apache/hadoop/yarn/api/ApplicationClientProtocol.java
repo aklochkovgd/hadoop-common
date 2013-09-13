@@ -46,6 +46,8 @@ import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -125,6 +127,35 @@ public interface ApplicationClientProtocol {
       SubmitApplicationRequest request) 
   throws YarnException, IOException;
   
+  /**
+   * <p>The interface used by clients to request the 
+   * <code>ResourceManager</code> to restart submitted application.</p>
+   * 
+   * <p>The client, via {@link RestartApplicationRequest} provides the
+   * {@link ApplicationId} of the application to be restarted.</p>
+   * 
+   * <p> In secure mode,the <code>ResourceManager</code> verifies access to the
+   * application, queue etc. before restarting the application.</p> 
+   * 
+   * <p> The request may be rejected due to recovery not being supported or
+   * number of attempts reached maximum configured value.</p>
+   * 
+   * <p>Currently, the <code>ResourceManager</code> returns an empty response
+   * on success and throws an exception on rejecting the request.</p>
+   * 
+   * @param request request to restart a submitted application
+   * @return <code>ResourceManager</code> returns an empty response
+   *         on success and throws an exception on rejecting the request
+   * @throws YarnException
+   * @throws IOException
+   * @see #getQueueUserAcls(GetQueueUserAclsInfoRequest) 
+   */
+  @Public
+  @Unstable
+  public RestartApplicationResponse restartApplication(
+      RestartApplicationRequest request) 
+  throws YarnException, IOException;
+
   /**
    * <p>The interface used by clients to request the 
    * <code>ResourceManager</code> to abort submitted application.</p>

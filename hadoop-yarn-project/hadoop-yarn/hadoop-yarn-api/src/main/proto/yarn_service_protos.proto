@@ -106,6 +106,13 @@ message SubmitApplicationRequestProto {
 message SubmitApplicationResponseProto {
 }
 
+message RestartApplicationRequestProto {
+  optional ApplicationIdProto application_id = 1;
+}
+
+message RestartApplicationResponseProto {
+}
+
 message KillApplicationRequestProto {
   optional ApplicationIdProto application_id = 1;
 }
