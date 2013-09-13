@@ -262,8 +262,8 @@ public class MiniYARNCluster extends CompositeService {
 
     private void waitForAppMastersToFinish(long timeoutMillis) throws InterruptedException {
       long started = System.currentTimeMillis();
-      while (!appMasters.isEmpty() && System.currentTimeMillis() - started < timeoutMillis) {
-        synchronized (appMasters) {
+      synchronized (appMasters) {
+        while (!appMasters.isEmpty() && System.currentTimeMillis() - started < timeoutMillis) {
           appMasters.wait(1000);
         }
       }
