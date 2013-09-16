@@ -780,21 +780,21 @@ public class RMAppImpl implements RMApp, Recoverable {
     @Override
     @SuppressWarnings("unchecked")
     public RMAppState transition(RMAppImpl app, RMAppEvent event) {
-      boolean retryAllowed = true;
+      boolean restartAllowed = true;
       String msg = null;
       if (app.submissionContext.getUnmanagedAM()) {
-        // RM does not manage the AM. Do not retry
-        retryAllowed = false;
+        // RM does not manage the AM. Do not restart
+        restartAllowed = false;
         msg = "Unmanaged application " + app.getApplicationId()
             + " can not be restarted.";
       } else if (app.attempts.size() >= app.maxAppAttempts) {
-        retryAllowed = false;
+        restartAllowed = false;
         msg = "Application " + app.getApplicationId() + " can not be restarted "
             + "due to number of attempts reached configured maximum of "
             + app.maxAppAttempts;
       }
 
-      if (retryAllowed) {
+      if (restartAllowed) {
         app.handler.handle(new RMAppAttemptEvent(app.currentAttempt.getAppAttemptId(),
                 RMAppAttemptEventType.RESTART));
         app.createNewAttempt(true);
