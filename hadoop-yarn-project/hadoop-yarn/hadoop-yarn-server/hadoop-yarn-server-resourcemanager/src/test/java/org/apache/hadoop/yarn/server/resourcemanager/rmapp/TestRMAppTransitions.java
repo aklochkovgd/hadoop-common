@@ -20,6 +20,7 @@ package org.apache.hadoop.yarn.server.resourcemanager.rmapp;
 
 import static org.mockito.Mockito.mock;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -61,8 +62,9 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.SchedulerEv
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.SchedulerEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.security.AMRMTokenSecretManager;
 import org.apache.hadoop.yarn.server.resourcemanager.security.ClientToAMTokenSecretManagerInRM;
-import org.apache.hadoop.yarn.server.resourcemanager.security.RMContainerTokenSecretManager;
 import org.apache.hadoop.yarn.server.resourcemanager.security.NMTokenSecretManagerInRM;
+import org.apache.hadoop.yarn.server.resourcemanager.security.RMContainerTokenSecretManager;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,6 +82,7 @@ public class TestRMAppTransitions {
       YarnConfiguration.DEFAULT_RM_AM_MAX_ATTEMPTS;
   private static int appId = 1;
   private DrainDispatcher rmDispatcher;
+  private RMStateStore store;
 
   // ignore all the RM application attempt events
   private static final class TestApplicationAttemptEventDispatcher implements
@@ -180,7 +183,7 @@ public class TestRMAppTransitions {
         mock(ContainerAllocationExpirer.class);
     AMLivelinessMonitor amLivelinessMonitor = mock(AMLivelinessMonitor.class);
     AMLivelinessMonitor amFinishingMonitor = mock(AMLivelinessMonitor.class);
-    RMStateStore store = mock(RMStateStore.class);
+    store = mock(RMStateStore.class);
     this.rmContext =
         new RMContextImpl(rmDispatcher, store,
           containerAllocationExpirer, amLivelinessMonitor, amFinishingMonitor,
@@ -290,6 +293,10 @@ public class TestRMAppTransitions {
         (application.getFinishTime() >= application.getStartTime()));
   }
 
+  private void assertAppRemoved(RMApp application){
+    verify(store).removeApplication(application);
+  }
+
   private static void assertKilled(RMApp application) {
     assertTimesAtFinish(application);
     assertAppState(RMAppState.KILLED, application);
@@ -378,15 +385,27 @@ public class TestRMAppTransitions {
     return application;
   }
 
+  protected RMApp testCreateAppRemoving(
+      ApplicationSubmissionContext submissionContext) throws IOException {
+    RMApp application = testCreateAppRunning(submissionContext);
+    RMAppEvent finishingEvent =
+        new RMAppEvent(application.getApplicationId(),
+          RMAppEventType.ATTEMPT_UNREGISTERED);
+    application.handle(finishingEvent);
+    assertAppState(RMAppState.REMOVING, application);
+    assertAppRemoved(application);
+    return application;
+  }
+
   protected RMApp testCreateAppFinishing(
       ApplicationSubmissionContext submissionContext) throws IOException {
     // unmanaged AMs don't use the FINISHING state
     assert submissionContext == null || !submissionContext.getUnmanagedAM();
-    RMApp application = testCreateAppRunning(submissionContext);
-    // RUNNING => FINISHING event RMAppEventType.ATTEMPT_FINISHING
+    RMApp application = testCreateAppRemoving(submissionContext);
+    // REMOVING => FINISHING event RMAppEventType.APP_REMOVED
     RMAppEvent finishingEvent =
         new RMAppEvent(application.getApplicationId(),
-            RMAppEventType.ATTEMPT_FINISHING);
+            RMAppEventType.APP_REMOVED);
     application.handle(finishingEvent);
     assertAppState(RMAppState.FINISHING, application);
     assertTimesAtFinish(application);
@@ -687,6 +706,30 @@ public class TestRMAppTransitions {
     rmDispatcher.await();
     assertAppState(RMAppState.SUBMITTED, application);
     Assert.assertEquals(expectedAttemptId, appAttempt.getAppAttemptId().getAttemptId());
+  }
+
+  @Test
+  public void testAppRemovingFinished() throws IOException {
+    LOG.info("--- START: testAppRemovingFINISHED ---");
+    RMApp application = testCreateAppRemoving(null);
+    // APP_REMOVING => FINISHED event RMAppEventType.ATTEMPT_FINISHED
+    RMAppEvent finishedEvent = new RMAppFinishedAttemptEvent(
+      application.getApplicationId(), null);
+    application.handle(finishedEvent);
+    rmDispatcher.await();
+    assertAppState(RMAppState.FINISHED, application);
+  }
+
+  @Test
+  public void testAppRemovingKilled() throws IOException {
+    LOG.info("--- START: testAppRemovingKilledD ---");
+    RMApp application = testCreateAppRemoving(null);
+    // APP_REMOVING => KILLED event RMAppEventType.KILL
+    RMAppEvent event =
+        new RMAppEvent(application.getApplicationId(), RMAppEventType.KILL);
+    application.handle(event);
+    rmDispatcher.await();
+    assertAppState(RMAppState.KILLED, application);
   }
 
   @Test

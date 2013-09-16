@@ -16,14 +16,21 @@
  * limitations under the License.
  */
 
-option java_package = "org.apache.hadoop.yarn.proto";
-option java_outer_classname = "LocalizationProtocol";
-option java_generic_services = true;
-option java_generate_equals_and_hash = true;
-package hadoop.yarn;
+package org.apache.hadoop.yarn.server.resourcemanager.rmapp;
 
-import "yarn_server_nodemanager_service_protos.proto";
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 
-service LocalizationProtocolService {
-  rpc heartbeat(LocalizerStatusProto) returns (LocalizerHeartbeatResponseProto);
+public class RMAppRemovedEvent extends RMAppEvent {
+
+  private final Exception removedException;
+
+  public RMAppRemovedEvent(ApplicationId appId, Exception removedException) {
+    super(appId, RMAppEventType.APP_REMOVED);
+    this.removedException = removedException;
+  }
+
+  public Exception getRemovedException() {
+    return removedException;
+  }
+
 }

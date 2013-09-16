@@ -29,6 +29,7 @@ Release 2.3.0 - UNRELEASED
     YARN-905. Add state filters to nodes CLI (Wei Yan via Sandy Ryza)
     YARN-1098. Separate out RM services into Always On and Active (Karthik
     Kambatla via bikas)
+    YARN-1027. Implement RMHAProtocolService (Karthik Kambatla via bikas)
 
   OPTIMIZATIONS
 
@@ -43,6 +44,10 @@ Release 2.1.1-beta - UNRELEASED
 
     YARN-707. Added user information also in the YARN ClientToken so that AMs
     can implement authorization based on incoming users. (Jason Lowe via vinodkv)
+
+    YARN-1170. YARN & MapReduce proto definitions fixed to specify protobuf
+    package as hadoop.yarn and hadoop.mapreduce respectively. (Binglin Chang
+    via acmurthy)
 
   NEW FEATURES
 
@@ -97,6 +102,9 @@ Release 2.1.1-beta - UNRELEASED
     YARN-910. Augmented auxiliary services to listen for container starts and
     completions in addition to application events. (Alejandro Abdelnur via
     vinodkv)
+
+    YARN-1137. Add support whitelist for system users to Yarn 
+    container-executor.c. (rvs via tucu)
 
   OPTIMIZATIONS
 
@@ -190,6 +198,18 @@ Release 2.1.1-beta - UNRELEASED
 
     YARN-1078. TestNodeManagerResync, TestNodeManagerShutdown, and
     TestNodeStatusUpdater fail on Windows. (Chuan Liu via cnauroth)
+
+    YARN-1194. TestContainerLogsPage fails with native builds (Roman Shaposhnik
+    via jlowe)
+
+    YARN-1116. Populate AMRMTokens back to AMRMTokenSecretManager after RM
+    restarts (Jian He via bikas)
+
+    YARN-1189. NMTokenSecretManagerInNM is not being told when applications
+    have finished (Omkar Vinit Joshi via jlowe)
+
+    YARN-540. Race condition causing RM to potentially relaunch already
+    unregistered AMs on RM restart (Jian He via bikas)
 
 Release 2.1.0-beta - 2013-08-22
 
