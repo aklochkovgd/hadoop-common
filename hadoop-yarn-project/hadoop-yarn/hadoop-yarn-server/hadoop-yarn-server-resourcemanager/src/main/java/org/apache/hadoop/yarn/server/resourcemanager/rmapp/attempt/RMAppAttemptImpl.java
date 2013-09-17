@@ -858,15 +858,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private static class BaseFinalTransition extends BaseTransition {
 
     private final RMAppAttemptState finalAttemptState;
-    private final boolean updateApp;
 
     public BaseFinalTransition(RMAppAttemptState finalAttemptState) {
-      this(finalAttemptState, true);
-    }
-    
-    public BaseFinalTransition(RMAppAttemptState finalAttemptState, boolean updateApp) {
       this.finalAttemptState = finalAttemptState;
-      this.updateApp = updateApp;
     }
 
     @Override
@@ -914,9 +908,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         break;
       }
 
-      if (updateApp) {
-        appAttempt.eventHandler.handle(appEvent);
-      }
+      appAttempt.eventHandler.handle(appEvent);
       appAttempt.eventHandler.handle(new AppRemovedSchedulerEvent(appAttemptId,
         finalAttemptState));
 
@@ -1047,11 +1039,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private static class FinalTransition extends BaseFinalTransition {
 
     public FinalTransition(RMAppAttemptState finalAttemptState) {
-      this(finalAttemptState, true);
-    }
-    
-    public FinalTransition(RMAppAttemptState finalAttemptState, boolean updateApp) {
-      super(finalAttemptState, updateApp);
+      super(finalAttemptState);
     }
 
     @Override

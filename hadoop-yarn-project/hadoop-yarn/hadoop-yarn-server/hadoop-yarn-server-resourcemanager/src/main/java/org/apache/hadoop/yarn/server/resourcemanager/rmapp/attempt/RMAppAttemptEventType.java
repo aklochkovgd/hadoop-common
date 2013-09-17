@@ -48,6 +48,6 @@ public enum RMAppAttemptEventType {
   APP_ACCEPTED,
   
   // Source: RMAttemptImpl.recover
-  RECOVER,
+  RECOVER
 
 }
