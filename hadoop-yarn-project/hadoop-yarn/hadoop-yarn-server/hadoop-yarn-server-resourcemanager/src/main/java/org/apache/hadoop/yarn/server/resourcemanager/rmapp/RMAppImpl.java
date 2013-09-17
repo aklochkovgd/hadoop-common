@@ -154,6 +154,9 @@ public class RMAppImpl implements RMApp, Recoverable {
         RMAppEventType.APP_ACCEPTED)
     .addTransition(RMAppState.SUBMITTED, RMAppState.KILLED,
         RMAppEventType.KILL, new KillAppAndAttemptTransition())
+    .addTransition(RMAppState.SUBMITTED, 
+        EnumSet.of(RMAppState.SUBMITTED, RMAppState.KILLED),
+        RMAppEventType.ATTEMPT_KILLED, new KillAttemptTransition())
 
      // Transitions from ACCEPTED state
     .addTransition(RMAppState.ACCEPTED, RMAppState.ACCEPTED,
@@ -166,6 +169,9 @@ public class RMAppImpl implements RMApp, Recoverable {
         new AttemptFailedTransition(RMAppState.SUBMITTED))
     .addTransition(RMAppState.ACCEPTED, RMAppState.KILLED,
         RMAppEventType.KILL, new KillAppAndAttemptTransition())
+    .addTransition(RMAppState.ACCEPTED, 
+        EnumSet.of(RMAppState.SUBMITTED, RMAppState.KILLED),
+        RMAppEventType.ATTEMPT_KILLED, new KillAttemptTransition())
 
      // Transitions from RUNNING state
     .addTransition(RMAppState.RUNNING, RMAppState.RUNNING,
@@ -183,7 +189,7 @@ public class RMAppImpl implements RMApp, Recoverable {
         RMAppEventType.KILL, new KillAppAndAttemptTransition())
     .addTransition(RMAppState.RUNNING, 
         EnumSet.of(RMAppState.SUBMITTED, RMAppState.KILLED),
-        RMAppEventType.ATTEMPT_KILLED, new AttemptKilledTransition())
+        RMAppEventType.ATTEMPT_KILLED, new KillAttemptTransition())
 
      // Transitions from REMOVING state
     .addTransition(RMAppState.REMOVING, RMAppState.FINISHING,
@@ -746,7 +752,7 @@ public class RMAppImpl implements RMApp, Recoverable {
     };
   }
 
-  private static class AttemptKilledTransition implements
+  private static class KillAttemptTransition implements
       MultipleArcTransition<RMAppImpl, RMAppEvent, RMAppState> {
     
     @SuppressWarnings("unchecked")
