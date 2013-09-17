@@ -89,6 +89,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.RMAuditLogger.AuditConstant
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMApp;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEventType;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppFailedAttemptEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerNodeReport;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.YarnScheduler;
@@ -371,7 +372,8 @@ public class ClientRMService extends AbstractService implements
     }
 
     this.rmContext.getDispatcher().getEventHandler().handle(
-        new RMAppEvent(applicationId, RMAppEventType.RESTART));
+        new RMAppFailedAttemptEvent(applicationId, RMAppEventType.ATTEMPT_KILLED, 
+            "Application is restarted by user"));
 
     RMAuditLogger.logSuccess(callerUGI.getShortUserName(), 
         AuditConstants.RESTART_APP_REQUEST, "ClientRMService" , applicationId);

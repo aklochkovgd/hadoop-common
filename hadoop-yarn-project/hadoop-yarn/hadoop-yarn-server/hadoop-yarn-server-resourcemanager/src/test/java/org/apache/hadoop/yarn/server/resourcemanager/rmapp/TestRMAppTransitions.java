@@ -64,7 +64,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.security.AMRMTokenSecretMan
 import org.apache.hadoop.yarn.server.resourcemanager.security.ClientToAMTokenSecretManagerInRM;
 import org.apache.hadoop.yarn.server.resourcemanager.security.NMTokenSecretManagerInRM;
 import org.apache.hadoop.yarn.server.resourcemanager.security.RMContainerTokenSecretManager;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -678,7 +677,7 @@ public class TestRMAppTransitions {
     for (int i=1; i<maxAppAttempts; i++) {
       RMAppEvent event = 
           new RMAppFailedAttemptEvent(application.getApplicationId(), 
-              RMAppEventType.RESTART, "");
+              RMAppEventType.ATTEMPT_KILLED, "Application is restarted by user");
       application.handle(event);
       rmDispatcher.await();
       assertAppState(RMAppState.SUBMITTED, application);
@@ -701,10 +700,10 @@ public class TestRMAppTransitions {
 
     RMAppEvent event = 
         new RMAppFailedAttemptEvent(application.getApplicationId(), 
-            RMAppEventType.RESTART, "");
+            RMAppEventType.ATTEMPT_KILLED, "Application is restarted by user");
     application.handle(event);
     rmDispatcher.await();
-    assertAppState(RMAppState.SUBMITTED, application);
+    assertAppState(RMAppState.FAILED, application);
     Assert.assertEquals(expectedAttemptId, appAttempt.getAppAttemptId().getAttemptId());
   }
 

@@ -22,7 +22,6 @@ public enum RMAppEventType {
   // Source: ClientRMService
   START,
   RECOVER,
-  RESTART,
   KILL,
 
   // Source: RMAppAttempt

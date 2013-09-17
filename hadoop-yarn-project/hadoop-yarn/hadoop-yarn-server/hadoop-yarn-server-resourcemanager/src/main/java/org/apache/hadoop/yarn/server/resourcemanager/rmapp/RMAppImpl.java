@@ -54,10 +54,8 @@ import org.apache.hadoop.yarn.server.resourcemanager.ApplicationMasterService;
 import org.apache.hadoop.yarn.server.resourcemanager.RMAppManagerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.RMAppManagerEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
-import org.apache.hadoop.yarn.server.resourcemanager.RMServerUtils;
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore.ApplicationState;
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore.RMState;
-import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore;
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.Recoverable;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppNodeUpdateEvent.RMAppNodeUpdateType;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttempt;
@@ -167,8 +165,8 @@ public class RMAppImpl implements RMApp, Recoverable {
         new AttemptFailedTransition(RMAppState.SUBMITTED))
     .addTransition(RMAppState.ACCEPTED,
         EnumSet.of(RMAppState.SUBMITTED, RMAppState.FAILED),
-        RMAppEventType.RESTART,
-        new AppRestartedTransition(RMAppState.SUBMITTED))
+        RMAppEventType.ATTEMPT_KILLED,
+        new AttemptFailedTransition(RMAppState.SUBMITTED))
     .addTransition(RMAppState.ACCEPTED, RMAppState.KILLED,
         RMAppEventType.KILL, new KillAppAndAttemptTransition())
 
@@ -182,8 +180,8 @@ public class RMAppImpl implements RMApp, Recoverable {
         RMAppEventType.ATTEMPT_FINISHED, FINISHED_TRANSITION)
     .addTransition(RMAppState.RUNNING,
         EnumSet.of(RMAppState.SUBMITTED, RMAppState.FAILED),
-        RMAppEventType.RESTART,
-        new AppRestartedTransition(RMAppState.SUBMITTED))
+        RMAppEventType.ATTEMPT_KILLED,
+        new AttemptFailedTransition(RMAppState.SUBMITTED))
     .addTransition(RMAppState.RUNNING,
         EnumSet.of(RMAppState.SUBMITTED, RMAppState.FAILED),
         RMAppEventType.ATTEMPT_FAILED,
@@ -791,45 +789,6 @@ public class RMAppImpl implements RMApp, Recoverable {
         FINAL_TRANSITION.transition(app, event);
         return RMAppState.FAILED;
       }
-    }
-
-  }
-
-  private static final class AppRestartedTransition implements
-      MultipleArcTransition<RMAppImpl, RMAppEvent, RMAppState> {
-
-    private final RMAppState initialState;
-
-    public AppRestartedTransition(RMAppState initialState) {
-      this.initialState = initialState;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public RMAppState transition(RMAppImpl app, RMAppEvent event) {
-      boolean restartAllowed = true;
-      String msg = null;
-      if (app.submissionContext.getUnmanagedAM()) {
-        // RM does not manage the AM. Do not restart
-        restartAllowed = false;
-        msg = "Unmanaged application " + app.getApplicationId()
-            + " can not be restarted.";
-      } else if (app.attempts.size() >= app.maxAppAttempts) {
-        restartAllowed = false;
-        msg = "Application " + app.getApplicationId() + " can not be restarted "
-            + "due to number of attempts reached configured maximum of "
-            + app.maxAppAttempts;
-      }
-
-      if (restartAllowed) {
-        app.handler.handle(new RMAppAttemptEvent(app.currentAttempt.getAppAttemptId(),
-                RMAppAttemptEventType.RESTART));
-        app.createNewAttempt(true);
-      } else {
-        LOG.info(msg);
-        app.diagnostics.append(msg);
-      }
-      return initialState;
     }
 
   }
