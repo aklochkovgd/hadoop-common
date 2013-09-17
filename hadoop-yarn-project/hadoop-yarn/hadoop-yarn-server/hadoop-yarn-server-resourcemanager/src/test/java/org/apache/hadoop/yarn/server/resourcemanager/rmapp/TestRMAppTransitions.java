@@ -148,13 +148,6 @@ public class TestRMAppTransitions {
     }
   }  
 
-  private static final class TestAMLauncherEventDispatcher implements
-      EventHandler<AMLauncherEvent> {
-    @Override
-    public void handle(AMLauncherEvent event) {
-    }
-  }
-  
   @Parameterized.Parameters
   public static Collection<Object[]> getTestParameters() {
     return Arrays.asList(new Object[][] {
@@ -202,9 +195,6 @@ public class TestRMAppTransitions {
     
     rmDispatcher.register(SchedulerEventType.class,
         new TestSchedulerEventDispatcher());
-    
-    rmDispatcher.register(AMLauncherEventType.class,
-        new TestAMLauncherEventDispatcher());
     
     rmDispatcher.init(conf);
     rmDispatcher.start();
