@@ -48,8 +48,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.RMAppManagerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.RMAppManagerEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContextImpl;
-import org.apache.hadoop.yarn.server.resourcemanager.amlauncher.AMLauncherEvent;
-import org.apache.hadoop.yarn.server.resourcemanager.amlauncher.AMLauncherEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.AMLivelinessMonitor;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttempt;
@@ -665,13 +663,16 @@ public class TestRMAppTransitions {
         appAttempt.getAppAttemptId().getAttemptId());
     Assert.assertTrue(maxAppAttempts > 1);
     for (int i=1; i<maxAppAttempts; i++) {
+      RMAppAttempt prevAttempt = application.getCurrentAppAttempt();
       RMAppEvent event = 
-          new RMAppFailedAttemptEvent(application.getApplicationId(), 
-              RMAppEventType.ATTEMPT_KILLED, "Application is restarted by user");
+          new RMAppEvent(application.getApplicationId(),  
+              RMAppEventType.ATTEMPT_KILLED);
       application.handle(event);
       rmDispatcher.await();
       assertAppState(RMAppState.SUBMITTED, application);
       appAttempt = application.getCurrentAppAttempt();
+      Assert.assertEquals(RMAppAttemptState.SUBMITTED, appAttempt.getAppAttemptState());
+      Assert.assertEquals(RMAppAttemptState.KILLED, prevAttempt.getAppAttemptState());
       Assert.assertEquals(++expectedAttemptId, 
           appAttempt.getAppAttemptId().getAttemptId());
       event = 
@@ -690,7 +691,7 @@ public class TestRMAppTransitions {
 
     RMAppEvent event = 
         new RMAppFailedAttemptEvent(application.getApplicationId(), 
-            RMAppEventType.ATTEMPT_KILLED, "Application is restarted by user");
+            RMAppEventType.ATTEMPT_FAILED, "Application is restarted by user");
     application.handle(event);
     rmDispatcher.await();
     assertAppState(RMAppState.FAILED, application);

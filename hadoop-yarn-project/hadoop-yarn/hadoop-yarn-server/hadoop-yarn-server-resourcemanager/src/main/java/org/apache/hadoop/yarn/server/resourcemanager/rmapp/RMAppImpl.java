@@ -63,6 +63,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptE
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptImpl;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptState;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptKilledEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNode;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNodeCleanAppEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.YarnScheduler;
@@ -163,10 +164,6 @@ public class RMAppImpl implements RMApp, Recoverable {
         EnumSet.of(RMAppState.SUBMITTED, RMAppState.FAILED),
         RMAppEventType.ATTEMPT_FAILED,
         new AttemptFailedTransition(RMAppState.SUBMITTED))
-    .addTransition(RMAppState.ACCEPTED,
-        EnumSet.of(RMAppState.SUBMITTED, RMAppState.FAILED),
-        RMAppEventType.ATTEMPT_KILLED,
-        new AttemptFailedTransition(RMAppState.SUBMITTED))
     .addTransition(RMAppState.ACCEPTED, RMAppState.KILLED,
         RMAppEventType.KILL, new KillAppAndAttemptTransition())
 
@@ -180,14 +177,13 @@ public class RMAppImpl implements RMApp, Recoverable {
         RMAppEventType.ATTEMPT_FINISHED, FINISHED_TRANSITION)
     .addTransition(RMAppState.RUNNING,
         EnumSet.of(RMAppState.SUBMITTED, RMAppState.FAILED),
-        RMAppEventType.ATTEMPT_KILLED,
-        new AttemptFailedTransition(RMAppState.SUBMITTED))
-    .addTransition(RMAppState.RUNNING,
-        EnumSet.of(RMAppState.SUBMITTED, RMAppState.FAILED),
         RMAppEventType.ATTEMPT_FAILED,
         new AttemptFailedTransition(RMAppState.SUBMITTED))
     .addTransition(RMAppState.RUNNING, RMAppState.KILLED,
         RMAppEventType.KILL, new KillAppAndAttemptTransition())
+    .addTransition(RMAppState.RUNNING, 
+        EnumSet.of(RMAppState.SUBMITTED, RMAppState.KILLED),
+        RMAppEventType.ATTEMPT_KILLED, new AttemptKilledTransition())
 
      // Transitions from REMOVING state
     .addTransition(RMAppState.REMOVING, RMAppState.FINISHING,
@@ -708,8 +704,7 @@ public class RMAppImpl implements RMApp, Recoverable {
     @SuppressWarnings("unchecked")
     @Override
     public void transition(RMAppImpl app, RMAppEvent event) {
-      app.handler.handle(new RMAppAttemptEvent(app.currentAttempt.getAppAttemptId(),
-          RMAppAttemptEventType.KILL));
+      app.handler.handle(new RMAppAttemptKilledEvent(app.currentAttempt.getAppAttemptId()));
       super.transition(app, event);
     }
   }
@@ -751,6 +746,43 @@ public class RMAppImpl implements RMApp, Recoverable {
     };
   }
 
+  private static class AttemptKilledTransition implements
+      MultipleArcTransition<RMAppImpl, RMAppEvent, RMAppState> {
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public RMAppState transition(RMAppImpl app, RMAppEvent event) {
+      app.handler.handle(new RMAppAttemptKilledEvent(app.currentAttempt.getAppAttemptId(), 
+              false, "Attempt is killed by user request"));
+
+      boolean retryApp = true;
+      String msg = null;
+      if (app.submissionContext.getUnmanagedAM()) {
+        // RM does not manage the AM. Do not retry
+        retryApp = false;
+        msg = "Unmanaged application " + app.getApplicationId()
+            + " killed by user request. Failing the application.";
+      } else if (app.attempts.size() >= app.maxAppAttempts) {
+        retryApp = false;
+        msg = "Application " + app.getApplicationId()
+            + " killed by user request and reached max number of attempts "
+            + app.maxAppAttempts + ". Failing the application.";
+      }
+
+      if (retryApp) {
+        app.createNewAttempt(true);
+        return RMAppState.SUBMITTED;
+      } else {
+        LOG.info(msg);
+        app.diagnostics.append(msg);
+        // Inform the node for app-finish
+        FINAL_TRANSITION.transition(app, event);
+        return RMAppState.FAILED;
+      }
+      
+    }
+  }
+  
   private static final class AttemptFailedTransition implements
       MultipleArcTransition<RMAppImpl, RMAppEvent, RMAppState> {
 

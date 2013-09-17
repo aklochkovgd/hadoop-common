@@ -372,8 +372,7 @@ public class ClientRMService extends AbstractService implements
     }
 
     this.rmContext.getDispatcher().getEventHandler().handle(
-        new RMAppFailedAttemptEvent(applicationId, RMAppEventType.ATTEMPT_KILLED, 
-            "Application is restarted by user"));
+        new RMAppEvent(applicationId, RMAppEventType.ATTEMPT_KILLED));
 
     RMAuditLogger.logSuccess(callerUGI.getShortUserName(), 
         AuditConstants.RESTART_APP_REQUEST, "ClientRMService" , applicationId);
