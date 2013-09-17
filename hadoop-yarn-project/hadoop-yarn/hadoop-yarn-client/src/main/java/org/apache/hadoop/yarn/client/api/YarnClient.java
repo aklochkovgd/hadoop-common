@@ -108,7 +108,7 @@ public abstract class YarnClient extends AbstractService {
    * @throws IOException
    * @see #getQueueAclsInfo()
    */
-  public abstract void restartApplication(ApplicationId appId)
+  public abstract void restartApplication(ApplicationId applicationId)
       throws YarnException, IOException;
 
   /**
