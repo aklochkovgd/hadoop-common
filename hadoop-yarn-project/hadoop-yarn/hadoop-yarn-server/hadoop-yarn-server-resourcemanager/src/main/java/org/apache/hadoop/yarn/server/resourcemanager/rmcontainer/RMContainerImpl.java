@@ -255,7 +255,7 @@ public class RMContainerImpl implements RMContainer {
     @Override
     public void transition(RMContainerImpl container, RMContainerEvent event) {
       container.eventHandler.handle(new RMAppAttemptContainerAllocatedEvent(
-          container.appAttemptId, container.container));
+          container.appAttemptId, container.container, event.getTimestamp()));
     }
   }
 
@@ -290,7 +290,8 @@ public class RMContainerImpl implements RMContainer {
 
       // Inform AppAttempt
       container.eventHandler.handle(new RMAppAttemptContainerFinishedEvent(
-          container.appAttemptId, finishedEvent.getRemoteContainerStatus()));
+          container.appAttemptId, finishedEvent.getRemoteContainerStatus(),
+          finishedEvent.getTimestamp()));
     }
   }
 

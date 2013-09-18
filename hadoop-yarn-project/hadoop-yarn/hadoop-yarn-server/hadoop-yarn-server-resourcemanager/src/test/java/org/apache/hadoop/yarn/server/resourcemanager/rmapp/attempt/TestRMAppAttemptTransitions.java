@@ -35,6 +35,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import junit.framework.Assert;
+
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -44,8 +47,10 @@ import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.yarn.MockApps;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.yarn.api.records.ApplicationResourceUsageReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
 import org.apache.hadoop.yarn.api.records.Container;
+import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.ContainerState;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
@@ -86,6 +91,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.security.ClientToAMTokenSec
 import org.apache.hadoop.yarn.server.resourcemanager.security.RMContainerTokenSecretManager;
 import org.apache.hadoop.yarn.server.utils.BuilderUtils;
 import org.apache.hadoop.yarn.server.resourcemanager.security.NMTokenSecretManagerInRM;
+import org.apache.hadoop.yarn.util.resource.Resources;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -547,7 +553,7 @@ public class TestRMAppAttemptTransitions {
     applicationAttempt.handle(
         new RMAppAttemptContainerAllocatedEvent(
             applicationAttempt.getAppAttemptId(), 
-            container));
+            container, -1));
     
     assertEquals(RMAppAttemptState.ALLOCATED_SAVING, 
         applicationAttempt.getAppAttemptState());
@@ -610,7 +616,8 @@ public class TestRMAppAttemptTransitions {
     applicationAttempt.handle(new RMAppAttemptContainerAcquiredEvent(
         applicationAttempt.getAppAttemptId(), mock(Container.class)));
     applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
-        applicationAttempt.getAppAttemptId(), mock(ContainerStatus.class)));
+        applicationAttempt.getAppAttemptId(), mock(ContainerStatus.class), -1));
+    
     // complete AM
     String trackingUrl = "mytrackingurl";
     String diagnostics = "Successful";
@@ -620,6 +627,40 @@ public class TestRMAppAttemptTransitions {
         diagnostics));
     testAppAttemptFinishedState(null, finalStatus, trackingUrl, diagnostics, 1,
         true);
+  }
+  
+  @Test
+  public void testUsageReport() {
+    Container amContainer = allocateApplicationAttempt();
+    launchApplicationAttempt(amContainer);
+    runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
+    
+    ContainerId containerId = ContainerId.newInstance(
+        applicationAttempt.getAppAttemptId(), 7);
+    Resource resource = Resources.createResource(8, 3);
+    
+    Container containerMock = mock(Container.class);
+    when(containerMock.getId()).thenReturn(containerId);
+    when(containerMock.getResource()).thenReturn(resource);
+    
+    ContainerStatus containerStatusMock = mock(ContainerStatus.class);
+    when(containerStatusMock.getContainerId()).thenReturn(containerId);
+    
+    long finishTime = System.currentTimeMillis();
+    long startTime = finishTime - 10 * DateUtils.MILLIS_PER_MINUTE;
+    
+    applicationAttempt.handle(new RMAppAttemptContainerAllocatedEvent(
+        applicationAttempt.getAppAttemptId(), containerMock, startTime));
+    applicationAttempt.handle(new RMAppAttemptContainerAcquiredEvent(
+        applicationAttempt.getAppAttemptId(), containerMock));
+    applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
+        applicationAttempt.getAppAttemptId(), containerStatusMock, finishTime));
+    
+    ApplicationResourceUsageReport report = 
+        applicationAttempt.getApplicationResourceUsageReport();
+    Assert.assertEquals(
+        resource.getMemory() * (finishTime - startTime) / DateUtils.MILLIS_PER_MINUTE,
+        report.getMemoryMinutes());
   }
   
   @Test
@@ -718,7 +759,7 @@ public class TestRMAppAttemptTransitions {
         BuilderUtils.newContainerStatus(amContainer.getId(),
           ContainerState.COMPLETE, containerDiagMsg, exitCode);
     applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
-      applicationAttempt.getAppAttemptId(), cs));
+      applicationAttempt.getAppAttemptId(), cs, -1));
     assertEquals(RMAppAttemptState.FAILED,
       applicationAttempt.getAppAttemptState());
     verifyTokenCount(applicationAttempt.getAppAttemptId(), 1);
@@ -735,7 +776,7 @@ public class TestRMAppAttemptTransitions {
         ContainerState.COMPLETE, containerDiagMsg, exitCode);
     ApplicationAttemptId appAttemptId = applicationAttempt.getAppAttemptId();
     applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
-        appAttemptId, cs));
+        appAttemptId, cs, -1));
     assertEquals(RMAppAttemptState.FAILED,
         applicationAttempt.getAppAttemptState());
     assertEquals(0,applicationAttempt.getJustFinishedContainers().size());
@@ -883,7 +924,7 @@ public class TestRMAppAttemptTransitions {
             BuilderUtils.newContainerStatus(
                 BuilderUtils.newContainerId(
                     applicationAttempt.getAppAttemptId(), 42),
-                ContainerState.COMPLETE, "", 0)));
+                ContainerState.COMPLETE, "", 0), -1));
     testAppAttemptFinishingState(amContainer, finalStatus, trackingUrl,
         diagnostics);
   }
@@ -902,7 +943,7 @@ public class TestRMAppAttemptTransitions {
         new RMAppAttemptContainerFinishedEvent(
             applicationAttempt.getAppAttemptId(),
             BuilderUtils.newContainerStatus(amContainer.getId(),
-                ContainerState.COMPLETE, "", 0)));
+                ContainerState.COMPLETE, "", 0), -1));
     testAppAttemptFinishedState(amContainer, finalStatus, trackingUrl,
         diagnostics, 0, false);
   }

@@ -28,8 +28,8 @@ public class RMAppAttemptContainerFinishedEvent extends RMAppAttemptEvent {
   private final ContainerStatus containerStatus;
 
   public RMAppAttemptContainerFinishedEvent(ApplicationAttemptId appAttemptId, 
-      ContainerStatus containerStatus) {
-    super(appAttemptId, RMAppAttemptEventType.CONTAINER_FINISHED);
+      ContainerStatus containerStatus, long timestamp) {
+    super(appAttemptId, RMAppAttemptEventType.CONTAINER_FINISHED, timestamp);
     this.containerStatus = containerStatus;
   }
 

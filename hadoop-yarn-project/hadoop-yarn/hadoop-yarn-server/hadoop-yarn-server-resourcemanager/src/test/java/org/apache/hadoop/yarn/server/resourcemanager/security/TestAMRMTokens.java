@@ -151,7 +151,7 @@ public class TestAMRMTokens {
           .getEventHandler()
           .handle(
               new RMAppAttemptContainerFinishedEvent(applicationAttemptId,
-                  containerStatus));
+                  containerStatus, -1));
 
       // Now simulate trying to allocate. RPC call itself should throw auth
       // exception.

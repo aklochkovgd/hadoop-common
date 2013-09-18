@@ -174,4 +174,5 @@ public interface RMAppAttempt extends EventHandler<RMAppAttemptEvent> {
    * @return the start time of the application.
    */
   long getStartTime();
+  
 }

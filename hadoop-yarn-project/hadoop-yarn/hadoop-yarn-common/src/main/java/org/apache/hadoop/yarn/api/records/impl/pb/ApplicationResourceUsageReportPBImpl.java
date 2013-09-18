@@ -95,6 +95,8 @@ extends ApplicationResourceUsageReport {
             builder.getNeededResources())) {
       builder.setNeededResources(convertToProtoFormat(this.neededResources));
     }
+    builder.setMemoryMinutes(this.getMemoryMinutes());
+    builder.setVirtualCoresMinutes(this.getVirtualCoresMinutes());
   }
 
   private void mergeLocalToProto() {
@@ -200,6 +202,30 @@ extends ApplicationResourceUsageReport {
     this.neededResources = reserved_resources;
   }
 
+  @Override
+  public void setMemoryMinutes(long memory_minutes) {
+    maybeInitBuilder();
+    builder.setMemoryMinutes(memory_minutes);
+  }
+  
+  @Override
+  public long getMemoryMinutes() {
+    ApplicationResourceUsageReportProtoOrBuilder p = viaProto ? proto : builder;
+    return p.getMemoryMinutes();
+  }
+
+  @Override
+  public void setVirtualCoresMinutes(long virtual_cores_minutes) {
+    maybeInitBuilder();
+    builder.setVirtualCoresMinutes(virtual_cores_minutes);
+  }
+
+  @Override
+  public long getVirtualCoresMinutes() {
+    ApplicationResourceUsageReportProtoOrBuilder p = viaProto ? proto : builder;
+    return (p.getVirtualCoresMinutes());
+  }
+  
   private ResourcePBImpl convertFromProtoFormat(ResourceProto p) {
     return new ResourcePBImpl(p);
   }

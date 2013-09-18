@@ -220,7 +220,8 @@ public class FSSchedulerApp extends SchedulerApplication {
         new RMContainerFinishedEvent(
             containerId,
             containerStatus, 
-            event)
+            event,
+            System.currentTimeMillis())
         );
     LOG.info("Completed container: " + rmContainer.getContainerId() + 
         " in state: " + rmContainer.getState() + " event:" + event);
@@ -553,7 +554,8 @@ public class FSSchedulerApp extends SchedulerApplication {
 
     // Inform the container
     rmContainer.handle(
-        new RMContainerEvent(container.getId(), RMContainerEventType.START));
+        new RMContainerEvent(container.getId(), RMContainerEventType.START,
+            System.currentTimeMillis()));
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("allocate: applicationAttemptId=" 

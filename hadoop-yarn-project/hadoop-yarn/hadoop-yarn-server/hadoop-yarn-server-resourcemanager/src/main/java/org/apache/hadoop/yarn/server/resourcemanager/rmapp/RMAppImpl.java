@@ -54,10 +54,8 @@ import org.apache.hadoop.yarn.server.resourcemanager.ApplicationMasterService;
 import org.apache.hadoop.yarn.server.resourcemanager.RMAppManagerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.RMAppManagerEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
-import org.apache.hadoop.yarn.server.resourcemanager.RMServerUtils;
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore.ApplicationState;
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore.RMState;
-import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore;
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.Recoverable;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppNodeUpdateEvent.RMAppNodeUpdateType;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttempt;
@@ -239,7 +237,7 @@ public class RMAppImpl implements RMApp, Recoverable {
     DUMMY_APPLICATION_RESOURCE_USAGE_REPORT =
       BuilderUtils.newApplicationResourceUsageReport(-1, -1,
           Resources.createResource(-1, -1), Resources.createResource(-1, -1),
-          Resources.createResource(-1, -1));
+          Resources.createResource(-1, -1), 0, 0);
   private static final int DUMMY_APPLICATION_ATTEMPT_NUMBER = -1;
   
   public RMAppImpl(ApplicationId applicationId, RMContext rmContext,
@@ -479,6 +477,17 @@ public class RMAppImpl implements RMApp, Recoverable {
             }
           }
         }
+        
+        long memoryMinutes = 0;
+        long virtualCoresMinutes = 0;
+        for (RMAppAttempt appAttempt : this.attempts.values()) {
+          ApplicationResourceUsageReport report = 
+              appAttempt.getApplicationResourceUsageReport();
+          memoryMinutes += report.getMemoryMinutes();
+          virtualCoresMinutes += report.getVirtualCoresMinutes();
+        }
+        appUsageReport.setMemoryMinutes(memoryMinutes);
+        appUsageReport.setVirtualCoresMinutes(virtualCoresMinutes);
       }
 
       if (currentApplicationAttemptId == null) {
