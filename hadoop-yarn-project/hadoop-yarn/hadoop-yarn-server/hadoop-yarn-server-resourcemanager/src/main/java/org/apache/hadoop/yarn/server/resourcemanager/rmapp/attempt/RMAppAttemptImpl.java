@@ -641,9 +641,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         LOG.info(appAttemptID + " State change from " + oldState + " to "
             + getAppAttemptState());
       }
-      
-      LOG.info("Processed event for " + appAttemptID + " of type "
-          + event.getType() + ": " + oldState + " -> " + getAppAttemptState());
     } finally {
       this.writeLock.unlock();
     }
@@ -1316,7 +1313,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private void containerAllocated(Container container, long timestamp) {
     writeLock.lock();
     try {
-      LOG.info("Container allocated: " + container.getId() + " at " + timestamp);
       ResourceUsage usage = new ResourceUsage(container.getResource(), 
           timestamp);
       runningContainersUsage.put(container.getId(), usage);
@@ -1329,8 +1325,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       long timestamp) {
     writeLock.lock();
     try {
-      LOG.info("Container finished: " + containerStatus.getContainerId() + " at " + timestamp);
-      ResourceUsage usage = runningContainersUsage.get(containerStatus.getContainerId());
+      ResourceUsage usage = runningContainersUsage.get(
+          containerStatus.getContainerId());
       if (usage != null) {
         runningContainersUsage.remove(containerStatus.getContainerId());
         this.memorySeconds += usage.getMemoryMillis(timestamp) 
