@@ -95,8 +95,6 @@ extends ApplicationResourceUsageReport {
             builder.getNeededResources())) {
       builder.setNeededResources(convertToProtoFormat(this.neededResources));
     }
-    builder.setMemoryMinutes(this.getMemoryMinutes());
-    builder.setVirtualCoresMinutes(this.getVirtualCoresMinutes());
   }
 
   private void mergeLocalToProto() {

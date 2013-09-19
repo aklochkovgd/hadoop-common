@@ -883,12 +883,14 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       // YarnScheduler#allocate will fetch it.
       assert amContainerAllocation.getContainers().size() != 0;
       // Set the masterContainer
-      appAttempt.setMasterContainer(amContainerAllocation.getContainers().get(
-                                                                           0));
+      Container container = amContainerAllocation.getContainers().get(0);
+      appAttempt.setMasterContainer(container);
       appAttempt.getSubmissionContext().setResource(
           appAttempt.getMasterContainer().getResource());
       RMStateStore store = appAttempt.rmContext.getStateStore();
       appAttempt.storeAttempt(store);
+      
+      appAttempt.containerAllocated(container, event.getTimestamp());
     }
   }
   
@@ -1077,6 +1079,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           " exitCode: " + status.getExitStatus() +
           " due to: " +  status.getDiagnostics() + "." +
           "Failing this attempt.");
+      
+      appAttempt.containerFinished(status, event.getTimestamp());
+      
       // Tell the app, scheduler
       super.transition(appAttempt, finishEvent);
     }
@@ -1278,6 +1283,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       ContainerStatus containerStatus =
           containerFinishedEvent.getContainerStatus();
 
+      appAttempt.containerFinished(containerStatus, event.getTimestamp());
+      
       // Is this container the ApplicationMaster container?
       if (appAttempt.masterContainer.getId().equals(
           containerStatus.getContainerId())) {
@@ -1288,6 +1295,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
       // Normal container.
       appAttempt.justFinishedContainers.add(containerStatus);
+      
       return RMAppAttemptState.FINISHING;
     }
   }
