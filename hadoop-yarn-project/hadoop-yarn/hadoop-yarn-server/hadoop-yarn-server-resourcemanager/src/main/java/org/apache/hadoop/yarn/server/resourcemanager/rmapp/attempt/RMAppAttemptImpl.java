@@ -1222,8 +1222,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         RMAppAttemptEvent event) {
       RMAppAttemptContainerAcquiredEvent acquiredEvent
         = (RMAppAttemptContainerAcquiredEvent) event;
-      Container container = acquiredEvent.getContainer();
-      appAttempt.ranNodes.add(container.getNodeId());
+      appAttempt.ranNodes.add(acquiredEvent.getContainer().getNodeId());
     }
   }
 
@@ -1295,7 +1294,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
       // Normal container.
       appAttempt.justFinishedContainers.add(containerStatus);
-      
       return RMAppAttemptState.FINISHING;
     }
   }

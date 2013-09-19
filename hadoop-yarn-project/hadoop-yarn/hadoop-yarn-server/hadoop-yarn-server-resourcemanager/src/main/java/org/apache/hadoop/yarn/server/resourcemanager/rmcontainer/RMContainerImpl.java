@@ -205,7 +205,7 @@ public class RMContainerImpl implements RMContainer {
   
   @Override
   public void handle(RMContainerEvent event) {
-    LOG.info("Processing " + event.getContainerId() + " of type " + event.getType());
+    LOG.debug("Processing " + event.getContainerId() + " of type " + event.getType());
     try {
       writeLock.lock();
       RMContainerState oldState = getState();
@@ -220,7 +220,6 @@ public class RMContainerImpl implements RMContainer {
         LOG.info(event.getContainerId() + " Container Transitioned from "
             + oldState + " to " + getState());
       }
-      LOG.info("Processed " + event.getContainerId() + " of type " + event.getType() + ": " + oldState + " -> " + getState());
     }
     
     finally {
