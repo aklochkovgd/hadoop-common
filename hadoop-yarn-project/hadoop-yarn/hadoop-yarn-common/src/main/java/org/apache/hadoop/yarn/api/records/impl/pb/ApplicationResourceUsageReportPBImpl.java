@@ -201,25 +201,25 @@ extends ApplicationResourceUsageReport {
   }
 
   @Override
-  public void setMemorySeconds(long memory_seconds) {
+  public synchronized void setMemorySeconds(long memory_seconds) {
     maybeInitBuilder();
     builder.setMemorySeconds(memory_seconds);
   }
   
   @Override
-  public long getMemorySeconds() {
+  public synchronized long getMemorySeconds() {
     ApplicationResourceUsageReportProtoOrBuilder p = viaProto ? proto : builder;
     return p.getMemorySeconds();
   }
 
   @Override
-  public void setVirtualCoresSeconds(long virtual_cores_seconds) {
+  public synchronized void setVirtualCoresSeconds(long virtual_cores_seconds) {
     maybeInitBuilder();
     builder.setVirtualCoresSeconds(virtual_cores_seconds);
   }
 
   @Override
-  public long getVirtualCoresSeconds() {
+  public synchronized long getVirtualCoresSeconds() {
     ApplicationResourceUsageReportProtoOrBuilder p = viaProto ? proto : builder;
     return (p.getVirtualCoresSeconds());
   }
