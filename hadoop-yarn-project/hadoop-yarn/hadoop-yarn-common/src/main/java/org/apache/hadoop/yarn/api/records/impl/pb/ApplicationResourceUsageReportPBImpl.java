@@ -201,27 +201,27 @@ extends ApplicationResourceUsageReport {
   }
 
   @Override
-  public void setMemoryMinutes(long memory_minutes) {
+  public void setMemorySeconds(long memory_seconds) {
     maybeInitBuilder();
-    builder.setMemoryMinutes(memory_minutes);
+    builder.setMemorySeconds(memory_seconds);
   }
   
   @Override
-  public long getMemoryMinutes() {
+  public long getMemorySeconds() {
     ApplicationResourceUsageReportProtoOrBuilder p = viaProto ? proto : builder;
-    return p.getMemoryMinutes();
+    return p.getMemorySeconds();
   }
 
   @Override
-  public void setVirtualCoresMinutes(long virtual_cores_minutes) {
+  public void setVirtualCoresSeconds(long virtual_cores_seconds) {
     maybeInitBuilder();
-    builder.setVirtualCoresMinutes(virtual_cores_minutes);
+    builder.setVirtualCoresSeconds(virtual_cores_seconds);
   }
 
   @Override
-  public long getVirtualCoresMinutes() {
+  public long getVirtualCoresSeconds() {
     ApplicationResourceUsageReportProtoOrBuilder p = viaProto ? proto : builder;
-    return (p.getVirtualCoresMinutes());
+    return (p.getVirtualCoresSeconds());
   }
   
   private ResourcePBImpl convertFromProtoFormat(ResourceProto p) {

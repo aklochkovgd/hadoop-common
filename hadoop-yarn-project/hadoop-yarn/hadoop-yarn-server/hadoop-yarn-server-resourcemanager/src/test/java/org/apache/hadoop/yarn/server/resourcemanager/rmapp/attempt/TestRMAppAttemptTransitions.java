@@ -660,7 +660,7 @@ public class TestRMAppAttemptTransitions {
         applicationAttempt.getApplicationResourceUsageReport();
     Assert.assertEquals(
         resource.getMemory() * (finishTime - startTime) / DateUtils.MILLIS_PER_MINUTE,
-        report.getMemoryMinutes());
+        report.getMemorySeconds());
   }
   
   @Test

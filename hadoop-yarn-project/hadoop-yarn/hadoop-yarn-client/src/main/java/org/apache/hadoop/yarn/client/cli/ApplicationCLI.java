@@ -288,8 +288,8 @@ public class ApplicationCLI extends YarnCLI {
       appReportStr.print("\tResources used : ");
       
       ApplicationResourceUsageReport usageReport = appReport.getApplicationResourceUsageReport();
-      appReportStr.print(usageReport.getMemoryMinutes() + " MB-minutes, ");
-      appReportStr.println(usageReport.getVirtualCoresMinutes() + " CPU-minutes");
+      appReportStr.print(usageReport.getMemorySeconds() + " MB-seconds, ");
+      appReportStr.println(usageReport.getVirtualCoresSeconds() + " CPU-seconds");
       appReportStr.print("\tDiagnostics : ");
       appReportStr.print(appReport.getDiagnostics());
     } else {

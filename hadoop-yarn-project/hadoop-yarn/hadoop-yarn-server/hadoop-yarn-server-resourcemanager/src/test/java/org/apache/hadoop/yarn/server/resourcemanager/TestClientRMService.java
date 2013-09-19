@@ -221,8 +221,8 @@ public class TestClientRMService {
     ApplicationReport report = response.getApplicationReport();
     ApplicationResourceUsageReport usageReport = 
         report.getApplicationResourceUsageReport();
-    Assert.assertEquals(10, usageReport.getMemoryMinutes());
-    Assert.assertEquals(3, usageReport.getVirtualCoresMinutes());
+    Assert.assertEquals(10, usageReport.getMemorySeconds());
+    Assert.assertEquals(3, usageReport.getVirtualCoresSeconds());
   }
   
   @Test
@@ -551,7 +551,7 @@ public class TestClientRMService {
 
   private RMAppImpl getRMApp(RMContext rmContext, YarnScheduler yarnScheduler,
       ApplicationId applicationId3, YarnConfiguration config, String queueName,
-      final long memoryMinutes, final long virtualCoresMinutes) {
+      final long memorySeconds, final long virtualCoresSeconds) {
     ApplicationSubmissionContext asContext = mock(ApplicationSubmissionContext.class);
     when(asContext.getMaxAppAttempts()).thenReturn(1);
     return new RMAppImpl(applicationId3, rmContext, config, null, null,
@@ -565,8 +565,8 @@ public class TestClientRMService {
                     clientUserName, allowAccess);
                 ApplicationResourceUsageReport usageReport = 
                     report.getApplicationResourceUsageReport();
-                usageReport.setMemoryMinutes(memoryMinutes);
-                usageReport.setVirtualCoresMinutes(virtualCoresMinutes);
+                usageReport.setMemorySeconds(memorySeconds);
+                usageReport.setVirtualCoresSeconds(virtualCoresSeconds);
                 report.setApplicationResourceUsageReport(usageReport);
                 return report;
               }

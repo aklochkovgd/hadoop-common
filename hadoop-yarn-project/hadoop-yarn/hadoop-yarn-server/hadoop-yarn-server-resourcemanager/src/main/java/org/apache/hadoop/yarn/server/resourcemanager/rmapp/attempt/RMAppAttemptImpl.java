@@ -141,8 +141,12 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
     new HashSet<NodeId>();
   private final List<ContainerStatus> justFinishedContainers =
     new ArrayList<ContainerStatus>();
-  private final Map<ContainerId, ResourceUsage> resourceUsage = 
+
+  private final Map<ContainerId, ResourceUsage> runningContainersUsage = 
     new HashMap<ContainerId, ResourceUsage>();
+  private long memorySeconds;
+  private long virtualCpuSeconds;
+
   private Container masterContainer;
 
   private float progress = 0;
@@ -159,7 +163,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
   private Configuration conf;
   private String user;
-  
+
   private static final ExpiredTransition EXPIRED_TRANSITION =
       new ExpiredTransition();
 
@@ -637,6 +641,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         LOG.info(appAttemptID + " State change from " + oldState + " to "
             + getAppAttemptState());
       }
+      
+      LOG.info("Processed event for " + appAttemptID + " of type "
+          + event.getType() + ": " + oldState + " -> " + getAppAttemptState());
     } finally {
       this.writeLock.unlock();
     }
@@ -673,19 +680,22 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         }
       }
 
-      long memoryMinutes = 0;
-      long virtualCpuMinutes = 0;
+      long memorySeconds = this.memorySeconds;
+      long virtualCpuSeconds = this.virtualCpuSeconds;
+      long currentTimeMillis = System.currentTimeMillis();
       
-      for (ResourceUsage usage : this.resourceUsage.values()) {
-        memoryMinutes += usage.getMemoryMinutes();
-        virtualCpuMinutes += usage.getVirtualCoresMinutes();
+      for (ResourceUsage usage : this.runningContainersUsage.values()) {
+        memorySeconds += usage.getMemoryMillis(currentTimeMillis) / 
+            DateUtils.MILLIS_PER_SECOND;
+        virtualCpuSeconds += usage.getVirtualCoresMillis(currentTimeMillis) 
+            / DateUtils.MILLIS_PER_SECOND;
       }
       
       return BuilderUtils.newApplicationResourceUsageReport(
           numUsedContainers, numReservedContainers,
           currentConsumption, reservedResources,
           Resources.add(currentConsumption, reservedResources),
-          memoryMinutes, virtualCpuMinutes);
+          memorySeconds, virtualCpuSeconds);
     } finally {
       this.readLock.unlock();
     }
@@ -730,30 +740,23 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
   private static class ResourceUsage {
     private final Resource resource;
-    private final long startTime;
-    private Long finishTime = null;
+    private final long startTimeMillis;
     
     ResourceUsage(Resource resource, long startTime) {
       this.resource = resource;
-      this.startTime = startTime;
+      this.startTimeMillis = startTime;
     }
     
-    void setFinishTime(long finishTime) {
-      this.finishTime = finishTime;
+    long getMemoryMillis(long currentTimeMillis) {
+      return resource.getMemory() * getUsedMillis(currentTimeMillis);
     }
     
-    long getMemoryMinutes() {
-      return resource.getMemory() * getUsageTimeMinutes();
-    }
-    
-    long getVirtualCoresMinutes() {
-      return resource.getVirtualCores() * getUsageTimeMinutes();
+    long getVirtualCoresMillis(long currentTimeMillis) {
+      return resource.getVirtualCores() * getUsedMillis(currentTimeMillis);
     }
 
-    long getUsageTimeMinutes() {
-      long finishTime = this.finishTime == null ? 
-          System.currentTimeMillis() : this.finishTime;
-      return (finishTime - startTime) / DateUtils.MILLIS_PER_MINUTE;
+    long getUsedMillis(long currentTimeMillis) {
+      return currentTimeMillis - startTimeMillis;
     }
 
   }
@@ -1313,9 +1316,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private void containerAllocated(Container container, long timestamp) {
     writeLock.lock();
     try {
+      LOG.info("Container allocated: " + container.getId() + " at " + timestamp);
       ResourceUsage usage = new ResourceUsage(container.getResource(), 
           timestamp);
-      resourceUsage.put(container.getId(), usage);
+      runningContainersUsage.put(container.getId(), usage);
     } finally {
       writeLock.unlock();
     }
@@ -1325,9 +1329,14 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       long timestamp) {
     writeLock.lock();
     try {
-      ResourceUsage usage = resourceUsage.get(containerStatus.getContainerId());
+      LOG.info("Container finished: " + containerStatus.getContainerId() + " at " + timestamp);
+      ResourceUsage usage = runningContainersUsage.get(containerStatus.getContainerId());
       if (usage != null) {
-        usage.setFinishTime(timestamp);
+        runningContainersUsage.remove(containerStatus.getContainerId());
+        this.memorySeconds += usage.getMemoryMillis(timestamp) 
+            / DateUtils.MILLIS_PER_SECOND;
+        this.virtualCpuSeconds += usage.getVirtualCoresMillis(timestamp)
+            / DateUtils.MILLIS_PER_SECOND;
       } else {
         LOG.error("Can not record resources usage for the unknown container "
             + containerStatus.getContainerId());

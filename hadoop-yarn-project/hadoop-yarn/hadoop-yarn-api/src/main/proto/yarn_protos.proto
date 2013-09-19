@@ -129,8 +129,8 @@ message ApplicationResourceUsageReportProto {
   optional ResourceProto used_resources = 3;
   optional ResourceProto reserved_resources = 4;
   optional ResourceProto needed_resources = 5;
-  optional int64 memory_minutes = 6;
-  optional int64 virtual_cores_minutes = 7;
+  optional int64 memory_seconds = 6;
+  optional int64 virtual_cores_seconds = 7;
 }
 
 message ApplicationReportProto {
