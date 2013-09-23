@@ -51,6 +51,7 @@ public class RMAuditLogger {
     public static final String REGISTER_AM = "Register App Master";
     public static final String ALLOC_CONTAINER = "AM Allocated Container";
     public static final String RELEASE_CONTAINER = "AM Released Container";
+		public static final String EXECUTE_EXT_COMMAND_REQUEST = "Execute External Command Request";
 
     // Some commonly used descriptions
     public static final String UNAUTHORIZED_USER = "Unauthorized user";

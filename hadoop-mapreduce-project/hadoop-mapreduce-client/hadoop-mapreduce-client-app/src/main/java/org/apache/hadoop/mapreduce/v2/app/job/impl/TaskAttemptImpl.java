@@ -110,11 +110,13 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringInterner;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.Shell.OSType;
 import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
 import org.apache.hadoop.yarn.api.records.ApplicationAccessType;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
+import org.apache.hadoop.yarn.api.records.ExternalCommand;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
@@ -602,6 +604,10 @@ public abstract class TaskAttemptImpl implements
       resourceSize, resourceModificationTime);
   }
 
+  private static ExternalCommand createExternalCommand(String command, OSType osType) {
+  	return ExternalCommand.newInstance(command, osType);
+  } 
+  
   /**
    * Lock this on initialClasspath so that there is only one fork in the AM for
    * getting the initial class-path. TODO: We already construct
@@ -759,12 +765,17 @@ public abstract class TaskAttemptImpl implements
             MRJobConfig.DEFAULT_MAPRED_ADMIN_USER_ENV)
         );
 
+    Map<String, ExternalCommand> extCommands = 
+    		new HashMap<String, ExternalCommand>();
+    extCommands.put("jstack", 
+    		createExternalCommand("jstack -p $CONTAINER_PID", null));
+    
     // Construct the actual Container
     // The null fields are per-container and will be constructed for each
     // container separately.
     ContainerLaunchContext container =
         ContainerLaunchContext.newInstance(localResources, environment, null,
-          serviceData, taskCredentialsBuffer, applicationACLs);
+          serviceData, taskCredentialsBuffer, applicationACLs, extCommands);
 
     return container;
   }
@@ -808,7 +819,7 @@ public abstract class TaskAttemptImpl implements
     ContainerLaunchContext container = ContainerLaunchContext.newInstance(
         commonContainerSpec.getLocalResources(), myEnv, commands,
         myServiceData, commonContainerSpec.getTokens().duplicate(),
-        applicationACLs);
+        applicationACLs, commonContainerSpec.getExternalCommands());
 
     return container;
   }

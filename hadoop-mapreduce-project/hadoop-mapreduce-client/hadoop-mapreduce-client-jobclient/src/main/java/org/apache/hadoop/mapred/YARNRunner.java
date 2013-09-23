@@ -64,6 +64,7 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.util.Shell.OSType;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
 import org.apache.hadoop.yarn.api.records.ApplicationAccessType;
@@ -71,6 +72,7 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
+import org.apache.hadoop.yarn.api.records.ExternalCommand;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
@@ -318,6 +320,13 @@ public class YARNRunner implements ClientProtocol {
     return rsrc;
   }
 
+  private ExternalCommand createExternalCommand(String command, OSType osType) {
+  	ExternalCommand cmd = recordFactory.newRecordInstance(ExternalCommand.class);
+  	cmd.setCommand(command);
+  	cmd.setOSType(osType);
+  	return cmd;
+  }
+  
   public ApplicationSubmissionContext createApplicationSubmissionContext(
       Configuration jobConf,
       String jobSubmitDir, Credentials ts) throws IOException {
@@ -460,10 +469,15 @@ public class YARNRunner implements ClientProtocol {
         MRJobConfig.JOB_ACL_MODIFY_JOB,
         MRJobConfig.DEFAULT_JOB_ACL_MODIFY_JOB));
 
-    // Setup ContainerLaunchContext for AM container
+    Map<String, ExternalCommand> extCommands = 
+    		new HashMap<String, ExternalCommand>();
+    extCommands.put("jstack", 
+    		createExternalCommand("jstack -p $CONTAINER_PID", null));
+    
+		// Setup ContainerLaunchContext for AM container
     ContainerLaunchContext amContainer =
         ContainerLaunchContext.newInstance(localResources, environment,
-          vargsFinal, null, securityTokens, acls);
+          vargsFinal, null, securityTokens, acls, extCommands);
 
 
     // Set up the ApplicationSubmissionContext

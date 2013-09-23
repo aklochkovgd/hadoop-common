@@ -43,6 +43,8 @@ import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
 import org.apache.hadoop.yarn.api.protocolrecords.CancelDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.CancelDelegationTokenResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.ExecuteExternalCommandRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.ExecuteExternalCommandResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationReportRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationReportResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
@@ -69,6 +71,7 @@ import org.apache.hadoop.yarn.api.records.ApplicationAccessType;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
+import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.NodeReport;
 import org.apache.hadoop.yarn.api.records.NodeState;
 import org.apache.hadoop.yarn.api.records.QueueInfo;
@@ -620,5 +623,55 @@ public class ClientRMService extends AbstractService implements
     } else {
       return true;
     }
+  }
+
+	@Override
+	public ExecuteExternalCommandResponse executeExternalCommand(
+			ExecuteExternalCommandRequest request) throws YarnException, IOException {
+		ContainerId containerId = request.getContainerId();
+		ApplicationId applicationId = containerId
+				.getApplicationAttemptId().getApplicationId();
+
+    UserGroupInformation callerUGI;
+    try {
+      callerUGI = UserGroupInformation.getCurrentUser();
+    } catch (IOException ie) {
+      LOG.info("Error getting UGI ", ie);
+      RMAuditLogger.logFailure("UNKNOWN", AuditConstants.EXECUTE_EXT_COMMAND_REQUEST,
+          "UNKNOWN", "ClientRMService" , "Error getting UGI",
+          applicationId);
+      throw RPCUtil.getRemoteException(ie);
+    }
+
+    RMApp application = this.rmContext.getRMApps().get(applicationId);
+    if (application == null) {
+      RMAuditLogger.logFailure(callerUGI.getUserName(),
+          AuditConstants.EXECUTE_EXT_COMMAND_REQUEST, "UNKNOWN", "ClientRMService",
+          "Trying to manage a container of an absent application", applicationId);
+      throw new ApplicationNotFoundException("Trying to manage a container of"
+      		+ "an absent application " + applicationId);
+    }
+
+    if (!checkAccess(callerUGI, application.getUser(),
+        ApplicationAccessType.MODIFY_APP, applicationId)) {
+      RMAuditLogger.logFailure(callerUGI.getShortUserName(),
+          AuditConstants.EXECUTE_EXT_COMMAND_REQUEST,
+          "User doesn't have permissions to "
+              + ApplicationAccessType.MODIFY_APP.toString(), "ClientRMService",
+          AuditConstants.UNAUTHORIZED_USER, applicationId);
+      throw RPCUtil.getRemoteException(new AccessControlException("User "
+          + callerUGI.getShortUserName() + " cannot perform operation "
+          + ApplicationAccessType.MODIFY_APP.name() + " on " + applicationId));
+    }
+
+    ** this.rmContext.getDispatcher().getEventHandler().handle(
+        new RMAppEvent(applicationId, RMAppEventType.KILL));
+
+    RMAuditLogger.logSuccess(callerUGI.getShortUserName(), 
+        AuditConstants.EXECUTE_EXT_COMMAND_REQUEST, "ClientRMService", 
+        applicationId);
+    ExecuteExternalCommandResponse response = recordFactory
+        .newRecordInstance(ExecuteExternalCommandResponse.class);
+    return response;	
   }
 }

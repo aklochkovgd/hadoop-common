@@ -30,8 +30,9 @@ import org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenRespo
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocolPB;
 import org.apache.hadoop.yarn.api.protocolrecords.CancelDelegationTokenResponse;
-import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.ExecuteExternalCommandResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationReportResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetClusterMetricsResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetClusterNodesResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetDelegationTokenResponse;
@@ -43,10 +44,12 @@ import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.CancelDelegationTokenRequestPBImpl;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.CancelDelegationTokenResponsePBImpl;
-import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.GetApplicationsRequestPBImpl;
-import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.GetApplicationsResponsePBImpl;
+import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.ExecuteExternalCommandRequestPBImpl;
+import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.ExecuteExternalCommandResponsePBImpl;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.GetApplicationReportRequestPBImpl;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.GetApplicationReportResponsePBImpl;
+import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.GetApplicationsRequestPBImpl;
+import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.GetApplicationsResponsePBImpl;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.GetClusterMetricsRequestPBImpl;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.GetClusterMetricsResponsePBImpl;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.GetClusterNodesRequestPBImpl;
@@ -66,10 +69,12 @@ import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.RenewDelegationTokenRe
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.SubmitApplicationRequestPBImpl;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.SubmitApplicationResponsePBImpl;
 import org.apache.hadoop.yarn.exceptions.YarnException;
-import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetApplicationsRequestProto;
-import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetApplicationsResponseProto;
+import org.apache.hadoop.yarn.proto.YarnServiceProtos.ExecuteExternalCommandRequestProto;
+import org.apache.hadoop.yarn.proto.YarnServiceProtos.ExecuteExternalCommandResponseProto;
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetApplicationReportRequestProto;
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetApplicationReportResponseProto;
+import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetApplicationsRequestProto;
+import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetApplicationsResponseProto;
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterMetricsRequestProto;
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterMetricsResponseProto;
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodesRequestProto;
@@ -278,4 +283,20 @@ public class ApplicationClientProtocolPBServiceImpl implements ApplicationClient
         throw new ServiceException(e);
       }
   }
+
+	@Override
+	public ExecuteExternalCommandResponseProto executeExternalCommand(
+			RpcController controller, ExecuteExternalCommandRequestProto proto)
+			throws ServiceException {
+		ExecuteExternalCommandRequestPBImpl request =
+        new ExecuteExternalCommandRequestPBImpl(proto);
+      try {
+      	ExecuteExternalCommandResponse response = real.executeExternalCommand(request);
+        return ((ExecuteExternalCommandResponsePBImpl)response).getProto();
+      } catch (YarnException e) {
+        throw new ServiceException(e);
+      } catch (IOException e) {
+        throw new ServiceException(e);
+      }
+	}
 }

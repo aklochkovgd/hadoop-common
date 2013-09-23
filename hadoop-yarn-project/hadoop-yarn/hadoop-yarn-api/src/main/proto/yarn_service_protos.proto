@@ -157,6 +157,15 @@ message GetQueueUserAclsInfoResponseProto {
   repeated QueueUserACLInfoProto queueUserAcls = 1;
 }
 
+message ExecuteExternalCommandRequestProto {
+  required ContainerIdProto container_id = 1;
+  required string command_name = 2;
+}
+
+message ExecuteExternalCommandResponseProto {
+  required int32 exitCode = 1;
+  optional string outputTail = 2;
+} 
 
 //////////////////////////////////////////////////////
 /////// client_NM_Protocol ///////////////////////////

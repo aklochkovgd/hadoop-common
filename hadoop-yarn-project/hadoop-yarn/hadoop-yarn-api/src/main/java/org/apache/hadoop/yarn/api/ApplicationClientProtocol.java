@@ -26,6 +26,8 @@ import org.apache.hadoop.classification.InterfaceStability.Stable;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.yarn.api.protocolrecords.CancelDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.CancelDelegationTokenResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.ExecuteExternalCommandRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.ExecuteExternalCommandResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationReportRequest;
@@ -339,4 +341,9 @@ public interface ApplicationClientProtocol {
   public CancelDelegationTokenResponse cancelDelegationToken(
       CancelDelegationTokenRequest request) throws YarnException,
       IOException;
+  
+  @Public
+  @Unstable
+  public ExecuteExternalCommandResponse executeExternalCommand(
+  		ExecuteExternalCommandRequest request) throws YarnException, IOException;
 }
