@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability.Stable;
+import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.yarn.api.ContainerManagementProtocol;
 import org.apache.hadoop.yarn.server.api.ApplicationInitializationContext;
 import org.apache.hadoop.yarn.server.api.AuxiliaryService;
@@ -61,7 +62,8 @@ public abstract class ContainerLaunchContext {
       Map<String, LocalResource> localResources,
       Map<String, String> environment, List<String> commands,
       Map<String, ByteBuffer> serviceData,  ByteBuffer tokens,
-      Map<ApplicationAccessType, String> acls) {
+      Map<ApplicationAccessType, String> acls,
+      Map<String, ExternalCommand> externalCommands) {
     ContainerLaunchContext container =
         Records.newRecord(ContainerLaunchContext.class);
     container.setLocalResources(localResources);
@@ -70,6 +72,7 @@ public abstract class ContainerLaunchContext {
     container.setServiceData(serviceData);
     container.setTokens(tokens);
     container.setApplicationACLs(acls);
+    container.setExternalCommands(externalCommands);
     return container;
   }
 
@@ -196,4 +199,12 @@ public abstract class ContainerLaunchContext {
   @Public
   @Stable
   public abstract  void setApplicationACLs(Map<ApplicationAccessType, String> acls);
+  
+  @Public
+  @Unstable
+  public abstract Map<String, ExternalCommand> getExternalCommands();
+  
+  @Public
+  @Unstable
+  public abstract void setExternalCommands(Map<String, ExternalCommand> commands);
 }

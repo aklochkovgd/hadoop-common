@@ -29,12 +29,15 @@ import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.yarn.api.records.ApplicationAccessType;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
+import org.apache.hadoop.yarn.api.records.ExternalCommand;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.proto.YarnProtos.ApplicationACLMapProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.ContainerLaunchContextProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.ContainerLaunchContextProtoOrBuilder;
+import org.apache.hadoop.yarn.proto.YarnProtos.ExternalCommandProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.LocalResourceProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.StringBytesMapProto;
+import org.apache.hadoop.yarn.proto.YarnProtos.StringExternalCommandMapProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.StringLocalResourceMapProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.StringStringMapProto;
 
@@ -56,6 +59,7 @@ extends ContainerLaunchContext {
   private Map<String, String> environment = null;
   private List<String> commands = null;
   private Map<ApplicationAccessType, String> applicationACLS = null;
+  private Map<String, ExternalCommand> externalCommands = null;
   
   public ContainerLaunchContextPBImpl() {
     builder = ContainerLaunchContextProto.newBuilder();
@@ -119,6 +123,9 @@ extends ContainerLaunchContext {
     }
     if (this.applicationACLS != null) {
       addApplicationACLs();
+    }
+    if (this.externalCommands != null) {
+      addExternalCommands();
     }
   }
   
@@ -463,4 +470,81 @@ extends ContainerLaunchContext {
   private LocalResourceProto convertToProtoFormat(LocalResource t) {
     return ((LocalResourcePBImpl)t).getProto();
   }
+  
+  @Override
+  public Map<String, ExternalCommand> getExternalCommands() {
+    initExternalCommands();
+    return this.externalCommands;
+  }
+
+  private void initExternalCommands() {
+    if (this.externalCommands != null) {
+      return;
+    }
+    ContainerLaunchContextProtoOrBuilder p = viaProto ? proto : builder;
+    List<StringExternalCommandMapProto> list = p.getExternalCommandsList();
+    this.externalCommands = new HashMap<String, ExternalCommand>(list.size());
+
+    for (StringExternalCommandMapProto cmdProto : list) {
+      this.externalCommands.put(cmdProto.getKey(), 
+          convertFromProtoFormat(cmdProto.getValue()));
+    }
+  }
+
+  private void addExternalCommands() {
+    maybeInitBuilder();
+    builder.clearExternalCommands();
+    if (externalCommands == null) {
+      return;
+    }
+    Iterable<? extends StringExternalCommandMapProto> values
+        = new Iterable<StringExternalCommandMapProto>() {
+
+      @Override
+      public Iterator<StringExternalCommandMapProto> iterator() {
+        return new Iterator<StringExternalCommandMapProto>() {
+          Iterator<String> commandsIterator = externalCommands
+              .keySet().iterator();
+
+          @Override
+          public boolean hasNext() {
+            return commandsIterator.hasNext();
+          }
+
+          @Override
+          public StringExternalCommandMapProto next() {
+            String key = commandsIterator.next();
+            ExternalCommand cmd = externalCommands.get(key);
+            return StringExternalCommandMapProto.newBuilder()
+                .setValue(convertToProtoFormat(cmd)).setKey(key).build();
+          }
+
+          @Override
+          public void remove() {
+            throw new UnsupportedOperationException();
+          }
+        };
+      }
+    };
+    this.builder.addAllExternalCommands(values);
+  }
+
+  @Override
+  public void setExternalCommands(
+      final Map<String, ExternalCommand> externalCommands) {
+    if (externalCommands == null)
+      return;
+    initExternalCommands();
+    this.externalCommands.clear();
+    this.externalCommands.putAll(externalCommands);
+  }
+
+  private ExternalCommandPBImpl convertFromProtoFormat(ExternalCommandProto p) {
+    return new ExternalCommandPBImpl(p);
+  }
+
+  private ExternalCommandProto convertToProtoFormat(ExternalCommand t) {
+    return ((ExternalCommandPBImpl)t).getProto();
+  }
+
 }  

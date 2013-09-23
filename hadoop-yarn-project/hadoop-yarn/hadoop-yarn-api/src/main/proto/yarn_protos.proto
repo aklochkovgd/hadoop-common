@@ -114,6 +114,15 @@ enum LocalResourceTypeProto {
   PATTERN = 3;
 }
 
+enum OSTypeProto {
+  OS_TYPE_LINUX = 1;
+  OS_TYPE_WIN = 2;
+  OS_TYPE_SOLARIS = 3;
+  OS_TYPE_MAC = 4;
+  OS_TYPE_FREEBSD = 5;
+  OS_TYPE_OTHER = 6;
+}
+
 message LocalResourceProto {
   optional URLProto resource = 1;
   optional int64 size = 2;
@@ -121,6 +130,11 @@ message LocalResourceProto {
   optional LocalResourceTypeProto type = 4;
   optional LocalResourceVisibilityProto visibility = 5;
   optional string pattern = 6;
+}
+
+message ExternalCommandProto {
+  optional string command = 1;
+  optional OSTypeProto os_type = 2;
 }
 
 message ApplicationResourceUsageReportProto {
@@ -289,6 +303,7 @@ message ContainerLaunchContextProto {
   repeated StringStringMapProto environment = 4;
   repeated string command = 5;
   repeated ApplicationACLMapProto application_ACLs = 6;
+  repeated StringExternalCommandMapProto externalCommands = 7;
 }
 
 message ContainerStatusProto {
@@ -321,4 +336,9 @@ message StringStringMapProto {
 message StringBytesMapProto {
   optional string key = 1;
   optional bytes value = 2;
+}
+
+message StringExternalCommandMapProto {
+  optional string key = 1;
+  optional ExternalCommandProto value = 2;
 }
