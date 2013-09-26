@@ -177,8 +177,13 @@ abstract public class Shell {
 
   /** Return a command to send a signal to a given pid */
   public static String[] getSignalKillCommand(int code, String pid) {
-    return Shell.WINDOWS ? new String[] { Shell.WINUTILS, "task", "kill", pid } :
-      new String[] { "kill", "-" + code, isSetsidAvailable ? "-" + pid : pid };
+    if (Shell.WINDOWS) {
+      String cmd = code == 3 ? "sendBreak" : "kill";
+      return new String[] { Shell.WINUTILS, "task", cmd , pid };
+    } else {
+      return new String[] 
+          { "kill", "-" + code, isSetsidAvailable ? "-" + pid : pid };
+    }
   }
 
   /** Return a regular expression string that match environment variables */
