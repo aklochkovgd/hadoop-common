@@ -95,22 +95,11 @@ static BOOL ParseCommandLine(__in int argc,
   return FALSE;
 }
 
-BOOL CtrlHandler( DWORD fdwCtrlType )
-{
-  if ( fdwCtrlType == CTRL_BREAK_EVENT ) {
-    GenerateConsoleCtrlEvent( CTRL_BREAK_EVENT, 0);
-    return TRUE;
-  }
-  return FALSE;
-}
-
 BOOL NoopCtrlHandler( DWORD fdwCtrlType )
 {
   if ( fdwCtrlType == CTRL_BREAK_EVENT ) {
-    printf("Ignoring break event");
     return TRUE;
   }
-  printf("Passing event");
   return FALSE;
 }
 
