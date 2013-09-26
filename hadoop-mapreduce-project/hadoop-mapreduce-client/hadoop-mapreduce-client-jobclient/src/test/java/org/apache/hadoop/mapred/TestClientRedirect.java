@@ -72,6 +72,8 @@ import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
 import org.apache.hadoop.yarn.api.protocolrecords.CancelDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.CancelDelegationTokenResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.ExecuteExternalCommandRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.ExecuteExternalCommandResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationReportRequest;
@@ -99,6 +101,7 @@ import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
 import org.apache.hadoop.yarn.factories.RecordFactory;
 import org.apache.hadoop.yarn.factory.providers.RecordFactoryProvider;
@@ -352,6 +355,13 @@ public class TestClientRedirect {
     @Override
     public CancelDelegationTokenResponse cancelDelegationToken(
         CancelDelegationTokenRequest request) throws IOException {
+      return null;
+    }
+
+    @Override
+    public ExecuteExternalCommandResponse executeExternalCommand(
+        ExecuteExternalCommandRequest request) throws YarnException,
+        IOException {
       return null;
     }
   }
