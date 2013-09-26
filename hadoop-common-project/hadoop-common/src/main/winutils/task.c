@@ -36,6 +36,7 @@ typedef enum TaskCommandOptionType
   TaskCreate,
   TaskIsAlive,
   TaskKill,
+  TaskBreak,
   TaskProcessList
 } TaskCommandOption;
 
@@ -71,6 +72,11 @@ static BOOL ParseCommandLine(__in int argc,
       *command = TaskKill;
       return TRUE;
     }
+    if (wcscmp(argv[1], L"sendBreak") == 0)
+    {
+      *command = TaskBreak;
+      return TRUE;
+    }
     if (wcscmp(argv[1], L"processList") == 0)
     {
       *command = TaskProcessList;
@@ -86,6 +92,25 @@ static BOOL ParseCommandLine(__in int argc,
     }
   }
 
+  return FALSE;
+}
+
+BOOL CtrlHandler( DWORD fdwCtrlType )
+{
+  if ( fdwCtrlType == CTRL_BREAK_EVENT ) {
+    GenerateConsoleCtrlEvent( CTRL_BREAK_EVENT, 0);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+BOOL NoopCtrlHandler( DWORD fdwCtrlType )
+{
+  if ( fdwCtrlType == CTRL_BREAK_EVENT ) {
+    printf("Ignoring break event");
+    return TRUE;
+  }
+  printf("Passing event");
   return FALSE;
 }
 
@@ -148,6 +173,8 @@ DWORD createTask(__in PCWSTR jobObjName,__in PWSTR cmdLine)
   ZeroMemory( &si, sizeof(si) );
   si.cb = sizeof(si);
   ZeroMemory( &pi, sizeof(pi) );
+
+  SetConsoleCtrlHandler(NoopCtrlHandler, TRUE);
 
   if (CreateProcess(NULL, cmdLine, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0)
   {
@@ -279,6 +306,47 @@ DWORD killTask(PCWSTR jobObjName)
   return ERROR_SUCCESS;
 }
 
+DWORD sendBreakToTask(PCWSTR jobObjName)
+{
+  HANDLE jobObject = OpenJobObject(JOB_OBJECT_QUERY, FALSE, jobObjName);
+  JOBOBJECT_BASIC_PROCESS_ID_LIST* jobInfo;
+  DWORD i;
+  DWORD pid;
+
+  if(jobObject == NULL)
+  {
+    DWORD err = GetLastError();
+    if(err == ERROR_FILE_NOT_FOUND)
+    {
+      // job object does not exist. assume its not alive
+      return ERROR_SUCCESS;
+    }
+    return err;
+  }
+
+  jobInfo = (JOBOBJECT_BASIC_PROCESS_ID_LIST*) LocalAlloc(LPTR, sizeof (JOBOBJECT_BASIC_PROCESS_ID_LIST) + sizeof(ULONG)*100);  
+
+  if(QueryInformationJobObject(jobObject, JobObjectBasicProcessIdList, jobInfo, sizeof (JOBOBJECT_BASIC_PROCESS_ID_LIST) + sizeof(ULONG)*100, NULL) == 0)
+  {
+    return GetLastError();
+  }
+
+  for (i = 0; i < jobInfo->NumberOfProcessIdsInList; i++)
+  {
+    pid = (DWORD) jobInfo->ProcessIdList[i];
+    printf("killing %i\n", pid);
+    FreeConsole();
+    AttachConsole(pid);
+    SetConsoleCtrlHandler(NoopCtrlHandler, TRUE);
+    GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, pid);
+  } 
+
+  LocalFree(jobInfo);
+
+  CloseHandle(jobObject);
+  return ERROR_SUCCESS;
+}
+
 //----------------------------------------------------------------------------
 // Function: printTaskProcessList
 //
@@ -362,7 +430,7 @@ DWORD printTaskProcessList(const WCHAR* jobObjName)
 // Function: Task
 //
 // Description:
-//  Manages a task via a jobobject (create/isAlive/kill). Outputs the
+//  Manages a task via a jobobject (create/isAlive/kill/sendBreak). Outputs the
 //  appropriate information to stdout on success, or stderr on failure.
 //
 // Returns:
@@ -425,6 +493,16 @@ int Task(__in int argc, __in_ecount(argc) wchar_t *argv[])
       ReportErrorCode(L"killTask", dwErrorCode);
       goto TaskExit;
     }
+  } else if (command == TaskBreak)
+  {
+    // Check if task jobobject
+    //
+    dwErrorCode = sendBreakToTask(argv[2]);
+    if (dwErrorCode != ERROR_SUCCESS)
+    {
+      ReportErrorCode(L"sendBreakToTask", dwErrorCode);
+      goto TaskExit;
+    }
   } else if (command == TaskProcessList)
   {
     // Check if task jobobject
@@ -455,6 +533,7 @@ void TaskUsage()
     Usage: task create [TASKNAME] [COMMAND_LINE] |\n\
           task isAlive [TASKNAME] |\n\
           task kill [TASKNAME]\n\
+          task sendBreak [TASKNAME]\n\
           task processList [TASKNAME]\n\
     Creates a new task jobobject with taskname\n\
     Checks if task jobobject is alive\n\
