@@ -164,6 +164,14 @@ public abstract class ContainerExecutor implements Configurable {
     public String toString() {
       return str;
     }
+    public static Signal valueOf(int signal_num) 
+        throws IllegalArgumentException {
+      for (Signal s : Signal.values()) {
+        if (s.value == signal_num)
+          return s;
+      }
+      throw new IllegalArgumentException();
+    }
   }
 
   protected void logOutput(String output) {

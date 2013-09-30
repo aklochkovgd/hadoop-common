@@ -18,8 +18,21 @@
 
 package org.apache.hadoop.yarn.server.nodemanager.containermanager.launcher;
 
-public enum ContainersLauncherEventType {
-  LAUNCH_CONTAINER,
-  CLEANUP_CONTAINER, // The process(grp) itself.
-  SIGNAL_CONTAINER,
+import org.apache.hadoop.yarn.server.nodemanager.ContainerExecutor.Signal;
+import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.Container;
+
+public class SignalContainersLauncherEvent
+    extends ContainersLauncherEvent {
+
+  private final Signal signal;
+
+  public SignalContainersLauncherEvent(Container container, Signal signal) {
+    super(container, ContainersLauncherEventType.SIGNAL_CONTAINER);
+    this.signal = signal;
+  }
+
+  public Signal getSignal() {
+    return signal;
+  }
+  
 }

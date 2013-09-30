@@ -38,6 +38,8 @@ import org.apache.hadoop.yarn.api.ContainerManagementProtocolPB;
 import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.SignalContainersRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.SignalContainersResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainerRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersResponse;
@@ -217,6 +219,12 @@ public class TestRPC {
       Exception e = new Exception(EXCEPTION_MSG, 
           new Exception(EXCEPTION_CAUSE));
       throw new YarnException(e);
+    }
+
+    @Override
+    public SignalContainersResponse signalContainers(
+        SignalContainersRequest request) throws YarnException, IOException {
+      return null;
     }
   }
 

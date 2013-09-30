@@ -22,8 +22,11 @@ import java.io.IOException;
 
 import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability.Stable;
+import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.SignalContainersRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.SignalContainersResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainerRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersResponse;
@@ -170,4 +173,10 @@ public interface ContainerManagementProtocol {
   GetContainerStatusesResponse getContainerStatuses(
       GetContainerStatusesRequest request) throws YarnException,
       IOException;
+  
+  @Public
+  @Unstable
+  SignalContainersResponse signalContainers(SignalContainersRequest request)
+      throws YarnException, IOException;
+  
 }

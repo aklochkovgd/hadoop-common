@@ -43,6 +43,8 @@ import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.SignalContainersRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.SignalContainersResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.StopContainersRequest;
@@ -128,6 +130,12 @@ public class TestAMAuthorization {
       buf.reset(containerTokens);
       credentials.readTokenStorageStream(buf);
       return credentials;
+    }
+
+    @Override
+    public SignalContainersResponse signalContainers(
+        SignalContainersRequest request) throws YarnException, IOException {
+      return SignalContainersResponse.newInstance(null);
     }
   }
 

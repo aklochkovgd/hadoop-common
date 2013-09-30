@@ -53,6 +53,8 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.ContainerManagementProtocol;
 import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.SignalContainersRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.SignalContainersResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainerRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersResponse;
@@ -82,6 +84,7 @@ import org.apache.hadoop.yarn.server.nodemanager.Context;
 import org.apache.hadoop.yarn.server.nodemanager.DeletionService;
 import org.apache.hadoop.yarn.server.nodemanager.LocalDirsHandlerService;
 import org.apache.hadoop.yarn.server.nodemanager.NMAuditLogger;
+import org.apache.hadoop.yarn.server.nodemanager.ContainerExecutor.Signal;
 import org.apache.hadoop.yarn.server.nodemanager.NMAuditLogger.AuditConstants;
 import org.apache.hadoop.yarn.server.nodemanager.NodeManager;
 import org.apache.hadoop.yarn.server.nodemanager.NodeStatusUpdater;
@@ -99,6 +102,7 @@ import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.Cont
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.ContainerKillEvent;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.launcher.ContainersLauncher;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.launcher.ContainersLauncherEventType;
+import org.apache.hadoop.yarn.server.nodemanager.containermanager.launcher.SignalContainersLauncherEvent;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.localizer.ResourceLocalizationService;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.localizer.event.LocalizationEventType;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.logaggregation.LogAggregationService;
@@ -761,5 +765,51 @@ public class ContainerManagerImpl extends CompositeService implements
 
   public Map<String, ByteBuffer> getAuxServiceMetaData() {
     return this.auxiliaryServices.getMetaData();
+  }
+
+  @Override
+  public SignalContainersResponse signalContainers(
+      SignalContainersRequest request) throws YarnException, IOException {
+    Map<ContainerId, SerializedException> failedRequests =
+        new HashMap<ContainerId, SerializedException>();
+    UserGroupInformation remoteUgi = getRemoteUgi();
+    NMTokenIdentifier identifier = selectNMTokenIdentifier(remoteUgi);
+    for (ContainerId id : request.getContainerIds()) {
+      try {
+        signalContainerInternal(request.getSignal(), id, identifier);
+      } catch (YarnException e) {
+        failedRequests.put(id, SerializedException.newInstance(e));
+      }
+    }
+    return SignalContainersResponse.newInstance(failedRequests);
+  }
+  
+  private void signalContainerInternal(int signal_num, ContainerId containerID,
+      NMTokenIdentifier nmTokenIdentifier) throws YarnException {
+    String containerIDStr = containerID.toString();
+    Container container = this.context.getContainers().get(containerID);
+
+    Signal signal;
+    try {
+      signal = Signal.valueOf(signal_num);
+    } catch (IllegalArgumentException e) {
+      throw new YarnException("Non supported signal " + signal_num);
+    }
+    
+    LOG.info("Sending signal " + signal + " to container " + containerIDStr);
+    authorizeGetAndStopContainerRequest(containerID, container, false,
+      nmTokenIdentifier);
+
+    if (container == null) {
+      if (nodeStatusUpdater.isContainerRecentlyStopped(containerID)) {
+        throw RPCUtil.getRemoteException("Container " + containerIDStr
+          + " was recently stopped on node manager.");
+      } else {
+        throw RPCUtil.getRemoteException("Container " + containerIDStr
+          + " is not handled by this NodeManager");
+      }
+    }
+    this.containersLauncher.handle(
+        new SignalContainersLauncherEvent(container, signal));
   }
 }

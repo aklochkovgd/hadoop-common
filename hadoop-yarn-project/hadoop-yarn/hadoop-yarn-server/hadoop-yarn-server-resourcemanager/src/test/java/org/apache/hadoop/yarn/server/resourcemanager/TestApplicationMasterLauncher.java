@@ -31,6 +31,8 @@ import org.apache.hadoop.yarn.api.ContainerManagementProtocol;
 import org.apache.hadoop.yarn.api.protocolrecords.AllocateResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.SignalContainersRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.SignalContainersResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainerRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersResponse;
@@ -116,6 +118,12 @@ public class TestApplicationMasterLauncher {
     @Override
     public GetContainerStatusesResponse getContainerStatuses(
         GetContainerStatusesRequest request) throws YarnException {
+      return null;
+    }
+
+    @Override
+    public SignalContainersResponse signalContainers(
+        SignalContainersRequest request) throws YarnException, IOException {
       return null;
     }
   }

@@ -217,3 +217,12 @@ message GetContainerStatusesResponseProto {
   repeated ContainerStatusProto status = 1;
   repeated ContainerExceptionMapProto failed_requests = 2;
 }
+
+message SignalContainersRequestProto {
+  repeated ContainerIdProto container_id = 1;
+  required int32 signal = 2;
+}
+
+message SignalContainersResponseProto {
+  repeated ContainerExceptionMapProto failed_requests = 1;
+}
