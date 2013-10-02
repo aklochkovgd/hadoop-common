@@ -323,7 +323,6 @@ DWORD sendBreakToTask(PCWSTR jobObjName)
   for (i = 0; i < jobInfo->NumberOfProcessIdsInList; i++)
   {
     pid = (DWORD) jobInfo->ProcessIdList[i];
-    printf("killing %i\n", pid);
     FreeConsole();
     AttachConsole(pid);
     SetConsoleCtrlHandler(NoopCtrlHandler, TRUE);
