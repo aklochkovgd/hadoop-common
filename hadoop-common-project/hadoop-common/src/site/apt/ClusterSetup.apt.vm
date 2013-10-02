@@ -311,7 +311,7 @@ Hadoop MapReduce Next Generation - Cluster Setup
 | | | Only applicable if log-aggregation is enabled. |
 *-------------------------+-------------------------+------------------------+
 | <<<yarn.nodemanager.aux-services>>> | | |
-| | mapreduce.shuffle  | |
+| | mapreduce_shuffle  | |
 | | | Shuffle service that needs to be set for Map Reduce applications. |
 *-------------------------+-------------------------+------------------------+
 
@@ -928,6 +928,8 @@ KVNO Timestamp         Principal
 | | | binary. |
 *-------------------------+-------------------------+------------------------+
 | <<<banned.users>>> | hfds,yarn,mapred,bin | Banned users. |
+*-------------------------+-------------------------+------------------------+
+| <<<allowed.system.users>>> | foo,bar | Allowed system users. |
 *-------------------------+-------------------------+------------------------+
 | <<<min.user.id>>> | 1000 | Prevent other super-users. |
 *-------------------------+-------------------------+------------------------+

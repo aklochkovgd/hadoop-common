@@ -23,6 +23,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -32,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +46,7 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.yarn.MockApps;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
@@ -53,6 +59,7 @@ import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.QueueACL;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
 import org.apache.hadoop.yarn.api.records.impl.pb.ApplicationSubmissionContextPBImpl;
+import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.event.AsyncDispatcher;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
@@ -72,6 +79,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainer;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.QueueMetrics;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.TestCapacityScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppAddedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppRemovedSchedulerEvent;
@@ -81,12 +89,15 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.NodeUpdateS
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.policies.DominantResourceFairnessPolicy;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.policies.FifoPolicy;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler;
+import org.apache.hadoop.yarn.server.resourcemanager.security.QueueACLsManager;
 import org.apache.hadoop.yarn.server.utils.BuilderUtils;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.yarn.util.resource.Resources;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.xml.sax.SAXException;
 
 public class TestFairScheduler {
@@ -288,6 +299,14 @@ public class TestFairScheduler {
     conf.setBoolean(FairSchedulerConfiguration.SIZE_BASED_WEIGHT, true);
     conf.setDouble(FairSchedulerConfiguration.LOCALITY_THRESHOLD_NODE, .5);
     conf.setDouble(FairSchedulerConfiguration.LOCALITY_THRESHOLD_RACK, .7);
+    conf.setBoolean(FairSchedulerConfiguration.CONTINUOUS_SCHEDULING_ENABLED,
+            true);
+    conf.setInt(FairSchedulerConfiguration.CONTINUOUS_SCHEDULING_SLEEP_MS,
+            10);
+    conf.setInt(FairSchedulerConfiguration.LOCALITY_DELAY_RACK_MS,
+            5000);
+    conf.setInt(FairSchedulerConfiguration.LOCALITY_DELAY_NODE_MS,
+            5000);
     conf.setInt(YarnConfiguration.RM_SCHEDULER_MAXIMUM_ALLOCATION_MB, 1024);
     conf.setInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, 512);
     conf.setInt(FairSchedulerConfiguration.RM_SCHEDULER_INCREMENT_ALLOCATION_MB, 
@@ -298,6 +317,11 @@ public class TestFairScheduler {
     Assert.assertEquals(true, scheduler.sizeBasedWeight);
     Assert.assertEquals(.5, scheduler.nodeLocalityThreshold, .01);
     Assert.assertEquals(.7, scheduler.rackLocalityThreshold, .01);
+    Assert.assertTrue("The continuous scheduling should be enabled",
+            scheduler.continuousSchedulingEnabled);
+    Assert.assertEquals(10, scheduler.continuousSchedulingSleepMs);
+    Assert.assertEquals(5000, scheduler.nodeLocalityDelayMs);
+    Assert.assertEquals(5000, scheduler.rackLocalityDelayMs);
     Assert.assertEquals(1024, scheduler.getMaximumResourceCapability().getMemory());
     Assert.assertEquals(512, scheduler.getMinimumResourceCapability().getMemory());
     Assert.assertEquals(128, 
@@ -437,6 +461,44 @@ public class TestFairScheduler {
     Assert.assertNotNull(leafQueue4);
     Assert.assertEquals("root.parent.sister", leafQueue4.getName());
     Assert.assertEquals(3, queueManager.getLeafQueues().size());
+  }
+
+  @Test
+  public void testSchedulerRootQueueMetrics() throws InterruptedException {
+	  
+    // Add a node
+    RMNode node1 = MockNodes.newNodeInfo(1, Resources.createResource(1024));
+    NodeAddedSchedulerEvent nodeEvent1 = new NodeAddedSchedulerEvent(node1);
+    scheduler.handle(nodeEvent1);
+
+    // Queue 1 requests full capacity of node
+    createSchedulingRequest(1024, "queue1", "user1", 1);
+    scheduler.update();
+    NodeUpdateSchedulerEvent updateEvent = new NodeUpdateSchedulerEvent(node1);
+    scheduler.handle(updateEvent);
+
+    // Now queue 2 requests likewise
+    createSchedulingRequest(1024, "queue2", "user1", 1);
+    scheduler.update();
+    scheduler.handle(updateEvent);
+
+    // Make sure reserved memory gets updated correctly
+    assertEquals(1024, scheduler.rootMetrics.getReservedMB());
+    
+    // Now another node checks in with capacity
+    RMNode node2 = MockNodes.newNodeInfo(1, Resources.createResource(1024));
+    NodeAddedSchedulerEvent nodeEvent2 = new NodeAddedSchedulerEvent(node2);
+    NodeUpdateSchedulerEvent updateEvent2 = new NodeUpdateSchedulerEvent(node2);
+    scheduler.handle(nodeEvent2);
+    scheduler.handle(updateEvent2);
+
+
+    // The old reservation should still be there...
+    assertEquals(1024, scheduler.rootMetrics.getReservedMB());
+
+    // ... but it should disappear when we update the first node.
+    scheduler.handle(updateEvent);
+    assertEquals(0, scheduler.rootMetrics.getReservedMB());
   }
 
   @Test (timeout = 5000)
@@ -1538,6 +1600,7 @@ public class TestFairScheduler {
     out.println("<allocations>");
     out.println("<queue name=\"queue1\">");
     out.println("<aclSubmitApps>norealuserhasthisname</aclSubmitApps>");
+    out.println("<aclAdministerApps>norealuserhasthisname</aclAdministerApps>");
     out.println("</queue>");
     out.println("</allocations>");
     out.close();
@@ -1766,6 +1829,7 @@ public class TestFairScheduler {
     out.println("<allocations>");
     out.println("<queue name=\"queue1\">");
     out.println("<aclSubmitApps>userallow</aclSubmitApps>");
+    out.println("<aclAdministerApps>userallow</aclAdministerApps>");
     out.println("</queue>");
     out.println("</allocations>");
     out.close();
@@ -2203,6 +2267,49 @@ public class TestFairScheduler {
     FairScheduler fs = new FairScheduler();
     TestCapacityScheduler.verifyConcurrentAccessOnApplications(
         fs.applications, FSSchedulerApp.class);
+  }
+
+  @Test
+  public void testContinuousScheduling() throws Exception {
+    // set continuous scheduling enabled
+    FairScheduler fs = new FairScheduler();
+    Configuration conf = createConfiguration();
+    conf.setBoolean(FairSchedulerConfiguration.CONTINUOUS_SCHEDULING_ENABLED,
+            true);
+    fs.reinitialize(conf, resourceManager.getRMContext());
+    Assert.assertTrue("Continuous scheduling should be enabled.",
+            fs.isContinuousSchedulingEnabled());
+
+    // Add one node
+    RMNode node1 =
+            MockNodes.newNodeInfo(1, Resources.createResource(8 * 1024, 8), 1,
+                    "127.0.0.1");
+    NodeAddedSchedulerEvent nodeEvent1 = new NodeAddedSchedulerEvent(node1);
+    fs.handle(nodeEvent1);
+
+    // available resource
+    Assert.assertEquals(fs.getClusterCapacity().getMemory(), 8 * 1024);
+    Assert.assertEquals(fs.getClusterCapacity().getVirtualCores(), 8);
+
+    // send application request
+    ApplicationAttemptId appAttemptId =
+            createAppAttemptId(this.APP_ID++, this.ATTEMPT_ID++);
+    fs.addApplication(appAttemptId, "queue11", "user11");
+    List<ResourceRequest> ask = new ArrayList<ResourceRequest>();
+    ResourceRequest request =
+            createResourceRequest(1024, 1, ResourceRequest.ANY, 1, 1, true);
+    ask.add(request);
+    fs.allocate(appAttemptId, ask, new ArrayList<ContainerId>(), null, null);
+
+    // waiting for continuous_scheduler_sleep_time
+    // at least one pass
+    Thread.sleep(fs.getConf().getContinuousSchedulingSleepMs() + 500);
+
+    // check consumption
+    Resource consumption =
+            fs.applications.get(appAttemptId).getCurrentConsumption();
+    Assert.assertEquals(1024, consumption.getMemory());
+    Assert.assertEquals(1, consumption.getVirtualCores());
   }
 
 }

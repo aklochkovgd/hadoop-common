@@ -26,17 +26,14 @@ import java.util.Arrays;
 import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.http.HttpConfig;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 
-import com.google.common.base.Joiner;
-
 @Public
 @Evolving
 public class YarnConfiguration extends Configuration {
-
-  private static final Joiner JOINER = Joiner.on("");
 
   private static final String YARN_DEFAULT_XML_FILE = "yarn-default.xml";
   private static final String YARN_SITE_XML_FILE = "yarn-site.xml";
@@ -161,6 +158,14 @@ public class YarnConfiguration extends Configuration {
   public static final String DEFAULT_RM_WEBAPP_ADDRESS = "0.0.0.0:" +
     DEFAULT_RM_WEBAPP_PORT;
   
+  /** The https address of the RM web application.*/
+  public static final String RM_WEBAPP_HTTPS_ADDRESS =
+      RM_PREFIX + "webapp.https.address";
+  
+  public static final int DEFAULT_RM_WEBAPP_HTTPS_PORT = 8090;
+  public static final String DEFAULT_RM_WEBAPP_HTTPS_ADDRESS = "0.0.0.0:"
+      + DEFAULT_RM_WEBAPP_HTTPS_PORT;
+  
   public static final String RM_RESOURCE_TRACKER_ADDRESS =
     RM_PREFIX + "resource-tracker.address";
   public static final int DEFAULT_RM_RESOURCE_TRACKER_PORT = 8031;
@@ -270,13 +275,46 @@ public class YarnConfiguration extends Configuration {
   
   public static final String RECOVERY_ENABLED = RM_PREFIX + "recovery.enabled";
   public static final boolean DEFAULT_RM_RECOVERY_ENABLED = false;
+
+  /** HA related configs */
+  public static final String RM_HA_PREFIX = RM_PREFIX + "ha.";
+  public static final String RM_HA_ENABLED = RM_HA_PREFIX + "enabled";
+  public static final boolean DEFAULT_RM_HA_ENABLED = false;
   
+
+  ////////////////////////////////
+  // RM state store configs
+  ////////////////////////////////
   /** The class to use as the persistent store.*/
   public static final String RM_STORE = RM_PREFIX + "store.class";
   
   /** URI for FileSystemRMStateStore */
   public static final String FS_RM_STATE_STORE_URI =
                                            RM_PREFIX + "fs.state-store.uri";
+  /**
+   * Comma separated host:port pairs, each corresponding to a ZK server for
+   * ZKRMStateStore
+   */
+  public static final String ZK_STATE_STORE_PREFIX =
+      RM_PREFIX + "zk.state-store.";
+  public static final String ZK_RM_STATE_STORE_NUM_RETRIES =
+      ZK_STATE_STORE_PREFIX + "num-retries";
+  public static final int DEFAULT_ZK_RM_STATE_STORE_NUM_RETRIES = 3;
+  public static final String ZK_RM_STATE_STORE_ADDRESS =
+      ZK_STATE_STORE_PREFIX + "address";
+  /** Timeout in millisec for ZK server connection for ZKRMStateStore */
+  public static final String ZK_RM_STATE_STORE_TIMEOUT_MS =
+      ZK_STATE_STORE_PREFIX + "timeout.ms";
+  public static final int DEFAULT_ZK_RM_STATE_STORE_TIMEOUT_MS = 60000;
+  /** Parent znode path under which ZKRMStateStore will create znodes */
+  public static final String ZK_RM_STATE_STORE_PARENT_PATH =
+      ZK_STATE_STORE_PREFIX + "parent-path";
+  public static final String DEFAULT_ZK_RM_STATE_STORE_PARENT_PATH = "/rmstore";
+  /** ACL for znodes in ZKRMStateStore */
+  public static final String ZK_RM_STATE_STORE_ACL =
+      ZK_STATE_STORE_PREFIX + "acl";
+  public static final String DEFAULT_ZK_RM_STATE_STORE_ACL =
+      "world:anyone:rwcda";
 
   /** The maximum number of completed applications RM keeps. */ 
   public static final String RM_MAX_COMPLETED_APPLICATIONS =
@@ -324,6 +362,13 @@ public class YarnConfiguration extends Configuration {
   
   public static final long DEFAULT_RM_NMTOKEN_MASTER_KEY_ROLLING_INTERVAL_SECS =
       24 * 60 * 60;
+
+  public static final String RM_NODEMANAGER_MINIMUM_VERSION =
+      RM_PREFIX + "nodemanager.minimum.version";
+
+  public static final String DEFAULT_RM_NODEMANAGER_MINIMUM_VERSION =
+      "NONE";
+
   ////////////////////////////////
   // Node Manager Configs
   ////////////////////////////////
@@ -422,6 +467,10 @@ public class YarnConfiguration extends Configuration {
   public static final String NM_LOG_DIRS = NM_PREFIX + "log-dirs";
   public static final String DEFAULT_NM_LOG_DIRS = "/tmp/logs";
 
+  public static final String NM_RESOURCEMANAGER_MINIMUM_VERSION =
+      NM_PREFIX + "resourcemanager.minimum.version";
+  public static final String DEFAULT_NM_RESOURCEMANAGER_MINIMUM_VERSION = "NONE";
+
   /** Interval at which the delayed token removal thread runs */
   public static final String RM_DELAYED_DELEGATION_TOKEN_REMOVAL_INTERVAL_MS =
       RM_PREFIX + "delayed.delegation-token.removal-interval-ms";
@@ -512,6 +561,13 @@ public class YarnConfiguration extends Configuration {
   public static final int DEFAULT_NM_WEBAPP_PORT = 8042;
   public static final String DEFAULT_NM_WEBAPP_ADDRESS = "0.0.0.0:" +
     DEFAULT_NM_WEBAPP_PORT;
+  
+  /** NM Webapp https address.**/
+  public static final String NM_WEBAPP_HTTPS_ADDRESS = NM_PREFIX
+      + "webapp.https.address";
+  public static final int DEFAULT_NM_WEBAPP_HTTPS_PORT = 8044;
+  public static final String DEFAULT_NM_WEBAPP_HTTPS_ADDRESS = "0.0.0.0:"
+      + DEFAULT_NM_WEBAPP_HTTPS_PORT; 
   
   /** How often to monitor containers.*/
   public final static String NM_CONTAINER_MON_INTERVAL_MS =
@@ -798,41 +854,4 @@ public class YarnConfiguration extends Configuration {
       this.reloadConfiguration();
     }
   }
-
-  public static String getProxyHostAndPort(Configuration conf) {
-    String addr = conf.get(PROXY_ADDRESS);
-    if(addr == null || addr.isEmpty()) {
-      addr = getRMWebAppHostAndPort(conf);
-    }
-    return addr;
-  }
-  
-  public static String getRMWebAppHostAndPort(Configuration conf) {
-    InetSocketAddress address = conf.getSocketAddr(
-        YarnConfiguration.RM_WEBAPP_ADDRESS,
-        YarnConfiguration.DEFAULT_RM_WEBAPP_ADDRESS,
-        YarnConfiguration.DEFAULT_RM_WEBAPP_PORT);
-    address = NetUtils.getConnectAddress(address);
-    StringBuffer sb = new StringBuffer();
-    InetAddress resolved = address.getAddress();
-    if (resolved == null || resolved.isAnyLocalAddress() || 
-        resolved.isLoopbackAddress()) {
-      String lh = address.getHostName();
-      try {
-        lh = InetAddress.getLocalHost().getCanonicalHostName();
-      } catch (UnknownHostException e) {
-        //Ignore and fallback.
-      }
-      sb.append(lh);
-    } else {
-      sb.append(address.getHostName());
-    }
-    sb.append(":").append(address.getPort());
-    return sb.toString();
-  }
-  
-  public static String getRMWebAppURL(Configuration conf) {
-    return JOINER.join("http://", getRMWebAppHostAndPort(conf));
-  }
-  
 }

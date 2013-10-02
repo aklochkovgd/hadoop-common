@@ -24,11 +24,25 @@ Release 2.3.0 - UNRELEASED
     YARN-649. Added a new NM web-service to serve container logs in plain text
     over HTTP. (Sandy Ryza via vinodkv)
 
+    YARN-1021. Yarn Scheduler Load Simulator. (ywskycn via tucu)
+
+    YARN-1010. FairScheduler: decouple container scheduling from nodemanager
+    heartbeats. (Wei Yan via Sandy Ryza)
+
   IMPROVEMENTS
 
     YARN-905. Add state filters to nodes CLI (Wei Yan via Sandy Ryza)
+
     YARN-1098. Separate out RM services into Always On and Active (Karthik
     Kambatla via bikas)
+
+    YARN-1027. Implement RMHAProtocolService (Karthik Kambatla via bikas)
+
+    YARN-353. Add Zookeeper-based store implementation for RMStateStore.
+    (Bikas Saha, Jian He and Karthik Kambatla via hitesh)
+
+    YARN-819. ResourceManager and NodeManager should check for a minimum allowed
+    version (Robert Parker via jeagles)
 
   OPTIMIZATIONS
 
@@ -37,12 +51,82 @@ Release 2.3.0 - UNRELEASED
     YARN-1060. Two tests in TestFairScheduler are missing @Test annotation
     (Niranjan Singh via Sandy Ryza)
 
-Release 2.1.1-beta - UNRELEASED
+    YARN-1188. The context of QueueMetrics becomes default when using
+    FairScheduler (Tsuyoshi Ozawa via Sandy Ryza)
+
+Release 2.2.0 - UNRELEASED
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+  IMPROVEMENTS
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+Release 2.1.2 - UNRELEASED
+
+  INCOMPATIBLE CHANGES
+  
+    YARN-1229. Define constraints on Auxiliary Service names. Change
+    ShuffleHandler service name from mapreduce.shuffle to
+    mapreduce_shuffle (Xuan Gong via sseth)
+
+  NEW FEATURES
+
+  IMPROVEMENTS
+
+    YARN-1246. Added application finish-status to ApplicationSummary for the sake
+    of testing given ApplicationHistoryServer is not yet ready. (Arpit Gupta via
+    vinodkv)
+
+    YARN-899. Added back queue level administrator-acls so that there is no
+    regression w.r.t 1.x. (Xuan Gong via vinodkv)
+
+    YARN-1228. Clean up Fair Scheduler configuration loading. (Sandy Ryza)
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+    YARN-1128. FifoPolicy.computeShares throws NPE on empty list of Schedulables
+    (Karthik Kambatla via Sandy Ryza)
+
+    YARN-1214. Register ClientToken MasterKey in SecretManager after it is
+    saved (Jian He via bikas)
+
+    YARN-49. Improve distributed shell application to work on a secure cluster.
+    (Vinod Kumar Vavilapalli via hitesh)
+
+    YARN-1157. Fixed ResourceManager UI to behave correctly when apps like
+    distributed-shell do not set tracking urls. (Xuan Gong via vinodkv)
+
+    YARN-1221. With Fair Scheduler, reserved MB reported in RM web UI increases
+    indefinitely (Siqi Li via Sandy Ryza)
+
+    YARN-1247. test-container-executor has gotten out of sync with the changes to
+    container-executor. (rvs via tucu)
+
+    YARN-1070. Fixed race conditions in NodeManager during container-kill.
+    (Zhijie Shen via vinodkv)
+
+    YARN-1215. Yarn URL should include userinfo. (Chuan Liu via cnauroth)
+
+    YARN-1262. TestApplicationCleanup relies on all containers assigned in a
+    single heartbeat (Karthik Kambatla via Sandy Ryza)
+
+Release 2.1.1-beta - 2013-09-23
 
   INCOMPATIBLE CHANGES
 
     YARN-707. Added user information also in the YARN ClientToken so that AMs
     can implement authorization based on incoming users. (Jason Lowe via vinodkv)
+
+    YARN-1170. YARN & MapReduce proto definitions fixed to specify protobuf
+    package as hadoop.yarn and hadoop.mapreduce respectively. (Binglin Chang
+    via acmurthy)
 
   NEW FEATURES
 
@@ -97,6 +181,19 @@ Release 2.1.1-beta - UNRELEASED
     YARN-910. Augmented auxiliary services to listen for container starts and
     completions in addition to application events. (Alejandro Abdelnur via
     vinodkv)
+
+    YARN-1137. Add support whitelist for system users to Yarn 
+    container-executor.c. (rvs via tucu)
+
+    YARN-1001. Added a web-service to get statistics about per application-type
+    per state for consumption by downstream projects. (Zhijie Shen via vinodkv)
+
+    YARN-1203. Changed YARN web-app proxy to handle http and https URLs from
+    AM registration and finish correctly. (Omkar Vinit Joshi via vinodkv)
+
+    YARN-1204. Added separate configuration properties for https for RM and NM
+    without which servers enabled with https will also start on http ports.
+    (Omkar Vinit Joshi via vinodkv)
 
   OPTIMIZATIONS
 
@@ -184,6 +281,26 @@ Release 2.1.1-beta - UNRELEASED
 
     YARN-1025. ResourceManager and NodeManager do not load native libraries on
     Windows. (cnauroth)
+
+    YARN-1176. RM web services ClusterMetricsInfo total nodes doesn't include 
+    unhealthy nodes (Jonathan Eagles via tgraves)
+
+    YARN-1078. TestNodeManagerResync, TestNodeManagerShutdown, and
+    TestNodeStatusUpdater fail on Windows. (Chuan Liu via cnauroth)
+
+    YARN-1194. TestContainerLogsPage fails with native builds (Roman Shaposhnik
+    via jlowe)
+
+    YARN-1116. Populate AMRMTokens back to AMRMTokenSecretManager after RM
+    restarts (Jian He via bikas)
+
+    YARN-1189. NMTokenSecretManagerInNM is not being told when applications
+    have finished (Omkar Vinit Joshi via jlowe)
+
+    YARN-540. Race condition causing RM to potentially relaunch already
+    unregistered AMs on RM restart (Jian He via bikas)
+
+    YARN-1184. ClassCastException during preemption enforcement. (cdouglas)
 
 Release 2.1.0-beta - 2013-08-22
 
@@ -1308,6 +1425,9 @@ Release 0.23.10 - UNRELEASED
 
     YARN-1101. Active nodes can be decremented below 0 (Robert Parker 
     via tgraves)
+
+    YARN-1176. RM web services ClusterMetricsInfo total nodes doesn't include 
+    unhealthy nodes (Jonathan Eagles via tgraves)
 
 Release 0.23.9 - 2013-07-08
 

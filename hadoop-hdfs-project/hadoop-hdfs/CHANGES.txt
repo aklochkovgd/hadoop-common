@@ -120,6 +120,9 @@ Trunk (Unreleased)
 
     HDFS-4904. Remove JournalService. (Arpit Agarwal via cnauroth)
 
+    HDFS-5041. Add the time of last heartbeat to dead server Web UI (Shinichi
+    Yamashita via brandonli)
+
   OPTIMIZATIONS
 
   BUG FIXES
@@ -244,6 +247,12 @@ Release 2.3.0 - UNRELEASED
 
   NEW FEATURES
 
+    HDFS-5122. Support failover and retry in WebHdfsFileSystem for NN HA.
+    (Haohui Mai via jing9)
+
+    HDFS-4953. Enable HDFS local reads via mmap.
+    (Colin Patrick McCabe via wang).
+
   IMPROVEMENTS
 
     HDFS-4657.  Limit the number of blocks logged by the NN after a block
@@ -272,7 +281,34 @@ Release 2.3.0 - UNRELEASED
     HDFS-4879. Add "blocked ArrayList" collection to avoid CMS full GCs
     (Todd Lipcon via Colin Patrick McCabe)
 
+    HDFS-4096. Add snapshot information to namenode WebUI. (Haohui Mai via 
+    jing9)
+
+    HDFS-5188. In BlockPlacementPolicy, reduce the number of chooseTarget(..)
+    methods; replace HashMap with Map in parameter declarations and cleanup
+    some related code.  (szetszwo)
+
+    HDFS-5207. In BlockPlacementPolicy.chooseTarget(..), change the writer
+    and the excludedNodes parameter types respectively to Node and Set.
+    (Junping Du via szetszwo)
+
+    HDFS-5240. Separate formatting from logging in the audit logger API (daryn)
+
+    HDFS-5191. Revisit zero-copy API in FSDataInputStream to make it more
+    intuitive.  (Contributed by Colin Patrick McCabe)
+
+    HDFS-5260. Merge zero-copy memory-mapped HDFS client reads to trunk and
+    branch-2. (cnauroth)
+
+    HDFS-4517. Cover class RemoteBlockReader with unit tests. (Vadim Bondarev
+    and Dennis Y via kihwal)
+
+    HDFS-4512. Cover package org.apache.hadoop.hdfs.server.common with tests.
+    (Vadim Bondarev via kihwal)
+
   OPTIMIZATIONS
+
+    HDFS-5239.  Allow FSNamesystem lock fairness to be configurable (daryn)
 
   BUG FIXES
     HDFS-5034.  Remove debug prints from GetFileLinkInfo (Andrew Wang via Colin
@@ -292,7 +328,64 @@ Release 2.3.0 - UNRELEASED
     HDFS-5170. BlockPlacementPolicyDefault uses the wrong classname when
     alerting to enable debug logging. (Andrew Wang)
 
-Release 2.1.1-beta - UNRELEASED
+    HDFS-5031. BlockScanner scans the block multiple times. (Vinay via Arpit
+    Agarwal)
+
+    HDFS-5266. ElasticByteBufferPool#Key does not implement equals. (cnauroth)
+
+Release 2.2.0 - UNRELEASED
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+  IMPROVEMENTS
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+Release 2.1.2 - UNRELEASED
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+    HDFS-5230. Introduce RpcInfo to decouple XDR classes from the RPC API.
+    (Haohui Mai via brandonli)
+
+  IMPROVEMENTS
+
+    HDFS-5246. Make Hadoop nfs server port and mount daemon port
+    configurable. (Jinghui Wang via brandonli)
+
+    HDFS-5256. Use guava LoadingCache to implement DFSClientCache. (Haohui Mai
+    via brandonli)
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+    HDFS-5139. Remove redundant -R option from setrep.
+
+    HDFS-5251. Race between the initialization of NameNode and the http
+    server. (Haohui Mai via suresh)
+
+    HDFS-5258. Skip tests in TestHDFSCLI that are not applicable on Windows.
+    (Chuan Liu via cnauroth)
+
+    HDFS-5186. TestFileJournalManager fails on Windows due to file handle leaks.
+    (Chuan Liu via cnauroth)
+
+    HDFS-5268. NFS write commit verifier is not set in a few places (brandonli)
+
+    HDFS-5265. Namenode fails to start when dfs.https.port is unspecified.
+    (Haohui Mai via jing9)
+
+    HDFS-5255. Distcp job fails with hsftp when https is enabled in insecure
+    cluster. (Arpit Agarwal)
+
+Release 2.1.1-beta - 2013-09-23
 
   INCOMPATIBLE CHANGES
 
@@ -333,6 +426,13 @@ Release 2.1.1-beta - UNRELEASED
     HDFS-5085. Refactor o.a.h.nfs to support different types of 
     authentications. (jing9)
 
+    HDFS-5067 Support symlink operations in NFS gateway. (brandonli)
+
+    HDFS-5199 Add more debug trace for NFS READ and WRITE. (brandonli)
+
+    HDFS-5234 Move RpcFrameDecoder out of the public API.
+    (Haohui Mai via brandonli)
+
   IMPROVEMENTS
 
     HDFS-4513. Clarify in the WebHDFS REST API that all JSON respsonses may
@@ -366,6 +466,14 @@ Release 2.1.1-beta - UNRELEASED
     server. (kihwal)
 
     HDFS-5150. Allow per NN SPN for internal SPNEGO. (kihwal)
+
+    HDFS-4680. Audit logging of delegation tokens for MR tracing. (Andrew Wang)
+
+    HDFS-5212. Refactor RpcMessage and NFS3Response to support different 
+    types of authentication information. (jing9)
+
+    HDFS-4971. Move IO operations out of locking in OpenFileCtx. (brandonli and
+    jing9)
 
   OPTIMIZATIONS
 
@@ -434,6 +542,17 @@ Release 2.1.1-beta - UNRELEASED
 
     HDFS-5159. Secondary NameNode fails to checkpoint if error occurs
     downloading edits on first checkpoint. (atm)
+
+    HDFS-5192. NameNode may fail to start when 
+    dfs.client.test.drop.namenode.response.number is set. (jing9)
+
+    HDFS-5219. Add configuration keys for retry policy in WebHDFSFileSystem.
+    (Haohui Mai via jing9)
+
+    HDFS-5231. Fix broken links in the document of HDFS Federation. (Haohui Mai
+    via jing9)
+
+    HDFS-5249. Fix dumper thread which may die silently. (brandonli)
 
 Release 2.1.0-beta - 2013-08-22
 
@@ -887,6 +1006,9 @@ Release 2.1.0-beta - 2013-08-22
 
     HDFS-5016. Deadlock in pipeline recovery causes Datanode to be marked dead.
     (suresh)
+
+    HDFS-5228. The RemoteIterator returned by DistributedFileSystem.listFiles
+    may throw NullPointerException.  (szetszwo and cnauroth via szetszwo)
 
   BREAKDOWN OF HDFS-347 SUBTASKS AND RELATED JIRAS
 

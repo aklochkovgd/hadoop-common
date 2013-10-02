@@ -36,6 +36,8 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_HA_STANDBY_CHECKPOINTS_KE
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_ACCESSTIME_PRECISION_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_ACCESSTIME_PRECISION_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_AUDIT_LOGGERS_KEY;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_AUDIT_LOG_TOKEN_TRACKING_ID_DEFAULT;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_AUDIT_LOG_TOKEN_TRACKING_ID_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_DEFAULT_AUDIT_LOGGER_NAME;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_DELEGATION_KEY_UPDATE_INTERVAL_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_DELEGATION_KEY_UPDATE_INTERVAL_KEY;
@@ -220,6 +222,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.security.token.delegation.DelegationKey;
 import org.apache.hadoop.util.Daemon;
 import org.apache.hadoop.util.DataChecksum;
@@ -311,8 +314,14 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
           stat.getGroup(), symlink, path);
     }
     for (AuditLogger logger : auditLoggers) {
-      logger.logAuditEvent(succeeded, ugi.toString(), addr,
-          cmd, src, dst, status);
+      if (logger instanceof HdfsAuditLogger) {
+        HdfsAuditLogger hdfsLogger = (HdfsAuditLogger) logger;
+        hdfsLogger.logAuditEvent(succeeded, ugi.toString(), addr, cmd, src, dst,
+            status, ugi, dtSecretManager);
+      } else {
+        logger.logAuditEvent(succeeded, ugi.toString(), addr,
+            cmd, src, dst, status);
+      }
     }
   }
 
@@ -426,7 +435,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   private final long accessTimePrecision;
 
   /** Lock to protect FSNamesystem. */
-  private ReentrantReadWriteLock fsLock = new ReentrantReadWriteLock(true);
+  private ReentrantReadWriteLock fsLock;
 
   /**
    * Used when this NN is in standby state to read from the shared edit log.
@@ -601,6 +610,9 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
    */
   FSNamesystem(Configuration conf, FSImage fsImage, boolean ignoreRetryCache)
       throws IOException {
+    boolean fair = conf.getBoolean("dfs.namenode.fslock.fair", true);
+    LOG.info("fsLock is fair:" + fair);
+    fsLock = new ReentrantReadWriteLock(fair);
     try {
       resourceRecheckInterval = conf.getLong(
           DFS_NAMENODE_RESOURCE_CHECK_INTERVAL_KEY,
@@ -2433,7 +2445,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
    * client to "try again later".
    */
   LocatedBlock getAdditionalBlock(String src, long fileId, String clientName,
-      ExtendedBlock previous, HashMap<Node, Node> excludedNodes, 
+      ExtendedBlock previous, Set<Node> excludedNodes, 
       List<String> favoredNodes)
       throws LeaseExpiredException, NotReplicatedYetException,
       QuotaExceededException, SafeModeException, UnresolvedLinkException,
@@ -2632,7 +2644,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
 
   /** @see NameNode#getAdditionalDatanode(String, ExtendedBlock, DatanodeInfo[], DatanodeInfo[], int, String) */
   LocatedBlock getAdditionalDatanode(String src, final ExtendedBlock blk,
-      final DatanodeInfo[] existings,  final HashMap<Node, Node> excludes,
+      final DatanodeInfo[] existings,  final Set<Node> excludes,
       final int numAdditionalNodes, final String clientName
       ) throws IOException {
     //check if the feature is enabled
@@ -4188,6 +4200,15 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   public int getNumSnapshots() {
     return this.snapshotManager.getNumSnapshots();
   }
+
+  @Override
+  public String getSnapshotStats() {
+    Map<String, Object> info = new HashMap<String, Object>();
+    info.put("SnapshottableDirectories", this.getNumSnapshottableDirs());
+    info.put("Snapshots", this.getNumSnapshots());
+    return JSON.toString(info);
+  }
+
 
   int getNumberOfDatanodes(DatanodeReportType type) {
     readLock();
@@ -5906,7 +5927,10 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
             DFS_NAMENODE_DELEGATION_TOKEN_MAX_LIFETIME_DEFAULT),
         conf.getLong(DFS_NAMENODE_DELEGATION_TOKEN_RENEW_INTERVAL_KEY,
             DFS_NAMENODE_DELEGATION_TOKEN_RENEW_INTERVAL_DEFAULT),
-        DELEGATION_TOKEN_REMOVER_SCAN_INTERVAL, this);
+        DELEGATION_TOKEN_REMOVER_SCAN_INTERVAL,
+        conf.getBoolean(DFS_NAMENODE_AUDIT_LOG_TOKEN_TRACKING_ID_KEY,
+            DFS_NAMENODE_AUDIT_LOG_TOKEN_TRACKING_ID_DEFAULT),
+        this);
   }
 
   /**
@@ -6817,17 +6841,22 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
    * defined in the config file. It can also be explicitly listed in the
    * config file.
    */
-  private static class DefaultAuditLogger implements AuditLogger {
+  private static class DefaultAuditLogger extends HdfsAuditLogger {
+
+    private boolean logTokenTrackingId;
 
     @Override
     public void initialize(Configuration conf) {
-      // Nothing to do.
+      logTokenTrackingId = conf.getBoolean(
+          DFSConfigKeys.DFS_NAMENODE_AUDIT_LOG_TOKEN_TRACKING_ID_KEY,
+          DFSConfigKeys.DFS_NAMENODE_AUDIT_LOG_TOKEN_TRACKING_ID_DEFAULT);
     }
 
     @Override
     public void logAuditEvent(boolean succeeded, String userName,
         InetAddress addr, String cmd, String src, String dst,
-        FileStatus status) {
+        FileStatus status, UserGroupInformation ugi,
+        DelegationTokenSecretManager dtSecretManager) {
       if (auditLog.isInfoEnabled()) {
         final StringBuilder sb = auditBuffer.get();
         sb.setLength(0);
@@ -6845,10 +6874,29 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
           sb.append(status.getGroup()).append(":");
           sb.append(status.getPermission());
         }
-        auditLog.info(sb);
+        if (logTokenTrackingId) {
+          sb.append("\t").append("trackingId=");
+          String trackingId = null;
+          if (ugi != null && dtSecretManager != null
+              && ugi.getAuthenticationMethod() == AuthenticationMethod.TOKEN) {
+            for (TokenIdentifier tid: ugi.getTokenIdentifiers()) {
+              if (tid instanceof DelegationTokenIdentifier) {
+                DelegationTokenIdentifier dtid =
+                    (DelegationTokenIdentifier)tid;
+                trackingId = dtSecretManager.getTokenTrackingId(dtid);
+                break;
+              }
+            }
+          }
+          sb.append(trackingId);
+        }
+        logAuditMessage(sb.toString());
       }
     }
 
+    public void logAuditMessage(String message) {
+      auditLog.info(message);
+    }
   }
 
 }

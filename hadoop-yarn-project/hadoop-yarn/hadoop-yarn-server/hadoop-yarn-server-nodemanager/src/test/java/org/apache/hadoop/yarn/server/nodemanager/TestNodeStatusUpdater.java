@@ -23,7 +23,9 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -143,7 +145,7 @@ public class TestNodeStatusUpdater {
       .byteValue() }));
     return masterKey;
   }
-  
+
   private class MyResourceTracker implements ResourceTracker {
 
     private final Context context;
@@ -219,11 +221,11 @@ public class TestNodeStatusUpdater {
         Resource resource = BuilderUtils.newResource(2, 1);
         long currentTime = System.currentTimeMillis();
         String user = "testUser";
-        ContainerTokenIdentifier containerToken =
-            BuilderUtils.newContainerTokenIdentifier(BuilderUtils
-              .newContainerToken(firstContainerID, "localhost", 1234, user,
-                resource, currentTime + 10000, 123, "password".getBytes(),
-                currentTime));
+        ContainerTokenIdentifier containerToken = BuilderUtils
+            .newContainerTokenIdentifier(BuilderUtils.newContainerToken(
+                firstContainerID, InetAddress.getByName("localhost")
+                    .getCanonicalHostName(), 1234, user, resource,
+                currentTime + 10000, 123, "password".getBytes(), currentTime));
         Container container =
             new ContainerImpl(conf, mockDispatcher, launchContext, null,
               mockMetrics, containerToken);
@@ -250,11 +252,11 @@ public class TestNodeStatusUpdater {
         long currentTime = System.currentTimeMillis();
         String user = "testUser";
         Resource resource = BuilderUtils.newResource(3, 1);
-        ContainerTokenIdentifier containerToken =
-            BuilderUtils.newContainerTokenIdentifier(BuilderUtils
-              .newContainerToken(secondContainerID, "localhost", 1234, user,
-                resource, currentTime + 10000, 123,
-                "password".getBytes(), currentTime));
+        ContainerTokenIdentifier containerToken = BuilderUtils
+            .newContainerTokenIdentifier(BuilderUtils.newContainerToken(
+                secondContainerID, InetAddress.getByName("localhost")
+                    .getCanonicalHostName(), 1234, user, resource,
+                currentTime + 10000, 123, "password".getBytes(), currentTime));
         Container container =
             new ContainerImpl(conf, mockDispatcher, launchContext, null,
               mockMetrics, containerToken);
@@ -469,6 +471,7 @@ public class TestNodeStatusUpdater {
     public NodeAction heartBeatNodeAction = NodeAction.NORMAL;
     public NodeAction registerNodeAction = NodeAction.NORMAL;
     public String shutDownMessage = "";
+    public String rmVersion = "3.0.1";
 
     @Override
     public RegisterNodeManagerResponse registerNodeManager(
@@ -481,6 +484,7 @@ public class TestNodeStatusUpdater {
       response.setContainerTokenMasterKey(createMasterKey());
       response.setNMTokenMasterKey(createMasterKey());
       response.setDiagnosticsMessage(shutDownMessage);
+      response.setRMVersion(rmVersion);
       return response;
     }
     @Override
@@ -1178,6 +1182,44 @@ public class TestNodeStatusUpdater {
         " connectionWaitSecs and RetryIntervalSecs", heartBeatID == 2);
   }
 
+  @Test
+  public void testRMVersionLessThanMinimum() throws InterruptedException {
+    final AtomicInteger numCleanups = new AtomicInteger(0);
+    YarnConfiguration conf = createNMConfig();
+    conf.set(YarnConfiguration.NM_RESOURCEMANAGER_MINIMUM_VERSION, "3.0.0");
+    nm = new NodeManager() {
+      @Override
+      protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+                                                          Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
+        MyNodeStatusUpdater myNodeStatusUpdater = new MyNodeStatusUpdater(
+            context, dispatcher, healthChecker, metrics);
+        MyResourceTracker2 myResourceTracker2 = new MyResourceTracker2();
+        myResourceTracker2.heartBeatNodeAction = NodeAction.NORMAL;
+        myResourceTracker2.rmVersion = "3.0.0";
+        myNodeStatusUpdater.resourceTracker = myResourceTracker2;
+        return myNodeStatusUpdater;
+      }
+
+      @Override
+      protected void cleanupContainers(NodeManagerEventType eventType) {
+        super.cleanupContainers(NodeManagerEventType.SHUTDOWN);
+        numCleanups.incrementAndGet();
+      }
+    };
+
+    nm.init(conf);
+    nm.start();
+
+    // NM takes a while to reach the STARTED state.
+    int waitCount = 0;
+    while (nm.getServiceState() != STATE.STARTED && waitCount++ != 20) {
+      LOG.info("Waiting for NM to stop..");
+      Thread.sleep(1000);
+    }
+    Assert.assertTrue(nm.getServiceState() == STATE.STARTED);
+    nm.stop();
+  }
+
   private class MyNMContext extends NMContext {
     ConcurrentMap<ContainerId, Container> containers =
         new ConcurrentSkipListMap<ContainerId, Container>();
@@ -1290,9 +1332,15 @@ public class TestNodeStatusUpdater {
 
   private YarnConfiguration createNMConfig() {
     YarnConfiguration conf = new YarnConfiguration();
+    String localhostAddress = null;
+    try {
+      localhostAddress = InetAddress.getByName("localhost").getCanonicalHostName();
+    } catch (UnknownHostException e) {
+      Assert.fail("Unable to get localhost address: " + e.getMessage());
+    }
     conf.setInt(YarnConfiguration.NM_PMEM_MB, 5 * 1024); // 5GB
-    conf.set(YarnConfiguration.NM_ADDRESS, "localhost:12345");
-    conf.set(YarnConfiguration.NM_LOCALIZER_ADDRESS, "localhost:12346");
+    conf.set(YarnConfiguration.NM_ADDRESS, localhostAddress + ":12345");
+    conf.set(YarnConfiguration.NM_LOCALIZER_ADDRESS, localhostAddress + ":12346");  
     conf.set(YarnConfiguration.NM_LOG_DIRS, logsDir.getAbsolutePath());
     conf.set(YarnConfiguration.NM_REMOTE_APP_LOG_DIR,
       remoteLogsDir.getAbsolutePath());

@@ -18,9 +18,12 @@
 package org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair;
 
 import java.io.File;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.conf.Configuration;
@@ -33,6 +36,9 @@ import org.apache.hadoop.yarn.util.resource.Resources;
 @Evolving
 public class FairSchedulerConfiguration extends Configuration {
 
+  public static final Log LOG = LogFactory.getLog(
+      FairSchedulerConfiguration.class.getName());
+  
   /** Increment request grant-able by the RM scheduler. 
    * These properties are looked up in the yarn-site.xml  */
   public static final String RM_SCHEDULER_INCREMENT_ALLOCATION_MB =
@@ -42,11 +48,10 @@ public class FairSchedulerConfiguration extends Configuration {
     YarnConfiguration.YARN_PREFIX + "scheduler.increment-allocation-vcores";
   public static final int DEFAULT_RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES = 1;
   
-  public static final String FS_CONFIGURATION_FILE = "fair-scheduler.xml";
-
   private static final String CONF_PREFIX =  "yarn.scheduler.fair.";
 
   protected static final String ALLOCATION_FILE = CONF_PREFIX + "allocation.file";
+  protected static final String DEFAULT_ALLOCATION_FILE = "fair-scheduler.xml";
   protected static final String EVENT_LOG_DIR = "eventlog.dir";
 
   /** Whether to use the user name as the queue name (instead of "default") if
@@ -65,6 +70,22 @@ public class FairSchedulerConfiguration extends Configuration {
   protected static final String LOCALITY_THRESHOLD_RACK = CONF_PREFIX + "locality.threshold.rack";
   protected static final float  DEFAULT_LOCALITY_THRESHOLD_RACK =
 		  DEFAULT_LOCALITY_THRESHOLD;
+
+  /** Delay for node locality. */
+  protected static final String LOCALITY_DELAY_NODE_MS = CONF_PREFIX + "locality-delay-node-ms";
+  protected static final long DEFAULT_LOCALITY_DELAY_NODE_MS = -1L;
+
+  /** Delay for rack locality. */
+  protected static final String LOCALITY_DELAY_RACK_MS = CONF_PREFIX + "locality-delay-rack-ms";
+  protected static final long DEFAULT_LOCALITY_DELAY_RACK_MS = -1L;
+
+  /** Enable continuous scheduling or not. */
+  protected static final String CONTINUOUS_SCHEDULING_ENABLED = CONF_PREFIX + "continuous-scheduling-enabled";
+  protected static final boolean DEFAULT_CONTINUOUS_SCHEDULING_ENABLED = false;
+
+  /** Sleep time of each pass in continuous scheduling (5ms in default) */
+  protected static final String CONTINUOUS_SCHEDULING_SLEEP_MS = CONF_PREFIX + "continuous-scheduling-sleep-ms";
+  protected static final int DEFAULT_CONTINUOUS_SCHEDULING_SLEEP_MS = 5;
 
   /** Whether preemption is enabled. */
   protected static final String  PREEMPTION = CONF_PREFIX + "preemption";
@@ -89,7 +110,6 @@ public class FairSchedulerConfiguration extends Configuration {
 
   public FairSchedulerConfiguration(Configuration conf) {
     super(conf);
-    addResource(FS_CONFIGURATION_FILE);
   }
 
   public Resource getMinimumAllocation() {
@@ -134,6 +154,22 @@ public class FairSchedulerConfiguration extends Configuration {
     return getFloat(LOCALITY_THRESHOLD_RACK, DEFAULT_LOCALITY_THRESHOLD_RACK);
   }
 
+  public boolean isContinuousSchedulingEnabled() {
+    return getBoolean(CONTINUOUS_SCHEDULING_ENABLED, DEFAULT_CONTINUOUS_SCHEDULING_ENABLED);
+  }
+
+  public int getContinuousSchedulingSleepMs() {
+    return getInt(CONTINUOUS_SCHEDULING_SLEEP_MS, DEFAULT_CONTINUOUS_SCHEDULING_SLEEP_MS);
+  }
+
+  public long getLocalityDelayNodeMs() {
+    return getLong(LOCALITY_DELAY_NODE_MS, DEFAULT_LOCALITY_DELAY_NODE_MS);
+  }
+
+  public long getLocalityDelayRackMs() {
+    return getLong(LOCALITY_DELAY_RACK_MS, DEFAULT_LOCALITY_DELAY_RACK_MS);
+  }
+
   public boolean getPreemptionEnabled() {
     return getBoolean(PREEMPTION, DEFAULT_PREEMPTION);
   }
@@ -150,8 +186,28 @@ public class FairSchedulerConfiguration extends Configuration {
     return getBoolean(SIZE_BASED_WEIGHT, DEFAULT_SIZE_BASED_WEIGHT);
   }
 
-  public String getAllocationFile() {
-    return get(ALLOCATION_FILE);
+  /**
+   * Path to XML file containing allocations. If the
+   * path is relative, it is searched for in the
+   * classpath, but loaded like a regular File.
+   */
+  public File getAllocationFile() {
+    String allocFilePath = get(ALLOCATION_FILE, DEFAULT_ALLOCATION_FILE);
+    File allocFile = new File(allocFilePath);
+    if (!allocFile.isAbsolute()) {
+      URL url = Thread.currentThread().getContextClassLoader()
+          .getResource(allocFilePath);
+      if (url == null) {
+        LOG.warn(allocFilePath + " not found on the classpath.");
+        allocFile = null;
+      } else if (!url.getProtocol().equalsIgnoreCase("file")) {
+        throw new RuntimeException("Allocation file " + url
+            + " found on the classpath is not on the local filesystem.");
+      } else {
+        allocFile = new File(url.getPath());
+      }
+    }
+    return allocFile;
   }
 
   public String getEventlogDir() {
