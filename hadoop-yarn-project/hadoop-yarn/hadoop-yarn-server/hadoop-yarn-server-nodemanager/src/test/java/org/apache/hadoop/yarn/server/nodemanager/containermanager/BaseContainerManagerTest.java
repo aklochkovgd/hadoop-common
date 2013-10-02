@@ -261,20 +261,25 @@ public abstract class BaseContainerManagerTest {
     GetContainerStatusesRequest request =
         GetContainerStatusesRequest.newInstance(list);
     ContainerStatus containerStatus =
-        containerManager.getContainerStatuses(request).getContainerStatuses()
-          .get(0);
+        getContainerStatus(containerManager, request);
     int timeoutSecs = 0;
       while (!containerStatus.getState().equals(finalState)
           && timeoutSecs++ < timeOutMax) {
           Thread.sleep(1000);
           LOG.info("Waiting for container to get into state " + finalState
               + ". Current state is " + containerStatus.getState());
-          containerStatus = containerManager.getContainerStatuses(request).getContainerStatuses().get(0);
+          containerStatus = getContainerStatus(containerManager, request);
         }
         LOG.info("Container state is " + containerStatus.getState());
         Assert.assertEquals("ContainerState is not correct (timedout)",
             finalState, containerStatus.getState());
       }
+
+  public static ContainerStatus getContainerStatus(
+      ContainerManagementProtocol containerManager,
+      GetContainerStatusesRequest request) throws YarnException, IOException {
+    return containerManager.getContainerStatuses(request).getContainerStatuses().get(0);
+  }
 
   static void waitForApplicationState(ContainerManagerImpl containerManager,
       ApplicationId appID, ApplicationState finalState)

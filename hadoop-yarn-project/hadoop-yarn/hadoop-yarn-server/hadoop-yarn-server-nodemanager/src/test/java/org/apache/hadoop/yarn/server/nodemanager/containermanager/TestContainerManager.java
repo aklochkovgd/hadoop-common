@@ -26,9 +26,11 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import junit.framework.Assert;
 
@@ -40,6 +42,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetContainerStatusesResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.SignalContainersRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainerRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainersResponse;
@@ -66,6 +69,7 @@ import org.apache.hadoop.yarn.security.NMTokenIdentifier;
 import org.apache.hadoop.yarn.server.api.ResourceManagerConstants;
 import org.apache.hadoop.yarn.server.nodemanager.CMgrCompletedAppsEvent;
 import org.apache.hadoop.yarn.server.nodemanager.ContainerExecutor.ExitCode;
+import org.apache.hadoop.yarn.server.nodemanager.ContainerExecutor.Signal;
 import org.apache.hadoop.yarn.server.nodemanager.DefaultContainerExecutor;
 import org.apache.hadoop.yarn.server.nodemanager.DeletionService;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.application.ApplicationState;
@@ -78,6 +82,9 @@ import org.apache.hadoop.yarn.server.utils.BuilderUtils;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 public class TestContainerManager extends BaseContainerManagerTest {
 
@@ -245,92 +252,34 @@ public class TestContainerManager extends BaseContainerManagerTest {
 
     // Now verify the contents of the file
     BufferedReader reader = new BufferedReader(new FileReader(targetFile));
-    Assert.assertEquals("Hello World!", reader.readLine());
-    Assert.assertEquals(null, reader.readLine());
+    try {
+      Assert.assertEquals("Hello World!", reader.readLine());
+      Assert.assertEquals(null, reader.readLine());
+    } finally {
+      reader.close();
+    }
   }
 
   @Test
   public void testContainerLaunchAndStop() throws IOException,
       InterruptedException, YarnException {
-    containerManager.start();
-
-    File scriptFile = Shell.appendScriptExtension(tmpDir, "scriptFile");
-    PrintWriter fileWriter = new PrintWriter(scriptFile);
-    File processStartFile =
-        new File(tmpDir, "start_file.txt").getAbsoluteFile();
-
-    // ////// Construct the Container-id
+    // Construct the Container-id
     ContainerId cId = createContainerId(0);
-
-    if (Shell.WINDOWS) {
-      fileWriter.println("@echo Hello World!> " + processStartFile);
-      fileWriter.println("@echo " + cId + ">> " + processStartFile);
-      fileWriter.println("@ping -n 100 127.0.0.1 >nul");
-    } else {
-      fileWriter.write("\numask 0"); // So that start file is readable by the test
-      fileWriter.write("\necho Hello World! > " + processStartFile);
-      fileWriter.write("\necho $$ >> " + processStartFile);
-      fileWriter.write("\nexec sleep 100");
-    }
-    fileWriter.close();
-
-    ContainerLaunchContext containerLaunchContext = 
-        recordFactory.newRecordInstance(ContainerLaunchContext.class);
-
-    URL resource_alpha =
-        ConverterUtils.getYarnUrlFromPath(localFS
-            .makeQualified(new Path(scriptFile.getAbsolutePath())));
-    LocalResource rsrc_alpha =
-        recordFactory.newRecordInstance(LocalResource.class);
-    rsrc_alpha.setResource(resource_alpha);
-    rsrc_alpha.setSize(-1);
-    rsrc_alpha.setVisibility(LocalResourceVisibility.APPLICATION);
-    rsrc_alpha.setType(LocalResourceType.FILE);
-    rsrc_alpha.setTimestamp(scriptFile.lastModified());
-    String destinationFile = "dest_file";
-    Map<String, LocalResource> localResources = 
-        new HashMap<String, LocalResource>();
-    localResources.put(destinationFile, rsrc_alpha);
-    containerLaunchContext.setLocalResources(localResources);
-    List<String> commands = Arrays.asList(Shell.getRunScriptCommand(scriptFile));
-    containerLaunchContext.setCommands(commands);
-
-    StartContainerRequest scRequest =
-        StartContainerRequest.newInstance(containerLaunchContext,
-          createContainerToken(cId,
-            DUMMY_RM_IDENTIFIER, context.getNodeId(), user,
-            context.getContainerTokenSecretManager()));
-    List<StartContainerRequest> list = new ArrayList<StartContainerRequest>();
-    list.add(scRequest);
-    StartContainersRequest allRequests =
-        StartContainersRequest.newInstance(list);
-    containerManager.startContainers(allRequests);
-
-    int timeoutSecs = 0;
-    while (!processStartFile.exists() && timeoutSecs++ < 20) {
-      Thread.sleep(1000);
-      LOG.info("Waiting for process start-file to be created");
-    }
-    Assert.assertTrue("ProcessStartFile doesn't exist!",
-        processStartFile.exists());
     
-    // Now verify the contents of the file
-    BufferedReader reader =
-        new BufferedReader(new FileReader(processStartFile));
-    Assert.assertEquals("Hello World!", reader.readLine());
-    // Get the pid of the process
-    String pid = reader.readLine().trim();
-    // No more lines
-    Assert.assertEquals(null, reader.readLine());
+    ShellScriptResourcesProvider resourcesProvider = new ShellScriptResourcesProvider(cId) {
 
-    // Now test the stop functionality.
-
-    // Assert that the process is alive
-    Assert.assertTrue("Process is not alive!",
-      DefaultContainerExecutor.containerIsAlive(pid));
-    // Once more
-    Assert.assertTrue("Process is not alive!",
-      DefaultContainerExecutor.containerIsAlive(pid));
+      @Override
+      public void appendCommands(PrintWriter scriptWriter) {
+        if (Shell.WINDOWS) {
+          scriptWriter.println("@ping -n 100 127.0.0.1 >nul");
+        } else {
+          scriptWriter.write("\nexec sleep 100");
+        }
+      }
+      
+    };
+    startContainer(cId, resourcesProvider);
+    String pid = resourcesProvider.waitForStartFile();
 
     List<ContainerId> containerIds = new ArrayList<ContainerId>();
     containerIds.add(cId);
@@ -352,67 +301,128 @@ public class TestContainerManager extends BaseContainerManagerTest {
     Assert.assertFalse("Process is still alive!",
       DefaultContainerExecutor.containerIsAlive(pid));
   }
-
-  private void testContainerLaunchAndExit(int exitCode) throws IOException,
+  
+  @Test
+  public void testSignalContainer() throws IOException,
       InterruptedException, YarnException {
+    // Construct the Container-id
+    ContainerId cId = createContainerId(0);
 
-	  File scriptFile = Shell.appendScriptExtension(tmpDir, "scriptFile");
-	  PrintWriter fileWriter = new PrintWriter(scriptFile);
-	  File processStartFile =
-			  new File(tmpDir, "start_file.txt").getAbsoluteFile();
+    final File logFile = new File(tmpDir, "testSignalContainer.out")
+        .getAbsoluteFile();
+    
+    ShellScriptResourcesProvider resourcesProvider = 
+        new ShellScriptResourcesProvider(cId) {
 
-	  // ////// Construct the Container-id
-	  ContainerId cId = createContainerId(0);
+          @Override
+          void appendCommands(PrintWriter scriptWriter) {
+            File testClassesDir = new File("target", "test-classes")
+                .getAbsoluteFile();
+            String cmd = "java -classpath " + testClassesDir + " " 
+                + SleepTool.class.getCanonicalName()
+                + " >" + logFile + " 2>&1";
+            if (Shell.WINDOWS) {
+              scriptWriter.println(cmd);
+            } else {
+              scriptWriter.write("\nexec " + cmd);
+            }
+          }
+          
+        };
+    startContainer(cId, resourcesProvider);
+    resourcesProvider.waitForStartFile();
+    
+    List<ContainerId> containerIds = new ArrayList<ContainerId>();
+    containerIds.add(cId);
+    SignalContainersRequest signalRequest =
+        SignalContainersRequest.newInstance(containerIds, Signal.QUIT.getValue());
+    containerManager.signalContainers(signalRequest);
+    
+    GetContainerStatusesRequest gcsRequest =
+        GetContainerStatusesRequest.newInstance(containerIds);
 
-	  if (Shell.WINDOWS) {
-	    fileWriter.println("@echo Hello World!> " + processStartFile);
-	    fileWriter.println("@echo " + cId + ">> " + processStartFile);
-	    if (exitCode != 0) {
-	      fileWriter.println("@exit " + exitCode);
-	    }
-	  } else {
-	    fileWriter.write("\numask 0"); // So that start file is readable by the test
-	    fileWriter.write("\necho Hello World! > " + processStartFile);
-	    fileWriter.write("\necho $$ >> " + processStartFile); 
-	    // Have script throw an exit code at the end
-	    if (exitCode != 0) {
-	      fileWriter.write("\nexit "+exitCode);
-	    }
-	  }
-	  
-	  fileWriter.close();
+    Thread.sleep(100);
+    ContainerStatus containerStatus = 
+        BaseContainerManagerTest.getContainerStatus(containerManager, gcsRequest);
+    Assert.assertEquals("Container state changed", ContainerState.RUNNING, 
+        containerStatus.getState());
+    
+    String containerLog = Files.toString(logFile, Charsets.US_ASCII);
+    System.out.println(containerLog);
+    Assert.assertTrue(
+        Pattern.compile("Full thread dump").matcher(containerLog).find());
+    
+    StopContainersRequest stopRequest =
+        StopContainersRequest.newInstance(containerIds);
+    containerManager.stopContainers(stopRequest);
+    BaseContainerManagerTest.waitForContainerState(containerManager, cId,
+        ContainerState.COMPLETE);
+  }
 
-	  ContainerLaunchContext containerLaunchContext = 
-			  recordFactory.newRecordInstance(ContainerLaunchContext.class);
+  private void startContainer(ContainerId cId, LocalResourcesProvider resourcesProvider) 
+      throws IOException, YarnException, InterruptedException {
+    containerManager.start();
 
-	  URL resource_alpha =
-			  ConverterUtils.getYarnUrlFromPath(localFS
-					  .makeQualified(new Path(scriptFile.getAbsolutePath())));
-	  LocalResource rsrc_alpha =
-			  recordFactory.newRecordInstance(LocalResource.class);
-	  rsrc_alpha.setResource(resource_alpha);
-	  rsrc_alpha.setSize(-1);
-	  rsrc_alpha.setVisibility(LocalResourceVisibility.APPLICATION);
-	  rsrc_alpha.setType(LocalResourceType.FILE);
-	  rsrc_alpha.setTimestamp(scriptFile.lastModified());
-	  String destinationFile = "dest_file";
-	  Map<String, LocalResource> localResources = 
-			  new HashMap<String, LocalResource>();
-	  localResources.put(destinationFile, rsrc_alpha);
-	  containerLaunchContext.setLocalResources(localResources);
-	  List<String> commands = Arrays.asList(Shell.getRunScriptCommand(scriptFile));
-	  containerLaunchContext.setCommands(commands);
+    ContainerLaunchContext containerLaunchContext = 
+        recordFactory.newRecordInstance(ContainerLaunchContext.class);
+
+    Map<String, LocalResource> localResources = 
+        new HashMap<String, LocalResource>();
+    
+    for (Map.Entry<String, File> e : resourcesProvider.getLocalResources().entrySet()) {
+      String destinationFile = e.getKey();
+      File localResource = e.getValue();
+      
+      URL resource_alpha =
+          ConverterUtils.getYarnUrlFromPath(localFS
+              .makeQualified(new Path(localResource.getAbsolutePath())));
+      LocalResource rsrc_alpha =
+          recordFactory.newRecordInstance(LocalResource.class);
+      rsrc_alpha.setResource(resource_alpha);
+      rsrc_alpha.setSize(-1);
+      rsrc_alpha.setVisibility(LocalResourceVisibility.APPLICATION);
+      rsrc_alpha.setType(LocalResourceType.FILE);
+      rsrc_alpha.setTimestamp(localResource.lastModified());
+      localResources.put(destinationFile, rsrc_alpha);
+    }
+    containerLaunchContext.setLocalResources(localResources);
+    
+    List<String> commands = Arrays.asList(
+        Shell.getRunScriptCommand(resourcesProvider.getScriptFile()));
+    containerLaunchContext.setCommands(commands);
 
     StartContainerRequest scRequest =
-        StartContainerRequest.newInstance(
-          containerLaunchContext,
-          createContainerToken(cId, DUMMY_RM_IDENTIFIER, context.getNodeId(),
-            user, context.getContainerTokenSecretManager()));
+        StartContainerRequest.newInstance(containerLaunchContext,
+          createContainerToken(cId,
+            DUMMY_RM_IDENTIFIER, context.getNodeId(), user,
+            context.getContainerTokenSecretManager()));
     List<StartContainerRequest> list = new ArrayList<StartContainerRequest>();
     list.add(scRequest);
     StartContainersRequest allRequests =
         StartContainersRequest.newInstance(list);
     containerManager.startContainers(allRequests);
+  }
+
+  private void testContainerLaunchAndExit(final int exitCode) throws IOException,
+      InterruptedException, YarnException {
+    // Construct the Container-id
+    ContainerId cId = createContainerId(0);
+    
+    LocalResourcesProvider resourcesProvider = 
+        new ShellScriptResourcesProvider(cId) {
+          
+          @Override
+          void appendCommands(PrintWriter scriptWriter) {
+            if (exitCode != 0) {
+              if (Shell.WINDOWS) {
+                scriptWriter.println("@exit " + exitCode);
+              } else {
+                scriptWriter.write("\nexit "+exitCode);
+              }
+            }
+          }
+        };
+    startContainer(cId, resourcesProvider); 
 
 	  BaseContainerManagerTest.waitForContainerState(containerManager, cId,
 			  ContainerState.COMPLETE);
@@ -761,4 +771,80 @@ public class TestContainerManager extends BaseContainerManagerTest {
             containerTokenIdentifier);
     return containerToken;
   }
+  
+  private static interface LocalResourcesProvider {
+    Map<String, File> getLocalResources() throws IOException;
+    File getScriptFile() throws IOException;
+  }
+  
+  private static abstract class ShellScriptResourcesProvider 
+      implements LocalResourcesProvider {
+
+    final File scriptFile;
+    final File processStartFile;
+
+    public ShellScriptResourcesProvider(ContainerId cId) throws IOException {
+      this.scriptFile = Shell.appendScriptExtension(tmpDir, "scriptFile");
+      PrintWriter scriptWriter = new PrintWriter(scriptFile);
+      this.processStartFile =
+          new File(tmpDir, "start_file.txt").getAbsoluteFile();
+
+      if (Shell.WINDOWS) {
+        scriptWriter.println("@echo Hello World!> " + processStartFile);
+        scriptWriter.println("@echo " + cId + ">> " + processStartFile);
+      } else {
+        scriptWriter.write("\numask 0"); // So that start file is readable by the test
+        scriptWriter.write("\necho Hello World! > " + processStartFile);
+        scriptWriter.write("\necho $$ >> " + processStartFile);
+      }
+      appendCommands(scriptWriter);
+      scriptWriter.close();    
+    }
+
+    abstract void appendCommands(PrintWriter scriptWriter);
+    
+    @Override
+    public Map<String, File> getLocalResources() throws IOException {
+      return Collections.singletonMap("dest_file", scriptFile);
+    }
+
+    @Override
+    public File getScriptFile() throws IOException {
+      return scriptFile;
+    }
+    
+    public String waitForStartFile() throws IOException, InterruptedException {
+      int timeoutSecs = 0;
+      while (!processStartFile.exists() && timeoutSecs++ < 20) {
+        Thread.sleep(1000);
+        LOG.info("Waiting for process start-file to be created");
+      }
+      Assert.assertTrue("ProcessStartFile doesn't exist!",
+          processStartFile.exists());
+      
+      // Now verify the contents of the file
+      BufferedReader reader =
+          new BufferedReader(new FileReader(processStartFile));
+      try {
+        Assert.assertEquals("Hello World!", reader.readLine());
+        // Get the pid of the process
+        String pid = reader.readLine().trim();
+        // No more lines
+        Assert.assertEquals(null, reader.readLine());
+        
+        // Assert that the process is alive
+        Assert.assertTrue("Process is not alive!",
+          DefaultContainerExecutor.containerIsAlive(pid));
+        // Once more
+        Assert.assertTrue("Process is not alive!",
+          DefaultContainerExecutor.containerIsAlive(pid));
+
+        return pid;
+      } finally {
+        reader.close();
+      }
+    }
+    
+  }
+  
 }
