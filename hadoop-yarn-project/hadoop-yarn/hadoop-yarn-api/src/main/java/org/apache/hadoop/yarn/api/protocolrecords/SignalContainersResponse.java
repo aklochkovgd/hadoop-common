@@ -24,7 +24,6 @@ import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability.Stable;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
-import org.apache.hadoop.yarn.api.ContainerManagementProtocol;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.SerializedException;
 import org.apache.hadoop.yarn.util.Records;
@@ -35,10 +34,6 @@ import org.apache.hadoop.yarn.util.Records;
  * <code>ApplicationMaster</code> when asked to send a signal
  * to requested containers.
  * </p>
- * 
- * The response is empty.
- * 
- * @see ContainerManagementProtocol#signalContainers(org.apache.hadoop.yarn.api.SignalContainersRequest)
  */
 @Public
 @Stable

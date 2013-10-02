@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability.Stable;
-import org.apache.hadoop.yarn.api.ContainerManagementProtocol;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.util.Records;
 
@@ -31,8 +30,6 @@ import org.apache.hadoop.yarn.util.Records;
  * The request sent by the <code>ApplicationMaster</code> to the
  * <code>NodeManager</code> to send a signal to requested containers.
  * </p>
- * 
- * @see ContainerManagementProtocol#signalContainers(org.apache.hadoop.yarn.api.SignalContainersRequest)
  */
 @Public
 @Stable
