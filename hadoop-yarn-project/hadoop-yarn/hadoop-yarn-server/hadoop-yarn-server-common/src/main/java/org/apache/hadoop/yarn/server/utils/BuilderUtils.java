@@ -370,7 +370,7 @@ public class BuilderUtils {
   public static ApplicationResourceUsageReport newApplicationResourceUsageReport(
       int numUsedContainers, int numReservedContainers, Resource usedResources,
       Resource reservedResources, Resource neededResources, long memorySeconds, 
-      long virtualCoresSeconds) {
+      long vcoreSeconds) {
     ApplicationResourceUsageReport report =
         recordFactory.newRecordInstance(ApplicationResourceUsageReport.class);
     report.setNumUsedContainers(numUsedContainers);
@@ -379,7 +379,7 @@ public class BuilderUtils {
     report.setReservedResources(reservedResources);
     report.setNeededResources(neededResources);
     report.setMemorySeconds(memorySeconds);
-    report.setVirtualCoresSeconds(virtualCoresSeconds);
+    report.setVcoreSeconds(vcoreSeconds);
     return report;
   }
 

@@ -479,15 +479,15 @@ public class RMAppImpl implements RMApp, Recoverable {
         }
         
         long memorySeconds = 0;
-        long virtualCoresSeconds = 0;
+        long vcoreSeconds = 0;
         for (RMAppAttempt appAttempt : this.attempts.values()) {
           ApplicationResourceUsageReport report = 
               appAttempt.getApplicationResourceUsageReport();
           memorySeconds += report.getMemorySeconds();
-          virtualCoresSeconds += report.getVirtualCoresSeconds();
+          vcoreSeconds += report.getVcoreSeconds();
         }
         appUsageReport.setMemorySeconds(memorySeconds);
-        appUsageReport.setVirtualCoresSeconds(virtualCoresSeconds);
+        appUsageReport.setVcoreSeconds(vcoreSeconds);
       }
 
       if (currentApplicationAttemptId == null) {

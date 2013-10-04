@@ -213,15 +213,15 @@ extends ApplicationResourceUsageReport {
   }
 
   @Override
-  public synchronized void setVirtualCoresSeconds(long virtual_cores_seconds) {
+  public synchronized void setVcoreSeconds(long vcore_seconds) {
     maybeInitBuilder();
-    builder.setVirtualCoresSeconds(virtual_cores_seconds);
+    builder.setVcoreSeconds(vcore_seconds);
   }
 
   @Override
-  public synchronized long getVirtualCoresSeconds() {
+  public synchronized long getVcoreSeconds() {
     ApplicationResourceUsageReportProtoOrBuilder p = viaProto ? proto : builder;
-    return (p.getVirtualCoresSeconds());
+    return (p.getVcoreSeconds());
   }
   
   private ResourcePBImpl convertFromProtoFormat(ResourceProto p) {

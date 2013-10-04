@@ -28,6 +28,7 @@ public class RMContainerEvent extends AbstractEvent<RMContainerEventType> {
   public RMContainerEvent(ContainerId containerId, RMContainerEventType type) {
     this(containerId, type, -1);
   }
+  
   public RMContainerEvent(ContainerId containerId, RMContainerEventType type,
       long timestamp) {
     super(type, timestamp);

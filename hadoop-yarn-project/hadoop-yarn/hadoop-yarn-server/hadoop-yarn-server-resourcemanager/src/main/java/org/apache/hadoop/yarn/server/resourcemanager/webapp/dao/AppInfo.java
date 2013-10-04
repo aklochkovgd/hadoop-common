@@ -73,7 +73,7 @@ public class AppInfo {
   protected String amContainerLogs;
   protected String amHostHttpAddress;
   protected long memorySeconds;
-  protected long virtualCoresSeconds;
+  protected long vcoreSeconds;
 
   public AppInfo() {
   } // JAXB needs this
@@ -139,7 +139,7 @@ public class AppInfo {
         ApplicationResourceUsageReport usageReport = 
             report.getApplicationResourceUsageReport();
         this.memorySeconds = usageReport.getMemorySeconds();
-        this.virtualCoresSeconds = usageReport.getVirtualCoresSeconds();
+        this.vcoreSeconds = usageReport.getVcoreSeconds();
       }
     }
   }
@@ -236,8 +236,8 @@ public class AppInfo {
     return memorySeconds;
   }
 
-  public long getVirtualCoresSeconds() {
-    return virtualCoresSeconds;
+  public long getVcoreSeconds() {
+    return vcoreSeconds;
   }
 
 }

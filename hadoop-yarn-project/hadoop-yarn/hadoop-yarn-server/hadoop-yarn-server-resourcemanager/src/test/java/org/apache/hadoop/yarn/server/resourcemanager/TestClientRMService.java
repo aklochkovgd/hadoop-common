@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CyclicBarrier;
 
 import junit.framework.Assert;
@@ -85,7 +84,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMApp;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppImpl;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttempt;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptImpl;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.YarnScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.security.QueueACLsManager;
@@ -216,18 +214,22 @@ public class TestClientRMService {
 
     ApplicationACLsManager mockAclsManager = mock(ApplicationACLsManager.class);
     ClientRMService rmService = new ClientRMService(rmContext, yarnScheduler,
-        null, mockAclsManager, null);
-    RecordFactory recordFactory = RecordFactoryProvider.getRecordFactory(null);
-    GetApplicationReportRequest request = recordFactory
-        .newRecordInstance(GetApplicationReportRequest.class);
-    request.setApplicationId(getApplicationId(1));
-    GetApplicationReportResponse response = 
-        rmService.getApplicationReport(request);
-    ApplicationReport report = response.getApplicationReport();
-    ApplicationResourceUsageReport usageReport = 
-        report.getApplicationResourceUsageReport();
-    Assert.assertEquals(10, usageReport.getMemorySeconds());
-    Assert.assertEquals(3, usageReport.getVirtualCoresSeconds());
+        null, mockAclsManager, null, null);
+    try {
+      RecordFactory recordFactory = RecordFactoryProvider.getRecordFactory(null);
+      GetApplicationReportRequest request = recordFactory
+          .newRecordInstance(GetApplicationReportRequest.class);
+      request.setApplicationId(getApplicationId(1));
+      GetApplicationReportResponse response = 
+          rmService.getApplicationReport(request);
+      ApplicationReport report = response.getApplicationReport();
+      ApplicationResourceUsageReport usageReport = 
+          report.getApplicationResourceUsageReport();
+      Assert.assertEquals(10, usageReport.getMemorySeconds());
+      Assert.assertEquals(3, usageReport.getVcoreSeconds());
+    } finally {
+      rmService.close();
+    }
   }
   
   @Test
@@ -563,7 +565,7 @@ public class TestClientRMService {
 
   private RMAppImpl getRMApp(RMContext rmContext, YarnScheduler yarnScheduler,
       ApplicationId applicationId3, YarnConfiguration config, String queueName,
-      final long memorySeconds, final long virtualCoresSeconds) {
+      final long memorySeconds, final long vcoreSeconds) {
     ApplicationSubmissionContext asContext = mock(ApplicationSubmissionContext.class);
     when(asContext.getMaxAppAttempts()).thenReturn(1);
     RMAppImpl app =  spy(new RMAppImpl(applicationId3, rmContext, config, null, null,
@@ -578,7 +580,7 @@ public class TestClientRMService {
                 ApplicationResourceUsageReport usageReport = 
                     report.getApplicationResourceUsageReport();
                 usageReport.setMemorySeconds(memorySeconds);
-                usageReport.setVirtualCoresSeconds(virtualCoresSeconds);
+                usageReport.setVcoreSeconds(vcoreSeconds);
                 report.setApplicationResourceUsageReport(usageReport);
                 return report;
               }

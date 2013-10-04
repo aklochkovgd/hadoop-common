@@ -141,12 +141,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
     new HashSet<NodeId>();
   private final List<ContainerStatus> justFinishedContainers =
     new ArrayList<ContainerStatus>();
-
   private final Map<ContainerId, ResourceUsage> runningContainersUsage = 
     new HashMap<ContainerId, ResourceUsage>();
   private long memorySeconds;
   private long virtualCpuSeconds;
-
   private Container masterContainer;
 
   private float progress = 0;
@@ -163,7 +161,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
   private Configuration conf;
   private String user;
-
+  
   private static final ExpiredTransition EXPIRED_TRANSITION =
       new ExpiredTransition();
 
@@ -891,7 +889,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           appAttempt.getMasterContainer().getResource());
       RMStateStore store = appAttempt.rmContext.getStateStore();
       appAttempt.storeAttempt(store);
-      
       appAttempt.containerAllocated(container, event.getTimestamp());
     }
   }
@@ -1249,6 +1246,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       ContainerStatus containerStatus =
           containerFinishedEvent.getContainerStatus();
 
+      appAttempt.containerFinished(containerStatus, event.getTimestamp());
+      
       // Is this container the AmContainer? If the finished container is same as
       // the AMContainer, AppAttempt fails
       if (appAttempt.masterContainer != null
@@ -1272,9 +1271,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
       // Put it in completedcontainers list
       appAttempt.justFinishedContainers.add(containerStatus);
-      
-      appAttempt.containerFinished(containerStatus, event.getTimestamp());
-      
       return RMAppAttemptState.RUNNING;
     }
   }
@@ -1319,34 +1315,24 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   }
   
   private void containerAllocated(Container container, long timestamp) {
-    writeLock.lock();
-    try {
-      ResourceUsage usage = new ResourceUsage(container.getResource(), 
-          timestamp);
-      runningContainersUsage.put(container.getId(), usage);
-    } finally {
-      writeLock.unlock();
-    }
+    ResourceUsage usage = new ResourceUsage(container.getResource(), 
+        timestamp);
+    runningContainersUsage.put(container.getId(), usage);
   }
   
   private void containerFinished(ContainerStatus containerStatus, 
       long timestamp) {
-    writeLock.lock();
-    try {
-      ResourceUsage usage = runningContainersUsage.get(
-          containerStatus.getContainerId());
-      if (usage != null) {
-        runningContainersUsage.remove(containerStatus.getContainerId());
-        this.memorySeconds += usage.getMemoryMillis(timestamp) 
-            / DateUtils.MILLIS_PER_SECOND;
-        this.virtualCpuSeconds += usage.getVirtualCoresMillis(timestamp)
-            / DateUtils.MILLIS_PER_SECOND;
-      } else {
-        LOG.error("Can not record resources usage for the unknown container "
-            + containerStatus.getContainerId());
-      }
-    } finally {
-      writeLock.unlock();
+    ResourceUsage usage = runningContainersUsage.get(
+        containerStatus.getContainerId());
+    if (usage != null) {
+      runningContainersUsage.remove(containerStatus.getContainerId());
+      this.memorySeconds += usage.getMemoryMillis(timestamp) 
+          / DateUtils.MILLIS_PER_SECOND;
+      this.virtualCpuSeconds += usage.getVirtualCoresMillis(timestamp)
+          / DateUtils.MILLIS_PER_SECOND;
+    } else {
+      LOG.error("Can not record resources usage for the unknown container "
+          + containerStatus.getContainerId());
     }
   }
   

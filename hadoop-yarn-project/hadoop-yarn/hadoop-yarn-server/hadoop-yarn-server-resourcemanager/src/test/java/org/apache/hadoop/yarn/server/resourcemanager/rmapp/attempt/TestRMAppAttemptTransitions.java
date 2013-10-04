@@ -94,12 +94,10 @@ import org.apache.hadoop.yarn.server.resourcemanager.security.ClientToAMTokenSec
 import org.apache.hadoop.yarn.server.resourcemanager.security.NMTokenSecretManagerInRM;
 import org.apache.hadoop.yarn.server.resourcemanager.security.RMContainerTokenSecretManager;
 import org.apache.hadoop.yarn.server.utils.BuilderUtils;
-import org.apache.hadoop.yarn.server.resourcemanager.security.NMTokenSecretManagerInRM;
 import org.apache.hadoop.yarn.util.resource.Resources;
 import org.apache.hadoop.yarn.server.webproxy.ProxyUriUtils;
 import org.apache.hadoop.yarn.webapp.util.WebAppUtils;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -555,6 +553,10 @@ public class TestRMAppAttemptTransitions {
     testAppAttemptScheduledState();
   }
 
+  private Container allocateApplicationAttempt() {
+    return allocateApplicationAttempt(-1);
+  }
+  
   @SuppressWarnings("unchecked")
   private Container allocateApplicationAttempt(long startTimeMillis) {
     scheduleApplicationAttempt();
@@ -705,7 +707,7 @@ public class TestRMAppAttemptTransitions {
         amContainer.getResource().getVirtualCores() * usageSeconds + 
         3 * usageSeconds;
     Assert.assertEquals(expectedMemSeconds, report.getMemorySeconds());
-    Assert.assertEquals(expectedCpuSeconds, report.getVirtualCoresSeconds());
+    Assert.assertEquals(expectedCpuSeconds, report.getVcoreSeconds());
   }
   
   @Test
@@ -776,7 +778,7 @@ public class TestRMAppAttemptTransitions {
 
   @Test
   public void testAllocatedToKilled() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     applicationAttempt.handle(
         new RMAppAttemptEvent(
             applicationAttempt.getAppAttemptId(), 
@@ -786,7 +788,7 @@ public class TestRMAppAttemptTransitions {
 
   @Test
   public void testAllocatedToFailed() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     String diagnostics = "Launch Failed";
     applicationAttempt.handle(
         new RMAppAttemptLaunchFailedEvent(
@@ -797,7 +799,7 @@ public class TestRMAppAttemptTransitions {
   
   @Test
   public void testAMCrashAtAllocated() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     String containerDiagMsg = "some error";
     int exitCode = 123;
     ContainerStatus cs =
@@ -812,7 +814,7 @@ public class TestRMAppAttemptTransitions {
   
   @Test
   public void testRunningToFailed() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
     String containerDiagMsg = "some error";
@@ -835,7 +837,7 @@ public class TestRMAppAttemptTransitions {
 
   @Test
   public void testRunningToKilled() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
     applicationAttempt.handle(
@@ -856,7 +858,7 @@ public class TestRMAppAttemptTransitions {
 
   @Test(timeout=10000)
   public void testLaunchedExpire() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     applicationAttempt.handle(new RMAppAttemptEvent(
         applicationAttempt.getAppAttemptId(), RMAppAttemptEventType.EXPIRE));
@@ -873,7 +875,7 @@ public class TestRMAppAttemptTransitions {
 
   @Test(timeout=20000)
   public void testRunningExpire() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
     applicationAttempt.handle(new RMAppAttemptEvent(
@@ -891,7 +893,7 @@ public class TestRMAppAttemptTransitions {
 
   @Test 
   public void testUnregisterToKilledFinishing() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
     unregisterApplicationAttempt(amContainer,
@@ -930,7 +932,7 @@ public class TestRMAppAttemptTransitions {
   }
 
   private void testTrackingUrlManagedAM(String url) {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, url, false);
     unregisterApplicationAttempt(amContainer,
@@ -939,7 +941,7 @@ public class TestRMAppAttemptTransitions {
 
   @Test
   public void testUnregisterToSuccessfulFinishing() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
     unregisterApplicationAttempt(amContainer,
@@ -948,7 +950,7 @@ public class TestRMAppAttemptTransitions {
 
   @Test
   public void testFinishingKill() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
     FinalApplicationStatus finalStatus = FinalApplicationStatus.FAILED;
@@ -966,7 +968,7 @@ public class TestRMAppAttemptTransitions {
 
   @Test
   public void testFinishingExpire() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
     FinalApplicationStatus finalStatus = FinalApplicationStatus.SUCCEEDED;
@@ -984,7 +986,7 @@ public class TestRMAppAttemptTransitions {
 
   @Test
   public void testFinishingToFinishing() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
     FinalApplicationStatus finalStatus = FinalApplicationStatus.SUCCEEDED;
@@ -1006,7 +1008,7 @@ public class TestRMAppAttemptTransitions {
 
   @Test
   public void testSuccessfulFinishingToFinished() {
-    Container amContainer = allocateApplicationAttempt(-1);
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
     FinalApplicationStatus finalStatus = FinalApplicationStatus.SUCCEEDED;
