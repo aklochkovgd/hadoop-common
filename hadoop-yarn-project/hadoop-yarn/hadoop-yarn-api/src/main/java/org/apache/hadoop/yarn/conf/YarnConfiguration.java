@@ -18,9 +18,7 @@
 
 package org.apache.hadoop.yarn.conf;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import org.apache.hadoop.classification.InterfaceAudience.Public;
@@ -30,13 +28,9 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 
-import com.google.common.base.Joiner;
-
 @Public
 @Evolving
 public class YarnConfiguration extends Configuration {
-
-  private static final Joiner JOINER = Joiner.on("");
 
   private static final String YARN_DEFAULT_XML_FILE = "yarn-default.xml";
   private static final String YARN_SITE_XML_FILE = "yarn-site.xml";
@@ -87,7 +81,7 @@ public class YarnConfiguration extends Configuration {
   // Resource Manager Configs
   ////////////////////////////////
   public static final String RM_PREFIX = "yarn.resourcemanager.";
-  
+
   /** The address of the applications manager interface in the RM.*/
   public static final String RM_ADDRESS = 
     RM_PREFIX + "address";
@@ -160,6 +154,14 @@ public class YarnConfiguration extends Configuration {
   public static final int DEFAULT_RM_WEBAPP_PORT = 8088;
   public static final String DEFAULT_RM_WEBAPP_ADDRESS = "0.0.0.0:" +
     DEFAULT_RM_WEBAPP_PORT;
+  
+  /** The https address of the RM web application.*/
+  public static final String RM_WEBAPP_HTTPS_ADDRESS =
+      RM_PREFIX + "webapp.https.address";
+  
+  public static final int DEFAULT_RM_WEBAPP_HTTPS_PORT = 8090;
+  public static final String DEFAULT_RM_WEBAPP_HTTPS_ADDRESS = "0.0.0.0:"
+      + DEFAULT_RM_WEBAPP_HTTPS_PORT;
   
   public static final String RM_RESOURCE_TRACKER_ADDRESS =
     RM_PREFIX + "resource-tracker.address";
@@ -276,6 +278,8 @@ public class YarnConfiguration extends Configuration {
   public static final String RM_HA_ENABLED = RM_HA_PREFIX + "enabled";
   public static final boolean DEFAULT_RM_HA_ENABLED = false;
   
+  public static final String RM_HA_IDS = RM_HA_PREFIX + "rm-ids";
+  public static final String RM_HA_ID = RM_HA_PREFIX + "id";
 
   ////////////////////////////////
   // RM state store configs
@@ -357,6 +361,13 @@ public class YarnConfiguration extends Configuration {
   
   public static final long DEFAULT_RM_NMTOKEN_MASTER_KEY_ROLLING_INTERVAL_SECS =
       24 * 60 * 60;
+
+  public static final String RM_NODEMANAGER_MINIMUM_VERSION =
+      RM_PREFIX + "nodemanager.minimum.version";
+
+  public static final String DEFAULT_RM_NODEMANAGER_MINIMUM_VERSION =
+      "NONE";
+
   ////////////////////////////////
   // Node Manager Configs
   ////////////////////////////////
@@ -455,6 +466,10 @@ public class YarnConfiguration extends Configuration {
   public static final String NM_LOG_DIRS = NM_PREFIX + "log-dirs";
   public static final String DEFAULT_NM_LOG_DIRS = "/tmp/logs";
 
+  public static final String NM_RESOURCEMANAGER_MINIMUM_VERSION =
+      NM_PREFIX + "resourcemanager.minimum.version";
+  public static final String DEFAULT_NM_RESOURCEMANAGER_MINIMUM_VERSION = "NONE";
+
   /** Interval at which the delayed token removal thread runs */
   public static final String RM_DELAYED_DELEGATION_TOKEN_REMOVAL_INTERVAL_MS =
       RM_PREFIX + "delayed.delegation-token.removal-interval-ms";
@@ -546,6 +561,13 @@ public class YarnConfiguration extends Configuration {
   public static final String DEFAULT_NM_WEBAPP_ADDRESS = "0.0.0.0:" +
     DEFAULT_NM_WEBAPP_PORT;
   
+  /** NM Webapp https address.**/
+  public static final String NM_WEBAPP_HTTPS_ADDRESS = NM_PREFIX
+      + "webapp.https.address";
+  public static final int DEFAULT_NM_WEBAPP_HTTPS_PORT = 8044;
+  public static final String DEFAULT_NM_WEBAPP_HTTPS_ADDRESS = "0.0.0.0:"
+      + DEFAULT_NM_WEBAPP_HTTPS_PORT; 
+  
   /** How often to monitor containers.*/
   public final static String NM_CONTAINER_MON_INTERVAL_MS =
     NM_PREFIX + "container-monitor.interval-ms";
@@ -613,7 +635,27 @@ public class YarnConfiguration extends Configuration {
    */
   public static final String NM_LINUX_CONTAINER_GROUP =
     NM_PREFIX + "linux-container-executor.group";
-  
+
+  /**
+   * The UNIX user that containers will run as when Linux-container-executor
+   * is used in nonsecure mode (a use case for this is using cgroups).
+   */
+  public static final String NM_NONSECURE_MODE_LOCAL_USER_KEY = NM_PREFIX +
+      "linux-container-executor.nonsecure-mode.local-user";
+
+  public static final String DEFAULT_NM_NONSECURE_MODE_LOCAL_USER = "nobody";
+
+  /**
+   * The allowed pattern for UNIX user names enforced by 
+   * Linux-container-executor when used in nonsecure mode (use case for this 
+   * is using cgroups). The default value is taken from /usr/sbin/adduser
+   */
+  public static final String NM_NONSECURE_MODE_USER_PATTERN_KEY = NM_PREFIX +
+      "linux-container-executor.nonsecure-mode.user-pattern";
+
+  public static final String DEFAULT_NM_NONSECURE_MODE_USER_PATTERN = 
+      "^[_.A-Za-z0-9][-@_.A-Za-z0-9]{0,255}?[$]?$";
+
   /** The type of resource enforcement to use with the
    *  linux container executor.
    */
@@ -832,40 +874,23 @@ public class YarnConfiguration extends Configuration {
     }
   }
 
-  public static String getProxyHostAndPort(Configuration conf) {
-    String addr = conf.get(PROXY_ADDRESS);
-    if(addr == null || addr.isEmpty()) {
-      addr = getRMWebAppHostAndPort(conf);
-    }
-    return addr;
-  }
-  
-  public static String getRMWebAppHostAndPort(Configuration conf) {
-    InetSocketAddress address = conf.getSocketAddr(
-        YarnConfiguration.RM_WEBAPP_ADDRESS,
-        YarnConfiguration.DEFAULT_RM_WEBAPP_ADDRESS,
-        YarnConfiguration.DEFAULT_RM_WEBAPP_PORT);
-    address = NetUtils.getConnectAddress(address);
-    StringBuffer sb = new StringBuffer();
-    InetAddress resolved = address.getAddress();
-    if (resolved == null || resolved.isAnyLocalAddress() || 
-        resolved.isLoopbackAddress()) {
-      String lh = address.getHostName();
-      try {
-        lh = InetAddress.getLocalHost().getCanonicalHostName();
-      } catch (UnknownHostException e) {
-        //Ignore and fallback.
-      }
-      sb.append(lh);
+  /**
+   * Get the socket address for <code>name</code> property as a
+   * <code>InetSocketAddress</code>.
+   * @param name property name.
+   * @param defaultAddress the default value
+   * @param defaultPort the default port
+   * @return InetSocketAddress
+   */
+  @Override
+  public InetSocketAddress getSocketAddr(
+      String name, String defaultAddress, int defaultPort) {
+    String address;
+    if (HAUtil.isHAEnabled(this)) {
+      address = HAUtil.getConfValueForRMInstance(name, defaultAddress, this);
     } else {
-      sb.append(address.getHostName());
+      address = get(name, defaultAddress);
     }
-    sb.append(":").append(address.getPort());
-    return sb.toString();
+    return NetUtils.createSocketAddr(address, defaultPort, name);
   }
-  
-  public static String getRMWebAppURL(Configuration conf) {
-    return JOINER.join("http://", getRMWebAppHostAndPort(conf));
-  }
-  
 }

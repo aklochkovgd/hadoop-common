@@ -435,7 +435,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   private final long accessTimePrecision;
 
   /** Lock to protect FSNamesystem. */
-  private ReentrantReadWriteLock fsLock = new ReentrantReadWriteLock(true);
+  private ReentrantReadWriteLock fsLock;
 
   /**
    * Used when this NN is in standby state to read from the shared edit log.
@@ -610,6 +610,9 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
    */
   FSNamesystem(Configuration conf, FSImage fsImage, boolean ignoreRetryCache)
       throws IOException {
+    boolean fair = conf.getBoolean("dfs.namenode.fslock.fair", true);
+    LOG.info("fsLock is fair:" + fair);
+    fsLock = new ReentrantReadWriteLock(fair);
     try {
       resourceRecheckInterval = conf.getLong(
           DFS_NAMENODE_RESOURCE_CHECK_INTERVAL_KEY,
@@ -6793,7 +6796,9 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
         throw new SafeModeException(
             "Cannot delete snapshot for " + snapshotRoot, safeMode);
       }
-      checkOwner(pc, snapshotRoot);
+      if (isPermissionEnabled) {
+        checkOwner(pc, snapshotRoot);
+      }
 
       BlocksMapUpdateInfo collectedBlocks = new BlocksMapUpdateInfo();
       List<INode> removedINodes = new ChunkedArrayList<INode>();
@@ -6887,10 +6892,13 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
           }
           sb.append(trackingId);
         }
-        auditLog.info(sb);
+        logAuditMessage(sb.toString());
       }
     }
 
+    public void logAuditMessage(String message) {
+      auditLog.info(message);
+    }
   }
 
 }
