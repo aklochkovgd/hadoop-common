@@ -212,14 +212,20 @@ public class TestClientRMService {
     RMContext rmContext = mock(RMContext.class);
     mockRMContext(yarnScheduler, rmContext);
 
+    ApplicationId appId1 = getApplicationId(1);
+
     ApplicationACLsManager mockAclsManager = mock(ApplicationACLsManager.class);
+    when(
+        mockAclsManager.checkAccess(UserGroupInformation.getCurrentUser(),
+            ApplicationAccessType.VIEW_APP, null, appId1)).thenReturn(true);
+
     ClientRMService rmService = new ClientRMService(rmContext, yarnScheduler,
         null, mockAclsManager, null, null);
     try {
       RecordFactory recordFactory = RecordFactoryProvider.getRecordFactory(null);
       GetApplicationReportRequest request = recordFactory
           .newRecordInstance(GetApplicationReportRequest.class);
-      request.setApplicationId(getApplicationId(1));
+      request.setApplicationId(appId1);
       GetApplicationReportResponse response = 
           rmService.getApplicationReport(request);
       ApplicationReport report = response.getApplicationReport();
