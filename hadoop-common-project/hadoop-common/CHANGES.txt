@@ -348,6 +348,12 @@ Release 2.3.0 - UNRELEASED
     HADOOP-9225. Cover package org.apache.hadoop.compress.Snappy (Vadim
     Bondarev, Andrey Klochkov and Nathan Roberts via jlowe)
 
+    HADOOP-9199. Cover package org.apache.hadoop.io with unit tests (Andrey
+    Klochkov via jeagles)
+
+    HADOOP-9470. eliminate duplicate FQN tests in different Hadoop modules
+    (Ivan A. Veselovsky via daryn)
+
   OPTIMIZATIONS
 
     HADOOP-9748. Reduce blocking on UGI.ensureInitialized (daryn)
@@ -390,6 +396,26 @@ Release 2.3.0 - UNRELEASED
     HADOOP-9981. globStatus should minimize its listStatus and getFileStatus
     calls.  (Contributed by Colin Patrick McCabe)
 
+Release 2.2.1 - UNRELEASED
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+  IMPROVEMENTS
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+    HADOOP-10028. Malformed ssl-server.xml.example. (Haohui Mai via jing9)
+
+    HADOOP-10030. FsShell -put/copyFromLocal should support Windows local path.
+    (Chuan Liu via cnauroth)
+
+    HADOOP-10031. FsShell -get/copyToLocal/moveFromLocal should support Windows
+    local path. (Chuan Liu via cnauroth)
+
 Release 2.2.0 - 2013-10-13
 
   INCOMPATIBLE CHANGES
@@ -425,8 +451,6 @@ Release 2.2.0 - 2013-10-13
 
     HADOOP-10017. Fix NPE in DFSClient#getDelegationToken when doing Distcp 
     from a secured cluster to an insecured cluster. (Haohui Mai via jing9)
-
-    HADOOP-10028. Malformed ssl-server.xml.example. (Haohui Mai via jing9)
 
 Release 2.1.1-beta - 2013-09-23
 

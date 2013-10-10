@@ -57,9 +57,16 @@ Release 2.3.0 - UNRELEASED
     YARN-465. fix coverage org.apache.hadoop.yarn.server.webproxy (Aleksey
     Gorshkov and Andrey Klochkov via jlowe)
 
+    YARN-976. Document the meaning of a virtual core. (Sandy Ryza)
+
+    YARN-1258. Allow configuring the Fair Scheduler root queue (Sandy Ryza)
+
   OPTIMIZATIONS
 
   BUG FIXES
+
+    YARN-461. Fair scheduler should not accept apps with empty string queue name. 
+    (ywskycn via tucu)
 
     YARN-1060. Two tests in TestFairScheduler are missing @Test annotation
     (Niranjan Singh via Sandy Ryza)
@@ -68,6 +75,28 @@ Release 2.3.0 - UNRELEASED
     FairScheduler (Tsuyoshi Ozawa via Sandy Ryza)
 
     YARN-1268. TestFairScheduler.testContinuousScheduling is flaky (Sandy Ryza)
+
+Release 2.2.1 - UNRELEASED
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+  IMPROVEMENTS
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+    YARN-1284. LCE: Race condition leaves dangling cgroups entries for killed
+    containers. (Alejandro Abdelnur via Sandy Ryza)
+
+    YARN-1283. Fixed RM to give a fully-qualified proxy URL for an application
+    so that clients don't need to do scheme-mangling. (Omkar Vinit Joshi via
+    vinodkv)
+
+    YARN-879. Fixed tests w.r.t o.a.h.y.server.resourcemanager.Application.
+    (Junping Du via devaraj)
 
 Release 2.2.0 - 2013-10-13
 
@@ -1085,9 +1114,6 @@ Release 2.1.0-beta - 2013-08-22
 
     YARN-875. Application can hang if AMRMClientAsync callback thread has
     exception (Xuan Gong via bikas)
-
-    YARN-461. Fair scheduler should not accept apps with empty string queue name. 
-    (ywskycn via tucu)
 
     YARN-968. RM admin commands don't work. (vinodkv via kihwal)
 
