@@ -710,8 +710,8 @@ public class TestRMAppAttemptTransitions {
 
   @Test
   // very similar to testUsageReport, but the AM container is stopped 
-  // 10 minutes before the worker container, and the final usage report should 
-  // not include that 10 extra minutes of usage. 
+  // before the worker container, and the final usage report should 
+  // not include that extra time the worker stayed alive. 
   public void testLeaksInUsageReport() throws Exception {
     long startTime = System.currentTimeMillis() - 10 * DateUtils.MILLIS_PER_MINUTE;
     
