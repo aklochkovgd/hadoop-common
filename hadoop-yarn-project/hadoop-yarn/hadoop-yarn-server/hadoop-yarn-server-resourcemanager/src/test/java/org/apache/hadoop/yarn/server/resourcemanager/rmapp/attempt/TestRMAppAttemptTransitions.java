@@ -707,7 +707,62 @@ public class TestRMAppAttemptTransitions {
     Assert.assertEquals(expectedMemSeconds, report.getMemorySeconds());
     Assert.assertEquals(expectedCpuSeconds, report.getVcoreSeconds());
   }
-  
+
+  @Test
+  // very similar to testUsageReport, but the AM container is stopped 
+  // 10 minutes before the worker container, and the final usage report should 
+  // not include that 10 extra minutes of usage. 
+  public void testLeaksInUsageReport() throws Exception {
+    long startTime = System.currentTimeMillis() - 10 * DateUtils.MILLIS_PER_MINUTE;
+    
+    Container amContainer = allocateApplicationAttempt(startTime);
+    launchApplicationAttempt(amContainer);
+    runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
+    
+    ContainerId containerId = ContainerId.newInstance(
+        applicationAttempt.getAppAttemptId(), 7);
+    Resource resource = Resources.createResource(8, 3);
+    
+    Container containerMock = mock(Container.class);
+    when(containerMock.getId()).thenReturn(containerId);
+    when(containerMock.getResource()).thenReturn(resource);
+    
+    ContainerStatus containerStatusMock = mock(ContainerStatus.class);
+    when(containerStatusMock.getContainerId()).thenReturn(containerId);
+    
+    applicationAttempt.handle(new RMAppAttemptContainerAllocatedEvent(
+        applicationAttempt.getAppAttemptId(), containerMock, startTime));
+    applicationAttempt.handle(new RMAppAttemptContainerAcquiredEvent(
+        applicationAttempt.getAppAttemptId(), containerMock));
+    applicationAttempt.handle(new RMAppAttemptUnregistrationEvent(
+        applicationAttempt.getAppAttemptId(), 
+        "", 
+        FinalApplicationStatus.SUCCEEDED, 
+        ""));
+    
+    // stop the AM container first, and then the worker container
+    applicationAttempt.handle(new RMAppAttemptEvent(
+        applicationAttempt.getAppAttemptId(), RMAppAttemptEventType.EXPIRE));
+   
+    Assert.assertTrue(((RMAppAttemptImpl) applicationAttempt)
+        .runningContainersUsage.isEmpty());
+    
+    ApplicationResourceUsageReport report1 = 
+        applicationAttempt.getApplicationResourceUsageReport();
+    
+    // final report shouldn't include this extra time of the worker usage
+    Thread.sleep(200);
+    
+    applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
+        applicationAttempt.getAppAttemptId(), containerStatusMock, 
+        System.currentTimeMillis()));
+    
+    ApplicationResourceUsageReport report2 = 
+        applicationAttempt.getApplicationResourceUsageReport();
+    Assert.assertEquals(report1.getMemorySeconds(), report2.getMemorySeconds());
+    Assert.assertEquals(report1.getVcoreSeconds(), report2.getVcoreSeconds());
+  }
+
   @Test
   public void testUnmanagedAMUnexpectedRegistration() {
     unmanagedAM = true;

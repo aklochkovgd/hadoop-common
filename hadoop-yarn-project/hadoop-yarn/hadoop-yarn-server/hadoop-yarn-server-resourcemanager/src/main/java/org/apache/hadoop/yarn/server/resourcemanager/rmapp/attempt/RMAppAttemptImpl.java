@@ -43,7 +43,6 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.http.HttpConfig;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
@@ -141,7 +140,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
     new HashSet<NodeId>();
   private final List<ContainerStatus> justFinishedContainers =
     new ArrayList<ContainerStatus>();
-  private final Map<ContainerId, ResourceUsage> runningContainersUsage = 
+  final Map<ContainerId, ResourceUsage> runningContainersUsage = 
     new HashMap<ContainerId, ResourceUsage>();
   private long memorySeconds;
   private long virtualCpuSeconds;
@@ -675,7 +674,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       long memorySeconds = this.memorySeconds;
       long virtualCpuSeconds = this.virtualCpuSeconds;
       long currentTimeMillis = System.currentTimeMillis();
-      
+
       for (ResourceUsage usage : this.runningContainersUsage.values()) {
         memorySeconds += usage.getMemoryMillis(currentTimeMillis) / 
             DateUtils.MILLIS_PER_SECOND;
@@ -950,6 +949,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         break;
       }
 
+      appAttempt.cleanupRunningContainers();
+      
       appAttempt.eventHandler.handle(appEvent);
       appAttempt.eventHandler.handle(new AppRemovedSchedulerEvent(appAttemptId,
         finalAttemptState));
@@ -1329,6 +1330,24 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       LOG.error("Can not record resources usage for the unknown container "
           + containerStatus.getContainerId());
     }
+  }
+  
+  private void cleanupRunningContainers() {
+    long timestamp = System.currentTimeMillis();
+    for (Map.Entry<ContainerId, ResourceUsage> e : 
+        runningContainersUsage.entrySet()) {
+      ContainerId containerId = e.getKey();
+      ResourceUsage usage = e.getValue();
+      LOG.warn("Container " + containerId + " is still counted as running after"
+          + " the attempt " + this.applicationAttemptId + " has finished."
+          + " Usage stats for the application may be inaccurate.");
+      this.memorySeconds += usage.getMemoryMillis(timestamp) 
+          / DateUtils.MILLIS_PER_SECOND;
+      LOG.info("new memSec" + this.memorySeconds);
+      this.virtualCpuSeconds += usage.getVirtualCoresMillis(timestamp)
+          / DateUtils.MILLIS_PER_SECOND;
+    }
+    runningContainersUsage.clear();
   }
   
   private void launchAttempt(){
