@@ -51,13 +51,11 @@ import org.apache.hadoop.mapreduce.TaskCounter;
 import org.apache.hadoop.mapreduce.TaskID;
 import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.hadoop.mapreduce.TestNoJobSetupCleanup.MyOutputFormat;
-import org.apache.hadoop.mapreduce.TypeConverter;
 import org.apache.hadoop.mapreduce.jobhistory.HistoryEvent;
 import org.apache.hadoop.mapreduce.jobhistory.TaskAttemptFinishedEvent;
 import org.apache.hadoop.mapreduce.jobhistory.TaskAttemptUnsuccessfulCompletionEvent;
 import org.apache.hadoop.mapreduce.jobhistory.TaskStartedEvent;
 import org.apache.hadoop.mapreduce.server.tasktracker.TTConfig;
-import org.apache.hadoop.mapreduce.v2.hs.HistoryFileManager;
 import org.apache.hadoop.mapreduce.v2.hs.HistoryFileManager.HistoryFileInfo;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.tools.rumen.TraceBuilder.MyOptions;
@@ -400,7 +398,7 @@ public class TestRumenJobTraces {
   /**
    * Test if {@link CurrentJHParser} can read events from current JH files.
    */
-  @Test(timeout=150000)
+  @Test//(timeout=150000)
   public void testCurrentJHParser() throws Exception {
     final Path tempDir = new Path(rootTempDir, "TestCurrentJHParser");
     lfs.delete(tempDir, true);
@@ -438,19 +436,18 @@ public class TestRumenJobTraces {
       // wait for 10 secs for the jobhistory file to move into the done folder
       for (int i = 0; i < 100; ++i) {
         // get the jobhistory filepath
-        HistoryFileManager hfm = new HistoryFileManager();
         try {
-          hfm.init(conf);
-          HistoryFileInfo fileInfo = hfm.getFileInfo(TypeConverter.toYarn(id));
-          inputPath = fileInfo.getHistoryFile();
-          if (lfs.exists(inputPath)) {
-            break;
+          HistoryFileInfo fileInfo = mrCluster.getJobFileInfo(
+              org.apache.hadoop.mapred.JobID.forName(id.toString()));
+          if (fileInfo != null && !fileInfo.isMovePending()) {
+            inputPath = fileInfo.getHistoryFile();
+            if (lfs.exists(inputPath)) {
+              break;
+            }
           }
         } catch (IOException e) {
-        } finally {
-          hfm.close();
         }
-        TimeUnit.MILLISECONDS.wait(100);
+        TimeUnit.MILLISECONDS.sleep(100);
       }
     
       assertTrue("Missing job history file", inputPath != null && 

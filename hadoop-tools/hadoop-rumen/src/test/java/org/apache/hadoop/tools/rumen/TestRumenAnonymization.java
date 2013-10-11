@@ -35,7 +35,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.MiniMRCluster;
+import org.apache.hadoop.mapred.MiniMRClientCluster;
+import org.apache.hadoop.mapred.MiniMRClientClusterFactory;
 import org.apache.hadoop.mapreduce.ID;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobID;
@@ -44,9 +45,7 @@ import org.apache.hadoop.mapreduce.MapReduceTestUtil;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskID;
 import org.apache.hadoop.mapreduce.TaskType;
-import org.apache.hadoop.mapreduce.TypeConverter;
 import org.apache.hadoop.mapreduce.server.tasktracker.TTConfig;
-import org.apache.hadoop.mapreduce.v2.hs.HistoryFileManager;
 import org.apache.hadoop.mapreduce.v2.hs.HistoryFileManager.HistoryFileInfo;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.PathUtils;
@@ -88,7 +87,6 @@ import org.junit.Test;
 /**
  * Tests Rumen output anonymization.
  */
-@SuppressWarnings("deprecation")
 public class TestRumenAnonymization {
   
   private final Configuration conf = new Configuration();
@@ -333,6 +331,7 @@ public class TestRumenAnonymization {
   /**
    * Test {@link JobProperties}.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testJobPropertiesDataType() throws IOException {
     // test job properties
@@ -360,6 +359,7 @@ public class TestRumenAnonymization {
   /**
    * Test {@link JobProperties} serialization.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testJobPropertiesSerialization() throws IOException {
     JsonSerializer<?> defaultSerializer = new DefaultRumenSerializer();
@@ -379,6 +379,7 @@ public class TestRumenAnonymization {
   /**
    * Test {@link JobProperties} anonymization.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testJobPropertiesAnonymization() throws IOException {
     // test job properties
@@ -773,28 +774,22 @@ public class TestRumenAnonymization {
     conf.setInt(TTConfig.TT_REDUCE_SLOTS, 1);
     
     MiniDFSCluster dfsCluster = null;
-    MiniMRCluster mrCluster =  null;
+    MiniMRClientCluster mrCluster =  null;
     
     Path tempDir = new Path(rootTempDir, "testRumenAnonymization");
     tempDir = lfs.makeQualified(tempDir);
     lfs.delete(tempDir, true);
     
     try {
-      dfsCluster = new MiniDFSCluster(conf, 1, true, null);
-      String[] racks = new String[] {"/rack123.myorg.com", 
-                                     "/rack456.myorg.com"};
-      String[] hosts = new String[] {"host1230.myorg.com", 
-                                     "host4560.myorg.com"};
+      dfsCluster = new MiniDFSCluster.Builder(conf).build();
       FileSystem fs = dfsCluster.getFileSystem();
-      mrCluster = 
-        new MiniMRCluster(2, fs.getUri().toString(), 
-                          1, racks, hosts, new JobConf(conf));
+      mrCluster = MiniMRClientClusterFactory.create(getClass(), 2, conf);
 
       // run a job
       Path inDir = new Path("secret-input");
       Path outDir = new Path("secret-output");
 
-      JobConf jConf = mrCluster.createJobConf();
+      JobConf jConf = new JobConf(mrCluster.getConfig());
       // add some usr sensitive data in the job conf
       jConf.set("user-secret-code", "abracadabra");
       
@@ -812,15 +807,12 @@ public class TestRumenAnonymization {
       Path inputConfPath = null;
       Path inputLogPath = null;
       
-      @SuppressWarnings("resource")
-      HistoryFileManager hfm = new HistoryFileManager();
-      hfm.init(conf);
-
       // wait for 10 secs for the jobhistory file to move into the done folder
       for (int i = 0; i < 100; ++i) {
         // get the jobhistory filepath
         try {
-          HistoryFileInfo fileInfo = hfm.getFileInfo(TypeConverter.toYarn(id));
+          HistoryFileInfo fileInfo = mrCluster.getJobFileInfo(
+              org.apache.hadoop.mapred.JobID.forName(id.toString()));
           inputLogPath = fileInfo.getHistoryFile();
           inputConfPath = fileInfo.getConfFile();
           if (!fileInfo.isMovePending() &&
@@ -914,7 +906,7 @@ public class TestRumenAnonymization {
     } finally {
       // shutdown and cleanup
       if (mrCluster != null) {
-        mrCluster.shutdown();
+        mrCluster.stop();
       }
       
       if (dfsCluster != null) {
