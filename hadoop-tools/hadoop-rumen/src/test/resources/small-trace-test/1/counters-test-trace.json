@@ -1,0 +1,1160 @@
+{
+  "priority" : "NORMAL",
+  "jobID" : "job_201002080801_40864",
+  "user" : "geek1",
+  "jobName" : "[DOTS-PROD-job_name-DAILY/20100210] - data\\.transform",
+  "mapTasks" : [ {
+    "startTime" : 1265814230813,
+    "taskID" : "task_201002080801_40864_m_000000",
+    "taskType" : "MAP",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "76\\.13\\.186\\.64", "node40488\\.gold\\.cloud\\.megacorp\\.com" ]
+      },
+      "hostName" : "/76\\.13\\.186\\.64/node40488\\.gold\\.cloud\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265814231562,
+      "finishTime" : 1265814234173,
+      "shuffleFinished" : -1,
+      "sortFinished" : -1,
+      "attemptID" : "attempt_201002080801_40864_m_000000_0",
+      "hdfsBytesRead" : 1377,
+      "hdfsBytesWritten" : -1,
+      "fileBytesRead" : -1,
+      "fileBytesWritten" : 1113,
+      "mapInputRecords" : 10,
+      "mapOutputBytes" : 1394,
+      "mapOutputRecords" : 10,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : -1,
+      "reduceInputRecords" : -1,
+      "reduceShuffleBytes" : -1,
+      "reduceOutputRecords" : -1,
+      "spilledRecords" : 10,
+      "mapInputBytes" : 574
+    } ],
+    "preferredLocations" : [ {
+      "layers" : [ "76\\.13\\.178\\.0", "node42075\\.gold\\.cloud\\.megacorp\\.com" ]
+    }, {
+      "layers" : [ "76\\.13\\.178\\.0", "node42067\\.gold\\.cloud\\.megacorp\\.com" ]
+    }, {
+      "layers" : [ "76\\.13\\.25\\.128", "node41498\\.gold\\.cloud\\.megacorp\\.com" ]
+    } ],
+    "finishTime" : 1265814234241,
+    "inputBytes" : 1377,
+    "inputRecords" : 10,
+    "outputBytes" : 1113,
+    "outputRecords" : 10,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265814230817,
+    "taskID" : "task_201002080801_40864_m_000001",
+    "taskType" : "MAP",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "76\\.13\\.186\\.64", "node40488\\.gold\\.cloud\\.megacorp\\.com" ]
+      },
+      "hostName" : "/76\\.13\\.186\\.64/node40488\\.gold\\.cloud\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265814234492,
+      "finishTime" : 1265814237270,
+      "shuffleFinished" : -1,
+      "sortFinished" : -1,
+      "attemptID" : "attempt_201002080801_40864_m_000001_1",
+      "hdfsBytesRead" : 1216,
+      "hdfsBytesWritten" : -1,
+      "fileBytesRead" : -1,
+      "fileBytesWritten" : 218,
+      "mapInputRecords" : 0,
+      "mapOutputBytes" : 0,
+      "mapOutputRecords" : 0,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : -1,
+      "reduceInputRecords" : -1,
+      "reduceShuffleBytes" : -1,
+      "reduceOutputRecords" : -1,
+      "spilledRecords" : 0,
+      "mapInputBytes" : 0
+    }, {
+      "location" : null,
+      "hostName" : "node43617\\.gold\\.cloud\\.megacorp\\.com",
+      "result" : "KILLED",
+      "startTime" : 1265814231931,
+      "finishTime" : 1265814337851,
+      "shuffleFinished" : -1,
+      "sortFinished" : -1,
+      "attemptID" : "attempt_201002080801_40864_m_000001_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : -1,
+      "fileBytesRead" : -1,
+      "fileBytesWritten" : -1,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : -1,
+      "reduceInputGroups" : -1,
+      "reduceInputRecords" : -1,
+      "reduceShuffleBytes" : -1,
+      "reduceOutputRecords" : -1,
+      "spilledRecords" : -1,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ {
+      "layers" : [ "76\\.13\\.186\\.128", "node40513\\.gold\\.cloud\\.megacorp\\.com" ]
+    }, {
+      "layers" : [ "76\\.13\\.186\\.128", "node40523\\.gold\\.cloud\\.megacorp\\.com" ]
+    }, {
+      "layers" : [ "76\\.13\\.25\\.128", "node41498\\.gold\\.cloud\\.megacorp\\.com" ]
+    } ],
+    "finishTime" : 1265814237350,
+    "inputBytes" : 1216,
+    "inputRecords" : 0,
+    "outputBytes" : 218,
+    "outputRecords" : 0,
+    "taskStatus" : "SUCCESS"
+  } ],
+  "reduceTasks" : [ {
+    "startTime" : 1265814234242,
+    "taskID" : "task_201002080801_40864_r_000000",
+    "taskType" : "REDUCE",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "76\\.13\\.186\\.64", "node40488\\.gold\\.cloud\\.megacorp\\.com" ]
+      },
+      "hostName" : "/76\\.13\\.186\\.64/node40488\\.gold\\.cloud\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265814234550,
+      "finishTime" : 1265814258939,
+      "shuffleFinished" : 1265814256631,
+      "sortFinished" : 1265814256680,
+      "attemptID" : "attempt_201002080801_40864_r_000000_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : 335,
+      "fileBytesRead" : 205,
+      "fileBytesWritten" : 205,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : 2,
+      "reduceInputRecords" : 2,
+      "reduceShuffleBytes" : 219,
+      "reduceOutputRecords" : 2,
+      "spilledRecords" : 2,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265814258943,
+    "inputBytes" : 219,
+    "inputRecords" : 2,
+    "outputBytes" : 335,
+    "outputRecords" : 2,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265814234244,
+    "taskID" : "task_201002080801_40864_r_000001",
+    "taskType" : "REDUCE",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "76\\.13\\.186\\.64", "node40488\\.gold\\.cloud\\.megacorp\\.com" ]
+      },
+      "hostName" : "/76\\.13\\.186\\.64/node40488\\.gold\\.cloud\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265814259018,
+      "finishTime" : 1265814268164,
+      "shuffleFinished" : 1265814266905,
+      "sortFinished" : 1265814266954,
+      "attemptID" : "attempt_201002080801_40864_r_000001_1",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : 344,
+      "fileBytesRead" : 224,
+      "fileBytesWritten" : 224,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : 2,
+      "reduceInputRecords" : 2,
+      "reduceShuffleBytes" : 238,
+      "reduceOutputRecords" : 2,
+      "spilledRecords" : 2,
+      "mapInputBytes" : -1
+    }, {
+      "location" : null,
+      "hostName" : "node40071\\.gold\\.cloud\\.megacorp\\.com",
+      "result" : "KILLED",
+      "startTime" : 1265814235144,
+      "finishTime" : 1265814353034,
+      "shuffleFinished" : -1,
+      "sortFinished" : -1,
+      "attemptID" : "attempt_201002080801_40864_r_000001_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : -1,
+      "fileBytesRead" : -1,
+      "fileBytesWritten" : -1,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : -1,
+      "reduceInputGroups" : -1,
+      "reduceInputRecords" : -1,
+      "reduceShuffleBytes" : -1,
+      "reduceOutputRecords" : -1,
+      "spilledRecords" : -1,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265814268233,
+    "inputBytes" : 238,
+    "inputRecords" : 2,
+    "outputBytes" : 344,
+    "outputRecords" : 2,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265814234247,
+    "taskID" : "task_201002080801_40864_r_000002",
+    "taskType" : "REDUCE",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "76\\.13\\.30\\.192", "node40993\\.gold\\.cloud\\.megacorp\\.com" ]
+      },
+      "hostName" : "/76\\.13\\.30\\.192/node40993\\.gold\\.cloud\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265814260157,
+      "finishTime" : 1265814374748,
+      "shuffleFinished" : 1265814373393,
+      "sortFinished" : 1265814373442,
+      "attemptID" : "attempt_201002080801_40864_r_000002_1",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : 321,
+      "fileBytesRead" : 182,
+      "fileBytesWritten" : 182,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : 2,
+      "reduceInputRecords" : 2,
+      "reduceShuffleBytes" : 178,
+      "reduceOutputRecords" : 2,
+      "spilledRecords" : 2,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265814374751,
+    "inputBytes" : 178,
+    "inputRecords" : 2,
+    "outputBytes" : 321,
+    "outputRecords" : 2,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265814234250,
+    "taskID" : "task_201002080801_40864_r_000003",
+    "taskType" : "REDUCE",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "76\\.13\\.25\\.128", "node41474\\.gold\\.cloud\\.megacorp\\.com" ]
+      },
+      "hostName" : "/76\\.13\\.25\\.128/node41474\\.gold\\.cloud\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265814235751,
+      "finishTime" : 1265814327292,
+      "shuffleFinished" : 1265814325918,
+      "sortFinished" : 1265814325983,
+      "attemptID" : "attempt_201002080801_40864_r_000003_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : 355,
+      "fileBytesRead" : 239,
+      "fileBytesWritten" : 239,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : 3,
+      "reduceInputRecords" : 3,
+      "reduceShuffleBytes" : 235,
+      "reduceOutputRecords" : 3,
+      "spilledRecords" : 3,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265814327449,
+    "inputBytes" : 235,
+    "inputRecords" : 3,
+    "outputBytes" : 355,
+    "outputRecords" : 3,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265814234260,
+    "taskID" : "task_201002080801_40864_r_000004",
+    "taskType" : "REDUCE",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "76\\.13\\.164\\.128", "node41957\\.gold\\.cloud\\.megacorp\\.com" ]
+      },
+      "hostName" : "/76\\.13\\.164\\.128/node41957\\.gold\\.cloud\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265814235344,
+      "finishTime" : 1265814352560,
+      "shuffleFinished" : 1265814350003,
+      "sortFinished" : 1265814350069,
+      "attemptID" : "attempt_201002080801_40864_r_000004_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : 297,
+      "fileBytesRead" : 155,
+      "fileBytesWritten" : 155,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : 1,
+      "reduceInputRecords" : 1,
+      "reduceShuffleBytes" : 151,
+      "reduceOutputRecords" : 1,
+      "spilledRecords" : 1,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265814352561,
+    "inputBytes" : 151,
+    "inputRecords" : 1,
+    "outputBytes" : 297,
+    "outputRecords" : 1,
+    "taskStatus" : "SUCCESS"
+  } ],
+  "otherTasks" : [ {
+    "startTime" : 1265814121642,
+    "taskID" : "task_201002080801_40864_m_000003",
+    "taskType" : "SETUP",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "76\\.13\\.186\\.64", "node40488\\.gold\\.cloud\\.megacorp\\.com" ]
+      },
+      "hostName" : "/76\\.13\\.186\\.64/node40488\\.gold\\.cloud\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265814122725,
+      "finishTime" : 1265814230311,
+      "shuffleFinished" : -1,
+      "sortFinished" : -1,
+      "attemptID" : "attempt_201002080801_40864_m_000003_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : -1,
+      "fileBytesRead" : -1,
+      "fileBytesWritten" : -1,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : -1,
+      "reduceInputGroups" : -1,
+      "reduceInputRecords" : -1,
+      "reduceShuffleBytes" : -1,
+      "reduceOutputRecords" : -1,
+      "spilledRecords" : 0,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265814230811,
+    "inputBytes" : -1,
+    "inputRecords" : -1,
+    "outputBytes" : -1,
+    "outputRecords" : -1,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265814374751,
+    "taskID" : "task_201002080801_40864_m_000002",
+    "taskType" : "CLEANUP",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "76\\.13\\.30\\.192", "node40993\\.gold\\.cloud\\.megacorp\\.com" ]
+      },
+      "hostName" : "/76\\.13\\.30\\.192/node40993\\.gold\\.cloud\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265814375495,
+      "finishTime" : 1265814377348,
+      "shuffleFinished" : -1,
+      "sortFinished" : -1,
+      "attemptID" : "attempt_201002080801_40864_m_000002_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : -1,
+      "fileBytesRead" : -1,
+      "fileBytesWritten" : -1,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : -1,
+      "reduceInputGroups" : -1,
+      "reduceInputRecords" : -1,
+      "reduceShuffleBytes" : -1,
+      "reduceOutputRecords" : -1,
+      "spilledRecords" : 0,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265814377411,
+    "inputBytes" : -1,
+    "inputRecords" : -1,
+    "outputBytes" : -1,
+    "outputRecords" : -1,
+    "taskStatus" : "SUCCESS"
+  } ],
+  "finishTime" : 1265814377411,
+  "jobProperties" : {
+    "mapred.child.java.opts" : "-Xmx1024M -Djava.io.tmpdir=./tmp"
+  },
+  "computonsPerMapInputByte" : -1,
+  "computonsPerMapOutputByte" : -1,
+  "computonsPerReduceInputByte" : -1,
+  "computonsPerReduceOutputByte" : -1,
+  "submitTime" : 1265814118952,
+  "launchTime" : 1265814121638,
+  "heapMegabytes" : 1024,
+  "totalMaps" : 2,
+  "totalReduces" : 5,
+  "outcome" : "SUCCESS",
+  "jobtype" : "JAVA",
+  "directDependantJobs" : [ ],
+  "successfulMapAttemptCDFs" : [ {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  }, {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  }, {
+    "maximum" : 2778,
+    "minimum" : 2611,
+    "rankings" : [ {
+      "datum" : 2611,
+      "relativeRanking" : 0.05
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.1
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.15
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.2
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.25
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.3
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.35
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.4
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.45
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.5
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.55
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.6
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.65
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.7
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.75
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.8
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.85
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.9
+    }, {
+      "datum" : 2611,
+      "relativeRanking" : 0.95
+    } ],
+    "numberValues" : 2
+  }, {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  } ],
+  "failedMapAttemptCDFs" : [ {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  }, {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  }, {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  }, {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  } ],
+  "successfulReduceAttemptCDF" : {
+    "maximum" : 117216,
+    "minimum" : 9146,
+    "rankings" : [ {
+      "datum" : 9146,
+      "relativeRanking" : 0.05
+    }, {
+      "datum" : 9146,
+      "relativeRanking" : 0.1
+    }, {
+      "datum" : 9146,
+      "relativeRanking" : 0.15
+    }, {
+      "datum" : 9146,
+      "relativeRanking" : 0.2
+    }, {
+      "datum" : 9146,
+      "relativeRanking" : 0.25
+    }, {
+      "datum" : 9146,
+      "relativeRanking" : 0.3
+    }, {
+      "datum" : 9146,
+      "relativeRanking" : 0.35
+    }, {
+      "datum" : 24389,
+      "relativeRanking" : 0.4
+    }, {
+      "datum" : 24389,
+      "relativeRanking" : 0.45
+    }, {
+      "datum" : 24389,
+      "relativeRanking" : 0.5
+    }, {
+      "datum" : 24389,
+      "relativeRanking" : 0.55
+    }, {
+      "datum" : 91541,
+      "relativeRanking" : 0.6
+    }, {
+      "datum" : 91541,
+      "relativeRanking" : 0.65
+    }, {
+      "datum" : 91541,
+      "relativeRanking" : 0.7
+    }, {
+      "datum" : 91541,
+      "relativeRanking" : 0.75
+    }, {
+      "datum" : 114591,
+      "relativeRanking" : 0.8
+    }, {
+      "datum" : 114591,
+      "relativeRanking" : 0.85
+    }, {
+      "datum" : 114591,
+      "relativeRanking" : 0.9
+    }, {
+      "datum" : 114591,
+      "relativeRanking" : 0.95
+    } ],
+    "numberValues" : 5
+  },
+  "failedReduceAttemptCDF" : {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  },
+  "mapperTriesToSucceed" : [ 0.5, 0.5 ],
+  "failedMapperFraction" : 0.0,
+  "relativeTime" : 0,
+  "queue" : null,
+  "clusterMapMB" : -1,
+  "clusterReduceMB" : -1,
+  "jobMapMB" : 1024,
+  "jobReduceMB" : 1024
+} {
+  "priority" : "NORMAL",
+  "jobID" : "job_201002080801_50510",
+  "user" : "geek1",
+  "jobName" : "[DOTS-PROD-job_name-DAILY/20100208] - data\\.transform",
+  "mapTasks" : [ {
+    "startTime" : 1265873554319,
+    "taskID" : "task_201002080801_50510_m_000000",
+    "taskType" : "MAP",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "192\\.13\\.181\\.64", "node42614\\.gold\\.megagrid\\.megacorp\\.com" ]
+      },
+      "hostName" : "/192\\.13\\.181\\.64/node42614\\.gold\\.megagrid\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265873555248,
+      "finishTime" : 1265873558485,
+      "shuffleFinished" : -1,
+      "sortFinished" : -1,
+      "attemptID" : "attempt_201002080801_50510_m_000000_0",
+      "hdfsBytesRead" : 1377,
+      "hdfsBytesWritten" : -1,
+      "fileBytesRead" : -1,
+      "fileBytesWritten" : 1113,
+      "mapInputRecords" : 10,
+      "mapOutputBytes" : 1394,
+      "mapOutputRecords" : 10,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : -1,
+      "reduceInputRecords" : -1,
+      "reduceShuffleBytes" : -1,
+      "reduceOutputRecords" : -1,
+      "spilledRecords" : 10,
+      "mapInputBytes" : 574
+    } ],
+    "preferredLocations" : [ {
+      "layers" : [ "192\\.13\\.185\\.128", "node40355\\.gold\\.megagrid\\.megacorp\\.com" ]
+    }, {
+      "layers" : [ "192\\.13\\.26\\.64", "node41523\\.gold\\.megagrid\\.megacorp\\.com" ]
+    }, {
+      "layers" : [ "192\\.13\\.26\\.64", "node41525\\.gold\\.megagrid\\.megacorp\\.com" ]
+    } ],
+    "finishTime" : 1265873566008,
+    "inputBytes" : 1377,
+    "inputRecords" : 10,
+    "outputBytes" : 1113,
+    "outputRecords" : 10,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265873554324,
+    "taskID" : "task_201002080801_50510_m_000001",
+    "taskType" : "MAP",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "192\\.13\\.181\\.64", "node42614\\.gold\\.megagrid\\.megacorp\\.com" ]
+      },
+      "hostName" : "/192\\.13\\.181\\.64/node42614\\.gold\\.megagrid\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265873566029,
+      "finishTime" : 1265873568886,
+      "shuffleFinished" : -1,
+      "sortFinished" : -1,
+      "attemptID" : "attempt_201002080801_50510_m_000001_1",
+      "hdfsBytesRead" : 1216,
+      "hdfsBytesWritten" : -1,
+      "fileBytesRead" : -1,
+      "fileBytesWritten" : 218,
+      "mapInputRecords" : 0,
+      "mapOutputBytes" : 0,
+      "mapOutputRecords" : 0,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : -1,
+      "reduceInputRecords" : -1,
+      "reduceShuffleBytes" : -1,
+      "reduceOutputRecords" : -1,
+      "spilledRecords" : 0,
+      "mapInputBytes" : 0
+    }, {
+      "location" : null,
+      "hostName" : "node40879\\.gold\\.megagrid\\.megacorp\\.com",
+      "result" : "KILLED",
+      "startTime" : 1265873555330,
+      "finishTime" : 1265873708876,
+      "shuffleFinished" : -1,
+      "sortFinished" : -1,
+      "attemptID" : "attempt_201002080801_50510_m_000001_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : -1,
+      "fileBytesRead" : -1,
+      "fileBytesWritten" : -1,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : -1,
+      "reduceInputGroups" : -1,
+      "reduceInputRecords" : -1,
+      "reduceShuffleBytes" : -1,
+      "reduceOutputRecords" : -1,
+      "spilledRecords" : -1,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ {
+      "layers" : [ "192\\.13\\.185\\.128", "node40355\\.gold\\.megagrid\\.megacorp\\.com" ]
+    }, {
+      "layers" : [ "192\\.13\\.27\\.64", "node41265\\.gold\\.megagrid\\.megacorp\\.com" ]
+    }, {
+      "layers" : [ "192\\.13\\.27\\.64", "node41228\\.gold\\.megagrid\\.megacorp\\.com" ]
+    } ],
+    "finishTime" : 1265873585989,
+    "inputBytes" : 1216,
+    "inputRecords" : 0,
+    "outputBytes" : 218,
+    "outputRecords" : 0,
+    "taskStatus" : "SUCCESS"
+  } ],
+  "reduceTasks" : [ {
+    "startTime" : 1265873566014,
+    "taskID" : "task_201002080801_50510_r_000000",
+    "taskType" : "REDUCE",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "192\\.13\\.30\\.128", "node40958\\.gold\\.megagrid\\.megacorp\\.com" ]
+      },
+      "hostName" : "/192\\.13\\.30\\.128/node40958\\.gold\\.megagrid\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265873567266,
+      "finishTime" : 1265873734380,
+      "shuffleFinished" : 1265873727807,
+      "sortFinished" : 1265873727856,
+      "attemptID" : "attempt_201002080801_50510_r_000000_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : 335,
+      "fileBytesRead" : 205,
+      "fileBytesWritten" : 205,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : 2,
+      "reduceInputRecords" : 2,
+      "reduceShuffleBytes" : 201,
+      "reduceOutputRecords" : 2,
+      "spilledRecords" : 2,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265873739294,
+    "inputBytes" : 201,
+    "inputRecords" : 2,
+    "outputBytes" : 335,
+    "outputRecords" : 2,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265873566019,
+    "taskID" : "task_201002080801_50510_r_000001",
+    "taskType" : "REDUCE",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "192\\.13\\.176\\.0", "node43378\\.gold\\.megagrid\\.megacorp\\.com" ]
+      },
+      "hostName" : "/192\\.13\\.176\\.0/node43378\\.gold\\.megagrid\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265873567257,
+      "finishTime" : 1265873705172,
+      "shuffleFinished" : 1265873697775,
+      "sortFinished" : 1265873697827,
+      "attemptID" : "attempt_201002080801_50510_r_000001_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : 344,
+      "fileBytesRead" : 224,
+      "fileBytesWritten" : 224,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : 2,
+      "reduceInputRecords" : 2,
+      "reduceShuffleBytes" : 220,
+      "reduceOutputRecords" : 2,
+      "spilledRecords" : 2,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265873718067,
+    "inputBytes" : 220,
+    "inputRecords" : 2,
+    "outputBytes" : 344,
+    "outputRecords" : 2,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265873566024,
+    "taskID" : "task_201002080801_50510_r_000002",
+    "taskType" : "REDUCE",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "192\\.13\\.29\\.0", "node43588\\.gold\\.megagrid\\.megacorp\\.com" ]
+      },
+      "hostName" : "/192\\.13\\.29\\.0/node43588\\.gold\\.megagrid\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265873567260,
+      "finishTime" : 1265873735707,
+      "shuffleFinished" : 1265873731296,
+      "sortFinished" : 1265873731352,
+      "attemptID" : "attempt_201002080801_50510_r_000002_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : 321,
+      "fileBytesRead" : 182,
+      "fileBytesWritten" : 182,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : 2,
+      "reduceInputRecords" : 2,
+      "reduceShuffleBytes" : 178,
+      "reduceOutputRecords" : 2,
+      "spilledRecords" : 2,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265873740559,
+    "inputBytes" : 178,
+    "inputRecords" : 2,
+    "outputBytes" : 321,
+    "outputRecords" : 2,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265873566029,
+    "taskID" : "task_201002080801_50510_r_000003",
+    "taskType" : "REDUCE",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "67\\.195\\.204\\.192", "node40736\\.gold\\.megagrid\\.megacorp\\.com" ]
+      },
+      "hostName" : "/67\\.195\\.204\\.192/node40736\\.gold\\.megagrid\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265873566546,
+      "finishTime" : 1265873790055,
+      "shuffleFinished" : 1265873782643,
+      "sortFinished" : 1265873782686,
+      "attemptID" : "attempt_201002080801_50510_r_000003_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : 355,
+      "fileBytesRead" : 239,
+      "fileBytesWritten" : 239,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : 3,
+      "reduceInputRecords" : 3,
+      "reduceShuffleBytes" : 253,
+      "reduceOutputRecords" : 3,
+      "spilledRecords" : 3,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265873793981,
+    "inputBytes" : 253,
+    "inputRecords" : 3,
+    "outputBytes" : 355,
+    "outputRecords" : 3,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265873566033,
+    "taskID" : "task_201002080801_50510_r_000004",
+    "taskType" : "REDUCE",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "192\\.13\\.28\\.128", "node41419\\.gold\\.megagrid\\.megacorp\\.com" ]
+      },
+      "hostName" : "/192\\.13\\.28\\.128/node41419\\.gold\\.megagrid\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265873567204,
+      "finishTime" : 1265873715893,
+      "shuffleFinished" : 1265873702466,
+      "sortFinished" : 1265873702534,
+      "attemptID" : "attempt_201002080801_50510_r_000004_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : 297,
+      "fileBytesRead" : 155,
+      "fileBytesWritten" : 155,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : 0,
+      "reduceInputGroups" : 1,
+      "reduceInputRecords" : 1,
+      "reduceShuffleBytes" : 151,
+      "reduceOutputRecords" : 1,
+      "spilledRecords" : 1,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265873721913,
+    "inputBytes" : 151,
+    "inputRecords" : 1,
+    "outputBytes" : 297,
+    "outputRecords" : 1,
+    "taskStatus" : "SUCCESS"
+  } ],
+  "otherTasks" : [ {
+    "startTime" : 1265873392084,
+    "taskID" : "task_201002080801_50510_m_000003",
+    "taskType" : "SETUP",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "192\\.13\\.181\\.64", "node42614\\.gold\\.megagrid\\.megacorp\\.com" ]
+      },
+      "hostName" : "/192\\.13\\.181\\.64/node42614\\.gold\\.megagrid\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265873393165,
+      "finishTime" : 1265873543421,
+      "shuffleFinished" : -1,
+      "sortFinished" : -1,
+      "attemptID" : "attempt_201002080801_50510_m_000003_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : -1,
+      "fileBytesRead" : -1,
+      "fileBytesWritten" : -1,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : -1,
+      "reduceInputGroups" : -1,
+      "reduceInputRecords" : -1,
+      "reduceShuffleBytes" : -1,
+      "reduceOutputRecords" : -1,
+      "spilledRecords" : 0,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265873554316,
+    "inputBytes" : -1,
+    "inputRecords" : -1,
+    "outputBytes" : -1,
+    "outputRecords" : -1,
+    "taskStatus" : "SUCCESS"
+  }, {
+    "startTime" : 1265873793981,
+    "taskID" : "task_201002080801_50510_m_000002",
+    "taskType" : "CLEANUP",
+    "attempts" : [ {
+      "location" : {
+        "layers" : [ "67\\.195\\.204\\.192", "node40736\\.gold\\.megagrid\\.megacorp\\.com" ]
+      },
+      "hostName" : "/67\\.195\\.204\\.192/node40736\\.gold\\.megagrid\\.megacorp\\.com",
+      "result" : "SUCCESS",
+      "startTime" : 1265873794453,
+      "finishTime" : 1265873795914,
+      "shuffleFinished" : -1,
+      "sortFinished" : -1,
+      "attemptID" : "attempt_201002080801_50510_m_000002_0",
+      "hdfsBytesRead" : -1,
+      "hdfsBytesWritten" : -1,
+      "fileBytesRead" : -1,
+      "fileBytesWritten" : -1,
+      "mapInputRecords" : -1,
+      "mapOutputBytes" : -1,
+      "mapOutputRecords" : -1,
+      "combineInputRecords" : -1,
+      "reduceInputGroups" : -1,
+      "reduceInputRecords" : -1,
+      "reduceShuffleBytes" : -1,
+      "reduceOutputRecords" : -1,
+      "spilledRecords" : 0,
+      "mapInputBytes" : -1
+    } ],
+    "preferredLocations" : [ ],
+    "finishTime" : 1265873797314,
+    "inputBytes" : -1,
+    "inputRecords" : -1,
+    "outputBytes" : -1,
+    "outputRecords" : -1,
+    "taskStatus" : "SUCCESS"
+  } ],
+  "finishTime" : 1265873797315,
+  "jobProperties" : {
+    "mapred.child.java.opts" : "-Xmx1024m -Djava.net.preferIPv4Stack=true"
+  },
+  "computonsPerMapInputByte" : -1,
+  "computonsPerMapOutputByte" : -1,
+  "computonsPerReduceInputByte" : -1,
+  "computonsPerReduceOutputByte" : -1,
+  "submitTime" : 1265873386009,
+  "launchTime" : 1265873392080,
+  "heapMegabytes" : 1024,
+  "totalMaps" : 2,
+  "totalReduces" : 5,
+  "outcome" : "SUCCESS",
+  "jobtype" : "JAVA",
+  "directDependantJobs" : [ ],
+  "successfulMapAttemptCDFs" : [ {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  }, {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  }, {
+    "maximum" : 3237,
+    "minimum" : 2857,
+    "rankings" : [ {
+      "datum" : 2857,
+      "relativeRanking" : 0.05
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.1
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.15
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.2
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.25
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.3
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.35
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.4
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.45
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.5
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.55
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.6
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.65
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.7
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.75
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.8
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.85
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.9
+    }, {
+      "datum" : 2857,
+      "relativeRanking" : 0.95
+    } ],
+    "numberValues" : 2
+  }, {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  } ],
+  "failedMapAttemptCDFs" : [ {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  }, {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  }, {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  }, {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  } ],
+  "successfulReduceAttemptCDF" : {
+    "maximum" : 223509,
+    "minimum" : 137915,
+    "rankings" : [ {
+      "datum" : 137915,
+      "relativeRanking" : 0.05
+    }, {
+      "datum" : 137915,
+      "relativeRanking" : 0.1
+    }, {
+      "datum" : 137915,
+      "relativeRanking" : 0.15
+    }, {
+      "datum" : 137915,
+      "relativeRanking" : 0.2
+    }, {
+      "datum" : 137915,
+      "relativeRanking" : 0.25
+    }, {
+      "datum" : 137915,
+      "relativeRanking" : 0.3
+    }, {
+      "datum" : 137915,
+      "relativeRanking" : 0.35
+    }, {
+      "datum" : 148689,
+      "relativeRanking" : 0.4
+    }, {
+      "datum" : 148689,
+      "relativeRanking" : 0.45
+    }, {
+      "datum" : 148689,
+      "relativeRanking" : 0.5
+    }, {
+      "datum" : 148689,
+      "relativeRanking" : 0.55
+    }, {
+      "datum" : 167114,
+      "relativeRanking" : 0.6
+    }, {
+      "datum" : 167114,
+      "relativeRanking" : 0.65
+    }, {
+      "datum" : 167114,
+      "relativeRanking" : 0.7
+    }, {
+      "datum" : 167114,
+      "relativeRanking" : 0.75
+    }, {
+      "datum" : 168447,
+      "relativeRanking" : 0.8
+    }, {
+      "datum" : 168447,
+      "relativeRanking" : 0.85
+    }, {
+      "datum" : 168447,
+      "relativeRanking" : 0.9
+    }, {
+      "datum" : 168447,
+      "relativeRanking" : 0.95
+    } ],
+    "numberValues" : 5
+  },
+  "failedReduceAttemptCDF" : {
+    "maximum" : 9223372036854775807,
+    "minimum" : -9223372036854775808,
+    "rankings" : [ ],
+    "numberValues" : 0
+  },
+  "mapperTriesToSucceed" : [ 0.5, 0.5 ],
+  "failedMapperFraction" : 0.0,
+  "relativeTime" : 0,
+  "queue" : null,
+  "clusterMapMB" : -1,
+  "clusterReduceMB" : -1,
+  "jobMapMB" : 1024,
+  "jobReduceMB" : 1024
+}
