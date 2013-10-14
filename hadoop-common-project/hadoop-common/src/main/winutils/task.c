@@ -36,6 +36,7 @@ typedef enum TaskCommandOptionType
   TaskCreate,
   TaskIsAlive,
   TaskKill,
+  TaskCtrlC,
   TaskBreak,
   TaskProcessList
 } TaskCommandOption;
@@ -72,6 +73,11 @@ static BOOL ParseCommandLine(__in int argc,
       *command = TaskKill;
       return TRUE;
     }
+    if (wcscmp(argv[1], L"sendCtrlC") == 0)
+    {
+      *command = TaskCtrlC;
+      return TRUE;
+    }
     if (wcscmp(argv[1], L"sendBreak") == 0)
     {
       *command = TaskBreak;
@@ -95,9 +101,9 @@ static BOOL ParseCommandLine(__in int argc,
   return FALSE;
 }
 
-BOOL NoopCtrlHandler( DWORD fdwCtrlType )
+BOOL NoopConsoleCtrlEventHandler( DWORD fdwCtrlType )
 {
-  if ( fdwCtrlType == CTRL_BREAK_EVENT ) {
+  if ( fdwCtrlType == CTRL_BREAK_EVENT || fdwCtrlType == CTRL_C_EVENT) {
     return TRUE;
   }
   return FALSE;
@@ -163,7 +169,7 @@ DWORD createTask(__in PCWSTR jobObjName,__in PWSTR cmdLine)
   si.cb = sizeof(si);
   ZeroMemory( &pi, sizeof(pi) );
 
-  SetConsoleCtrlHandler(NoopCtrlHandler, TRUE);
+  SetConsoleCtrlHandler(NoopConsoleCtrlEventHandler, TRUE);
 
   if (CreateProcess(NULL, cmdLine, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0)
   {
@@ -295,7 +301,7 @@ DWORD killTask(PCWSTR jobObjName)
   return ERROR_SUCCESS;
 }
 
-DWORD sendBreakToTask(PCWSTR jobObjName)
+DWORD sendConsoleCtrlEvent(PCWSTR jobObjName, DWORD dwCtrlEvent)
 {
   HANDLE jobObject = OpenJobObject(JOB_OBJECT_QUERY, FALSE, jobObjName);
   JOBOBJECT_BASIC_PROCESS_ID_LIST* jobInfo;
@@ -320,19 +326,29 @@ DWORD sendBreakToTask(PCWSTR jobObjName)
     return GetLastError();
   }
 
-  for (i = 0; i < jobInfo->NumberOfProcessIdsInList; i++)
+  if (jobInfo->NumberOfProcessIdsInList >0)
   {
-    pid = (DWORD) jobInfo->ProcessIdList[i];
+    pid = (DWORD) jobInfo->ProcessIdList[0];
     FreeConsole();
     AttachConsole(pid);
-    SetConsoleCtrlHandler(NoopCtrlHandler, TRUE);
-    GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, pid);
+    SetConsoleCtrlHandler(NoopConsoleCtrlEventHandler, TRUE);
+    GenerateConsoleCtrlEvent(dwCtrlEvent, 0);
   } 
 
   LocalFree(jobInfo);
 
   CloseHandle(jobObject);
   return ERROR_SUCCESS;
+}
+
+DWORD sendBreakToTask(PCWSTR jobObjName)
+{
+  return sendConsoleCtrlEvent(jobObjName, CTRL_BREAK_EVENT);
+}
+
+DWORD sendCtrlCToTask(PCWSTR jobObjName)
+{
+  return sendConsoleCtrlEvent(jobObjName, CTRL_C_EVENT);
 }
 
 //----------------------------------------------------------------------------
@@ -481,6 +497,16 @@ int Task(__in int argc, __in_ecount(argc) wchar_t *argv[])
       ReportErrorCode(L"killTask", dwErrorCode);
       goto TaskExit;
     }
+  } else if (command == TaskCtrlC)
+  {
+    // Check if task jobobject
+    //
+    dwErrorCode = sendCtrlCToTask(argv[2]);
+    if (dwErrorCode != ERROR_SUCCESS)
+    {
+      ReportErrorCode(L"sendCtrlCToTask", dwErrorCode);
+      goto TaskExit;
+    }
   } else if (command == TaskBreak)
   {
     // Check if task jobobject
@@ -521,6 +547,7 @@ void TaskUsage()
     Usage: task create [TASKNAME] [COMMAND_LINE] |\n\
           task isAlive [TASKNAME] |\n\
           task kill [TASKNAME]\n\
+          task sendCtrlC [TASKNAME]\n\
           task sendBreak [TASKNAME]\n\
           task processList [TASKNAME]\n\
     Creates a new task jobobject with taskname\n\
