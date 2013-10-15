@@ -100,6 +100,17 @@
   </property>
 
   <property>
+      <description>
+        This configures the HTTP endpoint for Yarn Daemons.The following
+        values are supported:
+        - HTTP_ONLY : Service is provided only on http
+        - HTTPS_ONLY : Service is provided only on https
+      </description>
+      <name>yarn.http.policy</name>
+      <value>HTTP_ONLY</value>
+  </property>
+
+  <property>
     <description>The http address of the RM web application.</description>
     <name>yarn.resourcemanager.webapp.address</name>
     <value>${yarn.resourcemanager.hostname}:8088</value>
@@ -725,6 +736,21 @@
     Only used when the LCE resources handler is set to the CgroupsLCEResourcesHandler, and
     yarn.nodemanager.linux-container-executor.cgroups.mount is true.</description>
     <name>yarn.nodemanager.linux-container-executor.cgroups.mount-path</name>
+  </property>
+
+  <property>
+    <description>The UNIX user that containers will run as when Linux-container-executor
+    is used in nonsecure mode (a use case for this is using cgroups).</description>
+    <name>yarn.nodemanager.linux-container-executor.nonsecure-mode.local-user</name>
+    <value>nobody</value>
+  </property>
+
+  <property>
+    <description>The allowed pattern for UNIX user names enforced by
+    Linux-container-executor when used in nonsecure mode (use case for this
+    is using cgroups). The default value is taken from /usr/sbin/adduser</description>
+    <name>yarn.nodemanager.linux-container-executor.nonsecure-mode.user-pattern</name>
+    <value>^[_.A-Za-z0-9][-@_.A-Za-z0-9]{0,255}?[$]?$</value>
   </property>
 
   <property>
