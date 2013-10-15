@@ -696,10 +696,9 @@ public class TestRMAppTransitions {
       assertAppState(RMAppState.RUNNING, application);
     }
 
-    RMAppEvent event = 
-        new RMAppFailedAttemptEvent(application.getApplicationId(), 
-            RMAppEventType.ATTEMPT_FAILED, "Attempt is failed by user");
-    application.handle(event);
+    application.getCurrentAppAttempt().handle(new RMAppAttemptEvent(
+        application.getCurrentAppAttempt().getAppAttemptId(), 
+        RMAppAttemptEventType.FAIL));
     rmDispatcher.await();
     assertAppState(RMAppState.FAILED, application);
     Assert.assertEquals(expectedAttemptId, appAttempt.getAppAttemptId().getAttemptId());

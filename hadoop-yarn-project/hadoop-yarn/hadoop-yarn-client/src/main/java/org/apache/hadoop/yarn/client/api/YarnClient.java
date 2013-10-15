@@ -379,5 +379,4 @@ public abstract class YarnClient extends AbstractService {
    */
   public abstract List<QueueUserACLInfo> getQueueAclsInfo() throws YarnException,
       IOException;
-
 }
