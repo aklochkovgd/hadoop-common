@@ -178,7 +178,14 @@ abstract public class Shell {
   /** Return a command to send a signal to a given pid */
   public static String[] getSignalKillCommand(int code, String pid) {
     if (Shell.WINDOWS) {
-      String cmd = code == 3 ? "sendBreak" : "kill";
+      final String cmd;
+      if (code == 3) { // QUIT
+        cmd = "sendBreak";
+      } else if (code == 15) { // TERM
+        cmd = "sendCtrlC";
+      } else {
+        cmd = "kill";
+      }
       return new String[] { Shell.WINUTILS, "task", cmd , pid };
     } else {
       return new String[] 
