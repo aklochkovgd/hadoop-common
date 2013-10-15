@@ -434,7 +434,7 @@ DWORD printTaskProcessList(const WCHAR* jobObjName)
 // Function: Task
 //
 // Description:
-//  Manages a task via a jobobject (create/isAlive/kill/sendBreak). Outputs the
+//  Manages a task via a jobobject (create/isAlive/kill/sendCtrlC/sendBreak). Outputs the
 //  appropriate information to stdout on success, or stderr on failure.
 //
 // Returns:
