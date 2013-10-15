@@ -46,8 +46,8 @@ import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenResponse;
-import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationRequest;
-import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -129,13 +129,15 @@ public interface ApplicationClientProtocol {
   
   /**
    * <p>The interface used by clients to request the 
-   * <code>ResourceManager</code> to restart submitted application.</p>
+   * <code>ResourceManager</code> to fail current attempt of a 
+   * submitted application.</p>
    * 
-   * <p>The client, via {@link RestartApplicationRequest} provides the
-   * {@link ApplicationId} of the application to be restarted.</p>
+   * <p>The client, via {@link FailCurrentAttemptRequest} provides the
+   * {@link ApplicationId} of the application the attempt to be failed
+   * belongs to.</p>
    * 
    * <p> In secure mode,the <code>ResourceManager</code> verifies access to the
-   * application, queue etc. before restarting the application.</p> 
+   * application, queue etc. before failing the attempt.</p> 
    * 
    * <p> The request may be rejected due to recovery not being supported or
    * number of attempts reached maximum configured value.</p>
@@ -143,7 +145,7 @@ public interface ApplicationClientProtocol {
    * <p>Currently, the <code>ResourceManager</code> returns an empty response
    * on success and throws an exception on rejecting the request.</p>
    * 
-   * @param request request to restart a submitted application
+   * @param request request to fail an attempt
    * @return <code>ResourceManager</code> returns an empty response
    *         on success and throws an exception on rejecting the request
    * @throws YarnException
@@ -152,8 +154,8 @@ public interface ApplicationClientProtocol {
    */
   @Public
   @Unstable
-  public RestartApplicationResponse restartApplication(
-      RestartApplicationRequest request) 
+  public FailCurrentAttemptResponse failCurrentAttempt(
+      FailCurrentAttemptRequest request) 
   throws YarnException, IOException;
 
   /**

@@ -53,8 +53,8 @@ import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenResponse;
-import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationRequest;
-import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.CancelDelegationTokenRequestPBImpl;
@@ -79,8 +79,8 @@ import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.KillApplicationRequest
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.KillApplicationResponsePBImpl;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.RenewDelegationTokenRequestPBImpl;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.RenewDelegationTokenResponsePBImpl;
-import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.RestartApplicationRequestPBImpl;
-import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.RestartApplicationResponsePBImpl;
+import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.FailCurrentAttemptRequestPBImpl;
+import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.FailCurrentAttemptResponsePBImpl;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.SubmitApplicationRequestPBImpl;
 import org.apache.hadoop.yarn.api.protocolrecords.impl.pb.SubmitApplicationResponsePBImpl;
 import org.apache.hadoop.yarn.exceptions.YarnException;
@@ -93,7 +93,7 @@ import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetNewApplicationRequestPr
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetQueueInfoRequestProto;
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetQueueUserAclsInfoRequestProto;
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.KillApplicationRequestProto;
-import org.apache.hadoop.yarn.proto.YarnServiceProtos.RestartApplicationRequestProto;
+import org.apache.hadoop.yarn.proto.YarnServiceProtos.FailCurrentAttemptRequestProto;
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.SubmitApplicationRequestProto;
 
 import com.google.protobuf.ServiceException;
@@ -119,12 +119,12 @@ public class ApplicationClientProtocolPBClientImpl implements ApplicationClientP
   }
 
   @Override
-  public RestartApplicationResponse restartApplication(
-      RestartApplicationRequest request) throws YarnException, IOException {
-    RestartApplicationRequestProto requestProto =
-        ((RestartApplicationRequestPBImpl) request).getProto();
+  public FailCurrentAttemptResponse failCurrentAttempt(
+      FailCurrentAttemptRequest request) throws YarnException, IOException {
+    FailCurrentAttemptRequestProto requestProto =
+        ((FailCurrentAttemptRequestPBImpl) request).getProto();
     try {
-      return new RestartApplicationResponsePBImpl(proxy.restartApplication(null,
+      return new FailCurrentAttemptResponsePBImpl(proxy.failCurrentAttempt(null,
         requestProto));
     } catch (ServiceException e) {
       RPCUtil.unwrapAndThrowException(e);

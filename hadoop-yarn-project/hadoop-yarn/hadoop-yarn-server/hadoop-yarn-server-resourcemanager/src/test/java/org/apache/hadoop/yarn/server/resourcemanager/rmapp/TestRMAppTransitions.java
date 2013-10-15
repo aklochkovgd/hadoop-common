@@ -666,8 +666,8 @@ public class TestRMAppTransitions {
   }
 
   @Test
-  public void testAppRunningRestarted() throws IOException {
-    LOG.info("--- START: testAppRunningRestarted ---");
+  public void testAppRunningFailAttempt() throws IOException {
+    LOG.info("--- START: testAppRunningFailAttempt---");
 
     RMApp application = testCreateAppRunning(null);
     RMAppAttempt appAttempt = application.getCurrentAppAttempt();
@@ -704,7 +704,7 @@ public class TestRMAppTransitions {
 
     RMAppEvent event = 
         new RMAppFailedAttemptEvent(application.getApplicationId(), 
-            RMAppEventType.ATTEMPT_FAILED, "Application is restarted by user");
+            RMAppEventType.ATTEMPT_FAILED, "Attempt is failed by user");
     application.handle(event);
     rmDispatcher.await();
     assertAppState(RMAppState.FAILED, application);

@@ -26,29 +26,30 @@ import org.apache.hadoop.yarn.util.Records;
 
 /**
  * <p>The request sent by the client to the <code>ResourceManager</code>
- * to restart a submitted application.</p>
+ * to fail an application attempt.</p>
  * 
- * <p>The request includes the {@link ApplicationId} of the application to be
- * restarted.</p>
+ * <p>The request includes the {@link ApplicationId} of the application the
+ * attempt to be failed belongs to.</p>
  * 
- * @see ApplicationClientProtocol#restartApplication(RestartApplicationRequest)
+ * @see ApplicationClientProtocol#failCurrentAttempt(FailCurrentAttemptRequest)
  */
 @Public
 @Stable
-public abstract class RestartApplicationRequest {
+public abstract class FailCurrentAttemptRequest {
 
   @Public
   @Stable 
-  public static RestartApplicationRequest newInstance(ApplicationId applicationId) {
-    RestartApplicationRequest request =
-        Records.newRecord(RestartApplicationRequest.class);
+  public static FailCurrentAttemptRequest newInstance(ApplicationId applicationId) {
+    FailCurrentAttemptRequest request =
+        Records.newRecord(FailCurrentAttemptRequest.class);
     request.setApplicationId(applicationId);
     return request;
   }
 
   /**
-   * Get the <code>ApplicationId</code> of the application to be aborted.
-   * @return <code>ApplicationId</code> of the application to be aborted
+   * Get the <code>ApplicationId</code> of an application the attempt to be
+   * failed belongs to.
+   * @return <code>ApplicationId</code> of an application the attempt belongs to
    */
   @Public
   @Stable

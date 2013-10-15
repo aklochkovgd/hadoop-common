@@ -27,20 +27,20 @@ import org.apache.hadoop.yarn.util.Records;
 
 /**
  * <p>The response sent by the <code>ResourceManager</code> to the client
- * restarting a submitted application.</p>
+ * failing the current attempt of a submitted application.</p>
  *
  * <p>Currently it's empty.</p>
  * 
- * @see ApplicationClientProtocol#restartApplication(RestartApplicationRequest)
+ * @see ApplicationClientProtocol#failCurrentAttempt(FailCurrentAttemptRequest)
  */
 @Public
 @Stable
-public abstract class RestartApplicationResponse {
+public abstract class FailCurrentAttemptResponse {
   @Private
   @Unstable
-  public static RestartApplicationResponse newInstance() {
-    RestartApplicationResponse response =
-        Records.newRecord(RestartApplicationResponse.class);
+  public static FailCurrentAttemptResponse newInstance() {
+    FailCurrentAttemptResponse response =
+        Records.newRecord(FailCurrentAttemptResponse.class);
     return response;
   }
 }

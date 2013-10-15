@@ -35,7 +35,7 @@ service ApplicationClientProtocolService {
   rpc getNewApplication (GetNewApplicationRequestProto) returns (GetNewApplicationResponseProto);
   rpc getApplicationReport (GetApplicationReportRequestProto) returns (GetApplicationReportResponseProto);
   rpc submitApplication (SubmitApplicationRequestProto) returns (SubmitApplicationResponseProto);
-  rpc restartApplication (RestartApplicationRequestProto) returns (RestartApplicationResponseProto);
+  rpc failCurrentAttempt (FailCurrentAttemptRequestProto) returns (FailCurrentAttemptResponseProto);
   rpc forceKillApplication (KillApplicationRequestProto) returns (KillApplicationResponseProto);
   rpc getClusterMetrics (GetClusterMetricsRequestProto) returns (GetClusterMetricsResponseProto);
   rpc getApplications (GetApplicationsRequestProto) returns (GetApplicationsResponseProto);

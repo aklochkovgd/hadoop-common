@@ -21,35 +21,35 @@ package org.apache.hadoop.yarn.api.protocolrecords.impl.pb;
 
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
-import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptRequest;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.impl.pb.ApplicationIdPBImpl;
 import org.apache.hadoop.yarn.proto.YarnProtos.ApplicationIdProto;
-import org.apache.hadoop.yarn.proto.YarnServiceProtos.RestartApplicationRequestProto;
-import org.apache.hadoop.yarn.proto.YarnServiceProtos.RestartApplicationRequestProtoOrBuilder;
+import org.apache.hadoop.yarn.proto.YarnServiceProtos.FailCurrentAttemptRequestProto;
+import org.apache.hadoop.yarn.proto.YarnServiceProtos.FailCurrentAttemptRequestProtoOrBuilder;
 
 import com.google.protobuf.TextFormat;
 
 @Private
 @Unstable
-public class RestartApplicationRequestPBImpl extends RestartApplicationRequest {
-  RestartApplicationRequestProto proto = RestartApplicationRequestProto.getDefaultInstance();
-  RestartApplicationRequestProto.Builder builder = null;
+public class FailCurrentAttemptRequestPBImpl extends FailCurrentAttemptRequest {
+  FailCurrentAttemptRequestProto proto = FailCurrentAttemptRequestProto.getDefaultInstance();
+  FailCurrentAttemptRequestProto.Builder builder = null;
   boolean viaProto = false;
   
   private ApplicationId applicationId = null;
   
   
-  public RestartApplicationRequestPBImpl() {
-    builder = RestartApplicationRequestProto.newBuilder();
+  public FailCurrentAttemptRequestPBImpl() {
+    builder = FailCurrentAttemptRequestProto.newBuilder();
   }
 
-  public RestartApplicationRequestPBImpl(RestartApplicationRequestProto proto) {
+  public FailCurrentAttemptRequestPBImpl(FailCurrentAttemptRequestProto proto) {
     this.proto = proto;
     viaProto = true;
   }
   
-  public RestartApplicationRequestProto getProto() {
+  public FailCurrentAttemptRequestProto getProto() {
       mergeLocalToProto();
     proto = viaProto ? proto : builder.build();
     viaProto = true;
@@ -92,7 +92,7 @@ public class RestartApplicationRequestPBImpl extends RestartApplicationRequest {
 
   private void maybeInitBuilder() {
     if (viaProto || builder == null) {
-      builder = RestartApplicationRequestProto.newBuilder(proto);
+      builder = FailCurrentAttemptRequestProto.newBuilder(proto);
     }
     viaProto = false;
   }
@@ -100,7 +100,7 @@ public class RestartApplicationRequestPBImpl extends RestartApplicationRequest {
   
   @Override
   public ApplicationId getApplicationId() {
-    RestartApplicationRequestProtoOrBuilder p = viaProto ? proto : builder;
+    FailCurrentAttemptRequestProtoOrBuilder p = viaProto ? proto : builder;
     if (this.applicationId != null) {
       return this.applicationId;
     }

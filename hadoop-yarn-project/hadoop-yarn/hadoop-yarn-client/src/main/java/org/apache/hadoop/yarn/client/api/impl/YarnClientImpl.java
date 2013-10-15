@@ -48,7 +48,7 @@ import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetQueueInfoRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetQueueUserAclsInfoRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationRequest;
-import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationRequest;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
@@ -178,13 +178,13 @@ public class YarnClientImpl extends YarnClient {
   }
 
   @Override
-  public void restartApplication(ApplicationId applicationId)
+  public void failCurrentAttempt(ApplicationId applicationId)
       throws YarnException, IOException {
-    LOG.info("Restarting application " + applicationId);
-    RestartApplicationRequest request =
-        Records.newRecord(RestartApplicationRequest.class);
+    LOG.info("Failing current attempt of application " + applicationId);
+    FailCurrentAttemptRequest request =
+        Records.newRecord(FailCurrentAttemptRequest.class);
     request.setApplicationId(applicationId);
-    rmClient.restartApplication(request);
+    rmClient.failCurrentAttempt(request);
   }
 
   @Override

@@ -63,8 +63,8 @@ import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenResponse;
-import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationRequest;
-import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationAccessType;
@@ -341,8 +341,8 @@ public class ClientRMService extends AbstractService implements
 
   @SuppressWarnings("unchecked")
   @Override
-  public RestartApplicationResponse restartApplication(
-      RestartApplicationRequest request) throws YarnException {
+  public FailCurrentAttemptResponse failCurrentAttempt(
+      FailCurrentAttemptRequest request) throws YarnException {
 
     ApplicationId applicationId = request.getApplicationId();
 
@@ -351,7 +351,7 @@ public class ClientRMService extends AbstractService implements
       callerUGI = UserGroupInformation.getCurrentUser();
     } catch (IOException ie) {
       LOG.info("Error getting UGI ", ie);
-      RMAuditLogger.logFailure("UNKNOWN", AuditConstants.RESTART_APP_REQUEST,
+      RMAuditLogger.logFailure("UNKNOWN", AuditConstants.FAIL_ATTEMPT_REQUEST,
           "UNKNOWN", "ClientRMService" , "Error getting UGI",
           applicationId);
       throw RPCUtil.getRemoteException(ie);
@@ -360,16 +360,16 @@ public class ClientRMService extends AbstractService implements
     RMApp application = this.rmContext.getRMApps().get(applicationId);
     if (application == null) {
       RMAuditLogger.logFailure(callerUGI.getUserName(),
-          AuditConstants.RESTART_APP_REQUEST, "UNKNOWN", "ClientRMService",
-          "Trying to restart an absent application", applicationId);
-      throw new ApplicationNotFoundException("Trying to restart an absent"
-          + " application " + applicationId);
+          AuditConstants.FAIL_ATTEMPT_REQUEST, "UNKNOWN", "ClientRMService",
+          "Trying to fail an attempt of an absent application", applicationId);
+      throw new ApplicationNotFoundException("Trying to fail an attempt of " 
+          + " an absent application " + applicationId);
     }
 
     if (!checkAccess(callerUGI, application.getUser(),
         ApplicationAccessType.MODIFY_APP, application)) {
       RMAuditLogger.logFailure(callerUGI.getShortUserName(),
-          AuditConstants.RESTART_APP_REQUEST,
+          AuditConstants.FAIL_ATTEMPT_REQUEST,
           "User doesn't have permissions to "
               + ApplicationAccessType.MODIFY_APP.toString(), "ClientRMService",
           AuditConstants.UNAUTHORIZED_USER, applicationId);
@@ -382,9 +382,9 @@ public class ClientRMService extends AbstractService implements
         new RMAppEvent(applicationId, RMAppEventType.ATTEMPT_KILLED));
 
     RMAuditLogger.logSuccess(callerUGI.getShortUserName(), 
-        AuditConstants.RESTART_APP_REQUEST, "ClientRMService" , applicationId);
-    RestartApplicationResponse response = recordFactory
-        .newRecordInstance(RestartApplicationResponse.class);
+        AuditConstants.FAIL_ATTEMPT_REQUEST, "ClientRMService" , applicationId);
+    FailCurrentAttemptResponse response = recordFactory
+        .newRecordInstance(FailCurrentAttemptResponse.class);
     return response;
   }
   

@@ -96,11 +96,11 @@ public abstract class YarnClient extends AbstractService {
 
   /**
    * <p>
-   * Restart an application identified by given ID.
+   * Fail current attempt of an application identified by given ID.
    * </p>
    * 
    * @param applicationId
-   *          {@link ApplicationId} of the application that needs to be restarted
+   *          {@link ApplicationId} of the application the attempt belongs to
    * @throws YarnException
    *           in case of errors or if YARN rejects the request due to
    *           access-control restrictions, recovery not being non supported
@@ -108,8 +108,10 @@ public abstract class YarnClient extends AbstractService {
    * @throws IOException
    * @see #getQueueAclsInfo()
    */
-  public abstract void restartApplication(ApplicationId applicationId)
-      throws YarnException, IOException;
+  public void failCurrentAttempt(ApplicationId applicationId)
+      throws YarnException, IOException {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * <p>

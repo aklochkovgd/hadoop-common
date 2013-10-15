@@ -75,7 +75,8 @@ public class ApplicationCLI extends YarnCLI {
         "based on application type, " +
         "and -appStates to filter applications based on application state");
     opts.addOption(KILL_CMD, true, "Kills the application.");
-    opts.addOption(RESTART_CMD, true, "Restarts the application.");
+    opts.addOption(FAIL_ATTEMPT_CMD, true, "Fails current attempt of the " + 
+        "application.");
     opts.addOption(HELP_CMD, false, "Displays help for all commands.");
     Option appTypeOpt = new Option(APP_TYPE_CMD, true, "Works with -list to " +
         "filter applications based on " +
@@ -92,7 +93,7 @@ public class ApplicationCLI extends YarnCLI {
     appStateOpt.setArgName("States");
     opts.addOption(appStateOpt);
     opts.getOption(KILL_CMD).setArgName("Application ID");
-    opts.getOption(RESTART_CMD).setArgName("Application ID");
+    opts.getOption(FAIL_ATTEMPT_CMD).setArgName("App ID");
     opts.getOption(STATUS_CMD).setArgName("Application ID");
 
     int exitCode = -1;
@@ -156,12 +157,12 @@ public class ApplicationCLI extends YarnCLI {
         return exitCode;
       }
       killApplication(cliParser.getOptionValue(KILL_CMD));
-    } else if (cliParser.hasOption(RESTART_CMD)) {
+    } else if (cliParser.hasOption(FAIL_ATTEMPT_CMD)) {
       if (args.length != 2) {
         printUsage(opts);
         return exitCode;
       }
-      restartApplication(cliParser.getOptionValue(RESTART_CMD));
+      failCurrentAttempt(cliParser.getOptionValue(FAIL_ATTEMPT_CMD));
     } else if (cliParser.hasOption(HELP_CMD)) {
       printUsage(opts);
       return 0;
@@ -250,13 +251,13 @@ public class ApplicationCLI extends YarnCLI {
   }
 
   /**
-   * Restarts the application with the application id as appId
+   * Fails current attempt of the application
    * 
-   * @param applicationId
+   * @param applicationId ID of the app the attempt belongs to.
    * @throws YarnException
    * @throws IOException
    */
-  private void restartApplication(String applicationId)
+  private void failCurrentAttempt(String applicationId)
       throws YarnException, IOException {
     ApplicationId appId = ConverterUtils.toApplicationId(applicationId);
     ApplicationReport appReport = client.getApplicationReport(appId);
@@ -265,8 +266,8 @@ public class ApplicationCLI extends YarnCLI {
         || appReport.getYarnApplicationState() == YarnApplicationState.FAILED) {
       sysout.println("Application " + applicationId + " has already finished ");
     } else {
-      sysout.println("Restarting application " + applicationId);
-      client.restartApplication(appId);
+      sysout.println("Failing current attempt of application " + applicationId);
+      client.failCurrentAttempt(appId);
     }
   }
 

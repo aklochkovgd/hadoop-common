@@ -21,28 +21,28 @@ package org.apache.hadoop.yarn.api.protocolrecords.impl.pb;
 
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
-import org.apache.hadoop.yarn.api.protocolrecords.RestartApplicationResponse;
-import org.apache.hadoop.yarn.proto.YarnServiceProtos.RestartApplicationResponseProto;
+import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptResponse;
+import org.apache.hadoop.yarn.proto.YarnServiceProtos.FailCurrentAttemptResponseProto;
 
 import com.google.protobuf.TextFormat;
 
 @Private
 @Unstable
-public class RestartApplicationResponsePBImpl extends RestartApplicationResponse {
-  RestartApplicationResponseProto proto = RestartApplicationResponseProto.getDefaultInstance();
-  RestartApplicationResponseProto.Builder builder = null;
+public class FailCurrentAttemptResponsePBImpl extends FailCurrentAttemptResponse {
+  FailCurrentAttemptResponseProto proto = FailCurrentAttemptResponseProto.getDefaultInstance();
+  FailCurrentAttemptResponseProto.Builder builder = null;
   boolean viaProto = false;
   
-  public RestartApplicationResponsePBImpl() {
-    builder = RestartApplicationResponseProto.newBuilder();
+  public FailCurrentAttemptResponsePBImpl() {
+    builder = FailCurrentAttemptResponseProto.newBuilder();
   }
 
-  public RestartApplicationResponsePBImpl(RestartApplicationResponseProto proto) {
+  public FailCurrentAttemptResponsePBImpl(FailCurrentAttemptResponseProto proto) {
     this.proto = proto;
     viaProto = true;
   }
   
-  public RestartApplicationResponseProto getProto() {
+  public FailCurrentAttemptResponseProto getProto() {
     proto = viaProto ? proto : builder.build();
     viaProto = true;
     return proto;
