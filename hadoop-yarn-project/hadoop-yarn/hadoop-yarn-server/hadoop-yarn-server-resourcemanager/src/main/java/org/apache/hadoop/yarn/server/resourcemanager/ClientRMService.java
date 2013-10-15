@@ -79,6 +79,7 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.api.records.YarnClusterMetrics;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.event.EventHandler;
 import org.apache.hadoop.yarn.exceptions.ApplicationNotFoundException;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.factories.RecordFactory;
@@ -90,6 +91,8 @@ import org.apache.hadoop.yarn.server.resourcemanager.RMAuditLogger.AuditConstant
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMApp;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEventType;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerNodeReport;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.YarnScheduler;
@@ -339,7 +342,7 @@ public class ClientRMService extends AbstractService implements
     return response;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
   public FailCurrentAttemptResponse failCurrentAttempt(
       FailCurrentAttemptRequest request) throws YarnException {
@@ -364,6 +367,12 @@ public class ClientRMService extends AbstractService implements
           "Trying to fail an attempt of an absent application", applicationId);
       throw new ApplicationNotFoundException("Trying to fail an attempt of " 
           + " an absent application " + applicationId);
+    } else if (application.getCurrentAppAttempt() == null) {
+      RMAuditLogger.logFailure(callerUGI.getUserName(),
+          AuditConstants.FAIL_ATTEMPT_REQUEST, "UNKNOWN", "ClientRMService",
+          "Trying to fail an absent attempt of the application", applicationId);
+      throw new YarnException("Trying to fail an absent attempt "
+          + " of the application " + applicationId);
     }
 
     if (!checkAccess(callerUGI, application.getUser(),
@@ -378,8 +387,10 @@ public class ClientRMService extends AbstractService implements
           + ApplicationAccessType.MODIFY_APP.name() + " on " + applicationId));
     }
 
-    this.rmContext.getDispatcher().getEventHandler().handle(
-        new RMAppEvent(applicationId, RMAppEventType.ATTEMPT_KILLED));
+    EventHandler eventHandler = this.rmContext.getDispatcher().getEventHandler();
+    eventHandler.handle(new RMAppAttemptEvent(
+        application.getCurrentAppAttempt().getAppAttemptId(), 
+        RMAppAttemptEventType.FAIL));
 
     RMAuditLogger.logSuccess(callerUGI.getShortUserName(), 
         AuditConstants.FAIL_ATTEMPT_REQUEST, "ClientRMService" , applicationId);

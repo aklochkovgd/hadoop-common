@@ -33,7 +33,6 @@ public abstract class YarnCLI extends Configured implements Tool {
   public static final String STATUS_CMD = "status";
   public static final String LIST_CMD = "list";
   public static final String KILL_CMD = "kill";
-  public static final String FAIL_ATTEMPT_CMD = "failAttempt";
   public static final String HELP_CMD = "help";
   protected PrintStream sysout;
   protected PrintStream syserr;

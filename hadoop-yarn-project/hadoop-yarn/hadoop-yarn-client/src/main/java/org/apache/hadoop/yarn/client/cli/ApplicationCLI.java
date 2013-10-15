@@ -52,6 +52,7 @@ public class ApplicationCLI extends YarnCLI {
 
   private static final String APP_TYPE_CMD = "appTypes";
   private static final String APP_STATE_CMD ="appStates";
+  private static final String FAIL_ATTEMPT_CMD = "failAttempt";
   private static final String ALLSTATES_OPTION = "ALL";
 
   private boolean allAppStates;

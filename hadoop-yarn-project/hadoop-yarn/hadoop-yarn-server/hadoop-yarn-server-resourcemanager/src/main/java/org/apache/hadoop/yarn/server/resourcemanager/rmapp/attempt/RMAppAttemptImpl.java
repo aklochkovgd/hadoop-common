@@ -40,7 +40,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.http.HttpConfig;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
@@ -78,7 +77,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppFinishedAttemptE
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppRejectedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAcquiredEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerFinishedEvent;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptKilledEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptLaunchFailedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptRegistrationEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptRejectedEvent;
@@ -172,7 +170,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           RMAppAttemptEventType.START, new AttemptStartedTransition())
       .addTransition(RMAppAttemptState.NEW, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
-          new AttemptKilledTransition())
+          new BaseFinalTransition(RMAppAttemptState.KILLED))
+      .addTransition(RMAppAttemptState.NEW, RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.FAIL,
+          new BaseFinalTransition(RMAppAttemptState.FAILED))
       .addTransition(RMAppAttemptState.NEW, RMAppAttemptState.FAILED,
           RMAppAttemptEventType.REGISTERED,
           new UnexpectedAMRegisteredTransition())
@@ -189,7 +190,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           new ScheduleTransition())
       .addTransition(RMAppAttemptState.SUBMITTED, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
-          new AttemptKilledTransition())
+          new BaseFinalTransition(RMAppAttemptState.KILLED))
+      .addTransition(RMAppAttemptState.SUBMITTED, RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.FAIL,
+          new BaseFinalTransition(RMAppAttemptState.FAILED))
       .addTransition(RMAppAttemptState.SUBMITTED, RMAppAttemptState.FAILED,
           RMAppAttemptEventType.REGISTERED,
           new UnexpectedAMRegisteredTransition())
@@ -201,7 +205,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           new AMContainerAllocatedTransition())
       .addTransition(RMAppAttemptState.SCHEDULED, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
-          new AttemptKilledTransition())
+          new BaseFinalTransition(RMAppAttemptState.KILLED))
+      .addTransition(RMAppAttemptState.SCHEDULED, RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.FAIL,
+          new BaseFinalTransition(RMAppAttemptState.FAILED))
           
        // Transitions from ALLOCATED_SAVING State
       .addTransition(RMAppAttemptState.ALLOCATED_SAVING, 
@@ -215,7 +222,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       .addTransition(RMAppAttemptState.ALLOCATED_SAVING, 
           RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
-          new AttemptKilledTransition())
+          new BaseFinalTransition(RMAppAttemptState.KILLED))
+      .addTransition(RMAppAttemptState.ALLOCATED_SAVING, RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.FAIL,
+          new BaseFinalTransition(RMAppAttemptState.FAILED))
       
        // Transitions from LAUNCHED_UNMANAGED_SAVING State
       .addTransition(RMAppAttemptState.LAUNCHED_UNMANAGED_SAVING, 
@@ -231,7 +241,11 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       .addTransition(RMAppAttemptState.LAUNCHED_UNMANAGED_SAVING, 
           RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
-          new AttemptKilledTransition())
+          new BaseFinalTransition(RMAppAttemptState.KILLED))
+      .addTransition(RMAppAttemptState.LAUNCHED_UNMANAGED_SAVING, 
+          RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.FAIL,
+          new BaseFinalTransition(RMAppAttemptState.FAILED))
 
        // Transitions from ALLOCATED State
       .addTransition(RMAppAttemptState.ALLOCATED,
@@ -244,7 +258,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           RMAppAttemptEventType.LAUNCH_FAILED, new LaunchFailedTransition())
       .addTransition(RMAppAttemptState.ALLOCATED, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL, new KillAllocatedAMTransition())
-          
+      .addTransition(RMAppAttemptState.ALLOCATED, RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.FAIL,
+          new BaseFinalTransition(RMAppAttemptState.FAILED))
       .addTransition(RMAppAttemptState.ALLOCATED, RMAppAttemptState.FAILED,
           RMAppAttemptEventType.CONTAINER_FINISHED,
           new AMContainerCrashedTransition())
@@ -259,9 +275,12 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           RMAppAttemptState.LAUNCHED, RMAppAttemptState.FAILED,
           RMAppAttemptEventType.EXPIRE,
           EXPIRED_TRANSITION)
+      .addTransition(RMAppAttemptState.LAUNCHED, RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.FAIL,
+          new BaseFinalTransition(RMAppAttemptState.FAILED))
       .addTransition(RMAppAttemptState.LAUNCHED, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
-          new AttemptKilledTransition())
+          new FinalTransition(RMAppAttemptState.KILLED))
 
        // Transitions from RUNNING State
       .addTransition(RMAppAttemptState.RUNNING,
@@ -280,6 +299,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           EnumSet.of(RMAppAttemptState.RUNNING, RMAppAttemptState.FAILED),
           RMAppAttemptEventType.CONTAINER_FINISHED,
           new ContainerFinishedTransition())
+      .addTransition(RMAppAttemptState.RUNNING, RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.FAIL,
+          new BaseFinalTransition(RMAppAttemptState.FAILED))
       .addTransition(
           RMAppAttemptState.RUNNING, RMAppAttemptState.FAILED,
           RMAppAttemptEventType.EXPIRE,
@@ -287,7 +309,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       .addTransition(
           RMAppAttemptState.RUNNING, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL,
-          new AttemptKilledTransition())
+          new FinalTransition(RMAppAttemptState.KILLED))
 
       // Transitions from FAILED State
       .addTransition(
@@ -296,6 +318,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           EnumSet.of(
               RMAppAttemptEventType.EXPIRE,
               RMAppAttemptEventType.KILL,
+              RMAppAttemptEventType.FAIL,
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.STATUS_UPDATE,
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
@@ -314,7 +337,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.STATUS_UPDATE,
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
-              RMAppAttemptEventType.KILL))
+              RMAppAttemptEventType.KILL,
+              RMAppAttemptEventType.FAIL))
 
       // Transitions from FINISHED State
       .addTransition(
@@ -325,7 +349,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
               RMAppAttemptEventType.CONTAINER_FINISHED,
-              RMAppAttemptEventType.KILL))
+              RMAppAttemptEventType.KILL,
+              RMAppAttemptEventType.FAIL))
 
       // Transitions from KILLED State
       .addTransition(
@@ -343,7 +368,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.CONTAINER_FINISHED,
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.KILL,
-              RMAppAttemptEventType.STATUS_UPDATE))
+              RMAppAttemptEventType.STATUS_UPDATE,
+              RMAppAttemptEventType.FAIL))
               
       // Transitions from RECOVERED State
       .addTransition(
@@ -362,6 +388,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.CONTAINER_FINISHED,
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.KILL,
+              RMAppAttemptEventType.FAIL,
               RMAppAttemptEventType.STATUS_UPDATE))
     .installTopology();
 
@@ -721,7 +748,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   }
 
   private static final class AttemptStartedTransition extends BaseTransition {
-	@Override
+    @Override
     public void transition(RMAppAttemptImpl appAttempt,
         RMAppAttemptEvent event) {
 
@@ -853,25 +880,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
     }
   }
   
-  private static class AttemptKilledTransition extends BaseFinalTransition {
-
-    public AttemptKilledTransition() {
-      super(RMAppAttemptState.KILLED);
-    }
-
-    @Override
-    protected RMAppEvent createAppEvent(ApplicationId applicationId,
-            RMAppAttemptImpl appAttempt, RMAppAttemptEvent event) {
-      RMAppAttemptKilledEvent killedEvent = (RMAppAttemptKilledEvent) event;
-      if (killedEvent.isKillingApplication()) {
-        return super.createAppEvent(applicationId, appAttempt, event);
-      } else {
-        return null;
-      }
-    }
-    
-  }
-  
   private static class BaseFinalTransition extends BaseTransition {
 
     private final RMAppAttemptState finalAttemptState;
@@ -880,41 +888,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       this.finalAttemptState = finalAttemptState;
     }
 
-    protected RMAppEvent createAppEvent(ApplicationId applicationId, 
-        RMAppAttemptImpl appAttempt, RMAppAttemptEvent event) {
-      
-      switch (finalAttemptState) {
-        case FINISHED:
-        {
-          return new RMAppFinishedAttemptEvent(applicationId,
-              appAttempt.getDiagnostics());
-        }
-        case KILLED:
-        {
-          // don't leave the tracking URL pointing to a non-existent AM
-          appAttempt.setTrackingUrlToRMAppPage();
-          return
-              new RMAppFailedAttemptEvent(applicationId,
-                  RMAppEventType.ATTEMPT_KILLED,
-                  "Application killed by user.");
-        }
-        case FAILED:
-        {
-          // don't leave the tracking URL pointing to a non-existent AM
-          appAttempt.setTrackingUrlToRMAppPage();
-          return
-              new RMAppFailedAttemptEvent(applicationId,
-                  RMAppEventType.ATTEMPT_FAILED,
-                  appAttempt.getDiagnostics());
-        }
-        default:
-        {
-          LOG.error("Cannot get this state!! Error!!");
-          return null;
-        }
-      }
-    }
-    
     @Override
     public void transition(RMAppAttemptImpl appAttempt,
         RMAppAttemptEvent event) {
@@ -925,11 +898,42 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
       // Tell the application and the scheduler
       ApplicationId applicationId = appAttemptId.getApplicationId();
-      RMAppEvent appEvent = createAppEvent(applicationId, appAttempt, event);
-
-      if (appEvent != null) { 
-        appAttempt.eventHandler.handle(appEvent);
+      RMAppEvent appEvent = null;
+      switch (finalAttemptState) {
+        case FINISHED:
+        {
+          appEvent = new RMAppFinishedAttemptEvent(applicationId,
+              appAttempt.getDiagnostics());
+        }
+        break;
+        case KILLED:
+        {
+          // don't leave the tracking URL pointing to a non-existent AM
+          appAttempt.setTrackingUrlToRMAppPage();
+          appEvent =
+              new RMAppFailedAttemptEvent(applicationId,
+                  RMAppEventType.ATTEMPT_KILLED,
+                  "Application killed by user.");
+        }
+        break;
+        case FAILED:
+        {
+          // don't leave the tracking URL pointing to a non-existent AM
+          appAttempt.setTrackingUrlToRMAppPage();
+          appEvent =
+              new RMAppFailedAttemptEvent(applicationId,
+                  RMAppEventType.ATTEMPT_FAILED,
+                  appAttempt.getDiagnostics());
+        }
+        break;
+        default:
+        {
+          LOG.error("Cannot get this state!! Error!!");
+        }
+        break;
       }
+
+      appAttempt.eventHandler.handle(appEvent);
       appAttempt.eventHandler.handle(new AppRemovedSchedulerEvent(appAttemptId,
         finalAttemptState));
 
@@ -994,8 +998,11 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   }
 
   private static final class KillAllocatedAMTransition extends
-      AttemptKilledTransition {
-    
+      BaseFinalTransition {
+    public KillAllocatedAMTransition() {
+      super(RMAppAttemptState.KILLED);
+    }
+
     @Override
     public void transition(RMAppAttemptImpl appAttempt,
         RMAppAttemptEvent event) {

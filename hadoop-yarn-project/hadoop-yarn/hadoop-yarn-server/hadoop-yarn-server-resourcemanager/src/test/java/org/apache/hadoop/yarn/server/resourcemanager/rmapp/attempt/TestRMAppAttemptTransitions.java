@@ -72,7 +72,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppRejectedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAcquiredEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAllocatedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerFinishedEvent;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptKilledEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptLaunchFailedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptRegistrationEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptRejectedEvent;
@@ -669,7 +668,9 @@ public class TestRMAppAttemptTransitions {
   @Test
   public void testNewToKilled() {
     applicationAttempt.handle(
-        new RMAppAttemptKilledEvent(applicationAttempt.getAppAttemptId()));
+        new RMAppAttemptEvent(
+            applicationAttempt.getAppAttemptId(), 
+            RMAppAttemptEventType.KILL));
     testAppAttemptKilledState(null, EMPTY_DIAGNOSTICS);
     verifyTokenCount(applicationAttempt.getAppAttemptId(), 1);
   } 
@@ -697,7 +698,9 @@ public class TestRMAppAttemptTransitions {
   public void testSubmittedToKilled() {
     submitApplicationAttempt();
     applicationAttempt.handle(
-        new RMAppAttemptKilledEvent(applicationAttempt.getAppAttemptId()));
+        new RMAppAttemptEvent(
+            applicationAttempt.getAppAttemptId(), 
+            RMAppAttemptEventType.KILL));
     testAppAttemptKilledState(null, EMPTY_DIAGNOSTICS);
   }
 
@@ -705,7 +708,9 @@ public class TestRMAppAttemptTransitions {
   public void testScheduledToKilled() {
     scheduleApplicationAttempt();
     applicationAttempt.handle(        
-        new RMAppAttemptKilledEvent(applicationAttempt.getAppAttemptId()));
+        new RMAppAttemptEvent(
+            applicationAttempt.getAppAttemptId(), 
+            RMAppAttemptEventType.KILL));
     testAppAttemptKilledState(null, EMPTY_DIAGNOSTICS);
   }
 
@@ -713,7 +718,9 @@ public class TestRMAppAttemptTransitions {
   public void testAllocatedToKilled() {
     Container amContainer = allocateApplicationAttempt();
     applicationAttempt.handle(
-        new RMAppAttemptKilledEvent(applicationAttempt.getAppAttemptId()));
+        new RMAppAttemptEvent(
+            applicationAttempt.getAppAttemptId(), 
+            RMAppAttemptEventType.KILL));
     testAppAttemptKilledState(amContainer, EMPTY_DIAGNOSTICS);
   }
 
@@ -772,7 +779,9 @@ public class TestRMAppAttemptTransitions {
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
     applicationAttempt.handle(
-        new RMAppAttemptKilledEvent(applicationAttempt.getAppAttemptId()));
+        new RMAppAttemptEvent(
+            applicationAttempt.getAppAttemptId(),
+            RMAppAttemptEventType.KILL));
     assertEquals(RMAppAttemptState.KILLED,
         applicationAttempt.getAppAttemptState());
     assertEquals(0,applicationAttempt.getJustFinishedContainers().size());
@@ -888,7 +897,9 @@ public class TestRMAppAttemptTransitions {
     unregisterApplicationAttempt(amContainer, finalStatus, trackingUrl,
         diagnostics);
     applicationAttempt.handle(
-        new RMAppAttemptKilledEvent(applicationAttempt.getAppAttemptId()));
+        new RMAppAttemptEvent(
+            applicationAttempt.getAppAttemptId(), 
+            RMAppAttemptEventType.KILL));
     testAppAttemptFinishingState(amContainer, finalStatus, trackingUrl,
         diagnostics);
   }

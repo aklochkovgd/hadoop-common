@@ -677,27 +677,21 @@ public class TestRMAppTransitions {
     Assert.assertTrue(maxAppAttempts > 1);
     for (int i=1; i<maxAppAttempts; i++) {
       RMAppAttempt prevAttempt = application.getCurrentAppAttempt();
-      RMAppEvent event = 
-          new RMAppEvent(application.getApplicationId(),  
-              RMAppEventType.ATTEMPT_KILLED);
-      application.handle(event);
+      prevAttempt.handle(new RMAppAttemptEvent(
+          prevAttempt.getAppAttemptId(), RMAppAttemptEventType.FAIL));
       rmDispatcher.await();
       assertAppState(RMAppState.SUBMITTED, application);
       appAttempt = application.getCurrentAppAttempt();
       Assert.assertEquals(RMAppAttemptState.SUBMITTED, appAttempt.getAppAttemptState());
-      Assert.assertEquals(RMAppAttemptState.KILLED, prevAttempt.getAppAttemptState());
+      Assert.assertEquals(RMAppAttemptState.FAILED, prevAttempt.getAppAttemptState());
       Assert.assertEquals(++expectedAttemptId, 
           appAttempt.getAppAttemptId().getAttemptId());
-      event = 
-          new RMAppEvent(application.getApplicationId(), 
-              RMAppEventType.APP_ACCEPTED);
-      application.handle(event);
+      application.handle(new RMAppEvent(application.getApplicationId(), 
+          RMAppEventType.APP_ACCEPTED));
       rmDispatcher.await();
       assertAppState(RMAppState.ACCEPTED, application);
-      event = 
-          new RMAppEvent(application.getApplicationId(), 
-              RMAppEventType.ATTEMPT_REGISTERED);
-      application.handle(event);
+      application.handle(new RMAppEvent(application.getApplicationId(), 
+          RMAppEventType.ATTEMPT_REGISTERED));
       rmDispatcher.await();
       assertAppState(RMAppState.RUNNING, application);
     }
