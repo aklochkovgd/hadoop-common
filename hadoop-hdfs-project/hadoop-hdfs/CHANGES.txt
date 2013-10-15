@@ -313,6 +313,9 @@ Release 2.3.0 - UNRELEASED
 
     HDFS-5323.  Remove some deadcode in BlockManager (Colin Patrick McCabe)
 
+    HDFS-5338. Add a conf to disable hostname check in datanode registration.
+    (szetszwo)
+
   OPTIMIZATIONS
 
     HDFS-5239.  Allow FSNamesystem lock fairness to be configurable (daryn)
@@ -380,6 +383,8 @@ Release 2.2.1 - UNRELEASED
 
     HDFS-5329. Update FSNamesystem#getListing() to handle inode path in startAfter
     token. (brandonli)
+
+    HDFS-5330. fix readdir and readdirplus for large directories (brandonli)
 
 Release 2.2.0 - 2013-10-13
 
