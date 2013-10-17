@@ -1333,21 +1333,25 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   }
   
   private void cleanupRunningContainers() {
-    long timestamp = System.currentTimeMillis();
-    for (Map.Entry<ContainerId, ResourceUsage> e : 
-        runningContainersUsage.entrySet()) {
-      ContainerId containerId = e.getKey();
-      ResourceUsage usage = e.getValue();
-      LOG.warn("Container " + containerId + " is still counted as running after"
-          + " the attempt " + this.applicationAttemptId + " has finished."
-          + " Usage stats for the application may be inaccurate.");
-      this.memorySeconds += usage.getMemoryMillis(timestamp) 
-          / DateUtils.MILLIS_PER_SECOND;
-      LOG.info("new memSec" + this.memorySeconds);
-      this.virtualCpuSeconds += usage.getVirtualCoresMillis(timestamp)
-          / DateUtils.MILLIS_PER_SECOND;
+    if (!runningContainersUsage.isEmpty()) {
+      long timestamp = System.currentTimeMillis();
+      
+      for (Map.Entry<ContainerId, ResourceUsage> e : 
+          runningContainersUsage.entrySet()) {
+        ResourceUsage usage = e.getValue();
+        this.memorySeconds += usage.getMemoryMillis(timestamp) 
+            / DateUtils.MILLIS_PER_SECOND;
+        this.virtualCpuSeconds += usage.getVirtualCoresMillis(timestamp)
+            / DateUtils.MILLIS_PER_SECOND;
+      }
+      
+      LOG.info("Application " + applicationAttemptId.getApplicationId()
+          + " has " + runningContainersUsage.size() + " containers running "
+          + "after the attempt " + applicationAttemptId + " has finished. "
+          + "Usage stats may be inaccurate.");
+      
+      runningContainersUsage.clear();
     }
-    runningContainersUsage.clear();
   }
   
   private void launchAttempt(){
