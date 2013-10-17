@@ -15,39 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.fs.viewfs;
 
+package org.apache.hadoop.fs;
 
-import org.apache.hadoop.fs.FileContext;
-import org.apache.hadoop.fs.FileContextMainOperationsBaseTest;
-import org.apache.hadoop.fs.Path;
+import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 
+/** 
+ * Thrown when the startAfter can't be found when listing a directory.
+ */
+@InterfaceAudience.LimitedPrivate({"HDFS"})
+@InterfaceStability.Stable
+public class DirectoryListingStartAfterNotFoundException extends IOException {
+  private static final long serialVersionUID = 1L;
 
-public class TestFcMainOperationsLocalFs  extends 
-  FileContextMainOperationsBaseTest {
-
-  FileContext fclocal;
-  Path targetOfTests;
-
-  @Override
-  @Before
-  public void setUp() throws Exception {
-    fc = ViewFsTestSetup.setupForViewFsLocalFs(fileContextTestHelper);
-    super.setUp();
+  public DirectoryListingStartAfterNotFoundException() {
+    super();
   }
-  
-  @Override
-  @After
-  public void tearDown() throws Exception {
-    super.tearDown();
-    ViewFsTestSetup.tearDownForViewFsLocalFs(fileContextTestHelper);
-  }
-  
-  @Override
-  protected boolean listCorruptedBlocksSupported() {
-    return false;
+
+  public DirectoryListingStartAfterNotFoundException(String msg) {
+    super(msg);
   }
 }
