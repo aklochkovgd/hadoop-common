@@ -279,6 +279,9 @@ public class ApplicationCLI extends YarnCLI {
         || appReport.getYarnApplicationState() == YarnApplicationState.KILLED
         || appReport.getYarnApplicationState() == YarnApplicationState.FAILED) {
       sysout.println("Application " + appId + " has already finished ");
+    } else if (attId != null && !attId.equals(
+        appReport.getCurrentApplicationAttemptId())) {
+      sysout.println("Attempt " + attId + " has already finished ");
     } else {
       if (attId == null) {
         attId = appReport.getCurrentApplicationAttemptId();

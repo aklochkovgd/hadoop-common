@@ -901,42 +901,34 @@ public class TestYarnCLI {
 
   @Test(timeout=1000)
   public void testFailAttemptByAppId() throws Exception {
-    ApplicationCLI cli = createAndGetAppCLI();
     ApplicationId appId = ApplicationId.newInstance(
         System.currentTimeMillis(), 777);
     ApplicationAttemptId attId = ApplicationAttemptId.newInstance(appId, 0);
-
-    ApplicationReport report = mock(ApplicationReport.class);
-    when(report.getCurrentApplicationAttemptId()).thenReturn(attId );
-    
-    when(client.getApplicationReport(eq(appId))).thenReturn(report);
-    
-    int exitCode = cli.run(new String[] {"-failAttempt", appId.toString()});
-    Assert.assertEquals(0, exitCode);
-    
-    verify(client).getApplicationReport(eq(appId));
-    verify(client).failApplicationAttempt(eq(attId));
-    verifyNoMoreInteractions(client);
+    testFailAttempt(appId, attId, attId.toString());
   }
   
   @Test(timeout=1000)
   public void testFailAttemptByAttemptId() throws Exception {
-    ApplicationCLI cli = createAndGetAppCLI();
     ApplicationId appId = ApplicationId.newInstance(
         System.currentTimeMillis(), 777);
     ApplicationAttemptId attId = ApplicationAttemptId.newInstance(appId, 0);
-    ApplicationAttemptId anotherAttId = ApplicationAttemptId.newInstance(appId, 5);
+    testFailAttempt(appId, attId, appId.toString());
+  }
+  
+  private void testFailAttempt(ApplicationId appId, ApplicationAttemptId attId, 
+      String cliParamValue) throws Exception {
+    ApplicationCLI cli = createAndGetAppCLI();
 
     ApplicationReport report = mock(ApplicationReport.class);
     when(report.getCurrentApplicationAttemptId()).thenReturn(attId);
     
     when(client.getApplicationReport(eq(appId))).thenReturn(report);
     
-    int exitCode = cli.run(new String[] {"-failAttempt", anotherAttId.toString()});
+    int exitCode = cli.run(new String[] {"-failAttempt", cliParamValue});
     Assert.assertEquals(0, exitCode);
     
     verify(client).getApplicationReport(eq(appId));
-    verify(client).failApplicationAttempt(eq(anotherAttId));
+    verify(client).failApplicationAttempt(eq(attId));
     verifyNoMoreInteractions(client);
   }
   
