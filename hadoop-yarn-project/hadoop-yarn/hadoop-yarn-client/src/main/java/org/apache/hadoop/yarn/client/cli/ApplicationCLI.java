@@ -317,6 +317,9 @@ public class ApplicationCLI extends YarnCLI {
       appReportStr.println(appReport.getStartTime());
       appReportStr.print("\tFinish-Time : ");
       appReportStr.println(appReport.getFinishTime());
+      appReportStr.print("\tCurrent-Attempt-Id : ");
+      ApplicationAttemptId currentAttemptId = appReport.getCurrentApplicationAttemptId();
+      appReportStr.println(currentAttemptId != null ? currentAttemptId : "");
       appReportStr.print("\tProgress : ");
       DecimalFormat formatter = new DecimalFormat("###.##%");
       String progress = formatter.format(appReport.getProgress());

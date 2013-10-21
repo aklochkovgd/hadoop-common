@@ -101,6 +101,7 @@ public class TestYarnCLI {
     pw.println("\tQueue : queue");
     pw.println("\tStart-Time : 0");
     pw.println("\tFinish-Time : 0");
+    pw.println("\tCurrent-Attempt-Id : appattempt_1234_0005_000001");
     pw.println("\tProgress : 53.79%");
     pw.println("\tState : FINISHED");
     pw.println("\tFinal-State : SUCCEEDED");
