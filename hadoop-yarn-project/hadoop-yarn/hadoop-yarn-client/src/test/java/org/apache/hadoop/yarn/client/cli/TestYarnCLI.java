@@ -20,13 +20,15 @@ package org.apache.hadoop.yarn.client.cli;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doThrow;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,6 +43,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.apache.commons.cli.Options;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -56,8 +59,6 @@ import org.apache.hadoop.yarn.exceptions.ApplicationNotFoundException;
 import org.apache.hadoop.yarn.util.Records;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.apache.commons.cli.Options;
 
 public class TestYarnCLI {
 
@@ -889,6 +890,55 @@ public class TestYarnCLI {
         + createNodeCLIHelpMessage(), sysOutStream.toString());
   }
 
+  @Test(timeout=1000)
+  public void testFailAttemptWithoutParams() throws Exception {
+    ApplicationCLI cli = createAndGetAppCLI();
+    int exitCode = cli.run(new String[] {"-failAttempt"});
+    Assert.assertEquals(-1, exitCode);
+    verifyNoMoreInteractions(client);
+  }
+
+  @Test(timeout=1000)
+  public void testFailAttemptByAppId() throws Exception {
+    ApplicationCLI cli = createAndGetAppCLI();
+    ApplicationId appId = ApplicationId.newInstance(
+        System.currentTimeMillis(), 777);
+    ApplicationAttemptId attId = ApplicationAttemptId.newInstance(appId, 0);
+
+    ApplicationReport report = mock(ApplicationReport.class);
+    when(report.getCurrentApplicationAttemptId()).thenReturn(attId );
+    
+    when(client.getApplicationReport(eq(appId))).thenReturn(report);
+    
+    int exitCode = cli.run(new String[] {"-failAttempt", appId.toString()});
+    Assert.assertEquals(0, exitCode);
+    
+    verify(client).getApplicationReport(eq(appId));
+    verify(client).failApplicationAttempt(eq(attId));
+    verifyNoMoreInteractions(client);
+  }
+  
+  @Test(timeout=1000)
+  public void testFailAttemptByAttemptId() throws Exception {
+    ApplicationCLI cli = createAndGetAppCLI();
+    ApplicationId appId = ApplicationId.newInstance(
+        System.currentTimeMillis(), 777);
+    ApplicationAttemptId attId = ApplicationAttemptId.newInstance(appId, 0);
+    ApplicationAttemptId anotherAttId = ApplicationAttemptId.newInstance(appId, 5);
+
+    ApplicationReport report = mock(ApplicationReport.class);
+    when(report.getCurrentApplicationAttemptId()).thenReturn(attId);
+    
+    when(client.getApplicationReport(eq(appId))).thenReturn(report);
+    
+    int exitCode = cli.run(new String[] {"-failAttempt", anotherAttId.toString()});
+    Assert.assertEquals(0, exitCode);
+    
+    verify(client).getApplicationReport(eq(appId));
+    verify(client).failApplicationAttempt(eq(anotherAttId));
+    verifyNoMoreInteractions(client);
+  }
+  
   private void verifyUsageInfo(YarnCLI cli) throws Exception {
     cli.setSysErrPrintStream(sysErr);
     cli.run(new String[0]);

@@ -161,7 +161,7 @@ public class ApplicationCLI extends YarnCLI {
       }
       killApplication(cliParser.getOptionValue(KILL_CMD));
     } else if (cliParser.hasOption(FAIL_ATTEMPT_CMD)) {
-      if (args.length != 3) {
+      if (args.length != 2) {
         printUsage(opts);
         return exitCode;
       }
