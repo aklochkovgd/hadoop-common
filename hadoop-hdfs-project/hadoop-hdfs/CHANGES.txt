@@ -255,7 +255,12 @@ Release 2.3.0 - UNRELEASED
 
     HDFS-5342. Provide more information in the FSNamesystem JMX interfaces.
     (Haohui Mai via jing9)
- 
+
+    HDFS-5334. Implement dfshealth.jsp in HTML pages. (Haohui Mai via jing9)
+
+    HDFS-5379. Update links to datanode information in dfshealth.html. (Haohui
+    Mai via jing9)
+
   IMPROVEMENTS
 
     HDFS-5267. Remove volatile from LightWeightHashSet. (Junping Du via llu)
@@ -316,6 +321,14 @@ Release 2.3.0 - UNRELEASED
     HDFS-5338. Add a conf to disable hostname check in datanode registration.
     (szetszwo)
 
+    HDFS-5130. Add test for snapshot related FsShell and DFSAdmin commands.
+    (Binglin Chang via jing9)
+
+    HDFS-5374. Remove deadcode in DFSOutputStream. (suresh)
+
+    HDFS-4511. Cover package org.apache.hadoop.hdfs.tools with unit test
+    (Andrey Klochkov via jeagles)
+
   OPTIMIZATIONS
 
     HDFS-5239.  Allow FSNamesystem lock fairness to be configurable (daryn)
@@ -346,6 +359,16 @@ Release 2.3.0 - UNRELEASED
     HDFS-5352. Server#initLog() doesn't close InputStream in httpfs. (Ted Yu via
     jing9)
 
+    HDFS-5283. Under construction blocks only inside snapshots should not be
+    counted in safemode threshhold.  (Vinay via szetszwo)
+
+    HDFS-4376. Fix race conditions in Balancer.  (Junping Du via szetszwo)
+
+    HDFS-5375. hdfs.cmd does not expose several snapshot commands. (cnauroth)
+
+    HDFS-5336. DataNode should not output 'StartupProgress' metrics.
+    (Akira Ajisaka via cnauroth)
+
 Release 2.2.1 - UNRELEASED
 
   INCOMPATIBLE CHANGES
@@ -353,6 +376,12 @@ Release 2.2.1 - UNRELEASED
   NEW FEATURES
 
   IMPROVEMENTS
+
+    HDFS-5360. Improvement of usage message of renameSnapshot and
+    deleteSnapshot. (Shinichi Yamashita via wang)
+
+    HDFS-5331. make SnapshotDiff.java to a o.a.h.util.Tool interface implementation. 
+    (Vinayakumar B via umamahesh)
 
   OPTIMIZATIONS
 
@@ -385,6 +414,11 @@ Release 2.2.1 - UNRELEASED
     token. (brandonli)
 
     HDFS-5330. fix readdir and readdirplus for large directories (brandonli)
+
+    HDFS-5370. Typo in Error Message: different between range in condition
+    and range in error message. (Kousuke Saruta via suresh)
+
+    HDFS-5365. Fix libhdfs compile error on FreeBSD9. (Radim Kolar via cnauroth)
 
 Release 2.2.0 - 2013-10-13
 
@@ -3664,6 +3698,9 @@ Release 0.23.10 - UNRELEASED
 
     HDFS-5010. Reduce the frequency of getCurrentUser() calls from namenode
     (kihwal)
+
+    HDFS-5346. Avoid unnecessary call to getNumLiveDataNodes() for each block 
+    during IBR processing (Ravi Prakash via kihwal)
 
   OPTIMIZATIONS
 

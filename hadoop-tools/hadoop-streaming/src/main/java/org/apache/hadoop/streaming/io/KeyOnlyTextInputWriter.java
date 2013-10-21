@@ -15,39 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.fs.viewfs;
+
+package org.apache.hadoop.streaming.io;
+
+import java.io.IOException;
 
 
-import org.apache.hadoop.fs.FileContext;
-import org.apache.hadoop.fs.FileContextMainOperationsBaseTest;
-import org.apache.hadoop.fs.Path;
-
-import org.junit.After;
-import org.junit.Before;
-
-
-public class TestFcMainOperationsLocalFs  extends 
-  FileContextMainOperationsBaseTest {
-
-  FileContext fclocal;
-  Path targetOfTests;
+public class KeyOnlyTextInputWriter extends TextInputWriter {
 
   @Override
-  @Before
-  public void setUp() throws Exception {
-    fc = ViewFsTestSetup.setupForViewFsLocalFs(fileContextTestHelper);
-    super.setUp();
+  public void writeKey(Object key) throws IOException {
+    writeUTF8(key);
+    clientOut.write('\n');
   }
-  
+
   @Override
-  @After
-  public void tearDown() throws Exception {
-    super.tearDown();
-    ViewFsTestSetup.tearDownForViewFsLocalFs(fileContextTestHelper);
-  }
-  
-  @Override
-  protected boolean listCorruptedBlocksSupported() {
-    return false;
-  }
+  public void writeValue(Object value) throws IOException {}
+
 }

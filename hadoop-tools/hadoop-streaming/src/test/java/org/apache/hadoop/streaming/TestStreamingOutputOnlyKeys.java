@@ -15,39 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.fs.viewfs;
 
+package org.apache.hadoop.streaming;
 
-import org.apache.hadoop.fs.FileContext;
-import org.apache.hadoop.fs.FileContextMainOperationsBaseTest;
-import org.apache.hadoop.fs.Path;
+import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Test;
 
+public class TestStreamingOutputOnlyKeys extends TestStreaming {
 
-public class TestFcMainOperationsLocalFs  extends 
-  FileContextMainOperationsBaseTest {
-
-  FileContext fclocal;
-  Path targetOfTests;
-
-  @Override
-  @Before
-  public void setUp() throws Exception {
-    fc = ViewFsTestSetup.setupForViewFsLocalFs(fileContextTestHelper);
-    super.setUp();
+  public TestStreamingOutputOnlyKeys() throws IOException {
+    super();
+  }
+  
+  @Test
+  public void testOutputOnlyKeys() throws Exception {
+    args.add("-jobconf"); args.add("stream.reduce.input" +
+        "=keyonlytext");
+    args.add("-jobconf"); args.add("stream.reduce.output" +
+        "=keyonlytext");
+    super.testCommandLine();
   }
   
   @Override
-  @After
-  public void tearDown() throws Exception {
-    super.tearDown();
-    ViewFsTestSetup.tearDownForViewFsLocalFs(fileContextTestHelper);
+  public String getExpectedOutput() {
+    return outputExpect.replaceAll("\t", "");
   }
   
   @Override
-  protected boolean listCorruptedBlocksSupported() {
-    return false;
+  @Test
+  public void testCommandLine() {
+    // Do nothing
   }
+
 }
