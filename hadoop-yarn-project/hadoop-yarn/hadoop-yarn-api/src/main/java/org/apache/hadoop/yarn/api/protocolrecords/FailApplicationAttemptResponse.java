@@ -18,44 +18,29 @@
 
 package org.apache.hadoop.yarn.api.protocolrecords;
 
+import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability.Stable;
+import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.util.Records;
 
 /**
- * <p>The request sent by the client to the <code>ResourceManager</code>
- * to fail an application attempt.</p>
+ * <p>The response sent by the <code>ResourceManager</code> to the client
+ * failing an application attempt.</p>
+ *
+ * <p>Currently it's empty.</p>
  * 
- * <p>The request includes the {@link ApplicationId} of the application the
- * attempt to be failed belongs to.</p>
- * 
- * @see ApplicationClientProtocol#failCurrentAttempt(FailCurrentAttemptRequest)
+ * @see ApplicationClientProtocol#failApplicationAttempt(FailApplicationAttemptRequest)
  */
 @Public
 @Stable
-public abstract class FailCurrentAttemptRequest {
-
-  @Public
-  @Stable 
-  public static FailCurrentAttemptRequest newInstance(ApplicationId applicationId) {
-    FailCurrentAttemptRequest request =
-        Records.newRecord(FailCurrentAttemptRequest.class);
-    request.setApplicationId(applicationId);
-    return request;
+public abstract class FailApplicationAttemptResponse {
+  @Private
+  @Unstable
+  public static FailApplicationAttemptResponse newInstance() {
+    FailApplicationAttemptResponse response =
+        Records.newRecord(FailApplicationAttemptResponse.class);
+    return response;
   }
-
-  /**
-   * Get the <code>ApplicationId</code> of an application the attempt to be
-   * failed belongs to.
-   * @return <code>ApplicationId</code> of an application the attempt belongs to
-   */
-  @Public
-  @Stable
-  public abstract ApplicationId getApplicationId();
-  
-  @Public
-  @Stable
-  public abstract void setApplicationId(ApplicationId applicationId);
 }

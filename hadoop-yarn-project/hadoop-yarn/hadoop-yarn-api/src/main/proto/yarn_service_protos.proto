@@ -108,11 +108,11 @@ message SubmitApplicationRequestProto {
 message SubmitApplicationResponseProto {
 }
 
-message FailCurrentAttemptRequestProto {
-  optional ApplicationIdProto application_id = 1;
+message FailApplicationAttemptRequestProto {
+  optional ApplicationAttemptIdProto application_attempt_id = 1;
 }
 
-message FailCurrentAttemptResponseProto {
+message FailApplicationAttemptResponseProto {
 }
 
 message KillApplicationRequestProto {

@@ -35,6 +35,7 @@ import org.apache.commons.cli.Options;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
@@ -76,8 +77,9 @@ public class ApplicationCLI extends YarnCLI {
         "based on application type, " +
         "and -appStates to filter applications based on application state");
     opts.addOption(KILL_CMD, true, "Kills the application.");
-    opts.addOption(FAIL_ATTEMPT_CMD, true, "Fails current attempt of the " + 
-        "application.");
+    opts.addOption(FAIL_ATTEMPT_CMD, true, "Fails application attempt. "
+        + "If application ID is provided, the current attempt will be failed. "
+        + "Otherwise specified attempt ID will be failed.");
     opts.addOption(HELP_CMD, false, "Displays help for all commands.");
     Option appTypeOpt = new Option(APP_TYPE_CMD, true, "Works with -list to " +
         "filter applications based on " +
@@ -94,7 +96,7 @@ public class ApplicationCLI extends YarnCLI {
     appStateOpt.setArgName("States");
     opts.addOption(appStateOpt);
     opts.getOption(KILL_CMD).setArgName("Application ID");
-    opts.getOption(FAIL_ATTEMPT_CMD).setArgName("App ID");
+    opts.getOption(FAIL_ATTEMPT_CMD).setArgName("App/Att ID");
     opts.getOption(STATUS_CMD).setArgName("Application ID");
 
     int exitCode = -1;
@@ -159,11 +161,11 @@ public class ApplicationCLI extends YarnCLI {
       }
       killApplication(cliParser.getOptionValue(KILL_CMD));
     } else if (cliParser.hasOption(FAIL_ATTEMPT_CMD)) {
-      if (args.length != 2) {
+      if (args.length != 3) {
         printUsage(opts);
         return exitCode;
       }
-      failCurrentAttempt(cliParser.getOptionValue(FAIL_ATTEMPT_CMD));
+      failApplicationAttempt(cliParser.getOptionValue(FAIL_ATTEMPT_CMD));
     } else if (cliParser.hasOption(HELP_CMD)) {
       printUsage(opts);
       return 0;
@@ -252,23 +254,37 @@ public class ApplicationCLI extends YarnCLI {
   }
 
   /**
-   * Fails current attempt of the application
+   * Fails an application attempt.
    * 
-   * @param applicationId ID of the app the attempt belongs to.
+   * @param applicationId ID of the app the attempt belongs to. If attemptId 
+   *        is not provided, current app attempt will be failed.
+   * @param attemptId ID of the attempt to fail. If provided, applicationId 
+   *        parameter is not used.
    * @throws YarnException
    * @throws IOException
    */
-  private void failCurrentAttempt(String applicationId)
+  private void failApplicationAttempt(String appOrAttemptId)
       throws YarnException, IOException {
-    ApplicationId appId = ConverterUtils.toApplicationId(applicationId);
+    ApplicationId appId;
+    ApplicationAttemptId attId;
+    try {
+      attId = ConverterUtils.toApplicationAttemptId(appOrAttemptId);
+      appId = attId.getApplicationId();
+    } catch (IllegalArgumentException e) {
+      appId = ConverterUtils.toApplicationId(appOrAttemptId);
+      attId = null;
+    }
     ApplicationReport appReport = client.getApplicationReport(appId);
     if (appReport.getYarnApplicationState() == YarnApplicationState.FINISHED
         || appReport.getYarnApplicationState() == YarnApplicationState.KILLED
         || appReport.getYarnApplicationState() == YarnApplicationState.FAILED) {
-      sysout.println("Application " + applicationId + " has already finished ");
+      sysout.println("Application " + appId + " has already finished ");
     } else {
-      sysout.println("Failing current attempt of application " + applicationId);
-      client.failCurrentAttempt(appId);
+      if (attId == null) {
+        attId = appReport.getCurrentApplicationAttemptId();
+      }
+      sysout.println("Failing attempt " + attId + " of application " + appId);
+      client.failApplicationAttempt(attId);
     }
   }
 

@@ -48,8 +48,9 @@ import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.GetQueueInfoRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetQueueUserAclsInfoRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationRequest;
-import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.FailApplicationAttemptRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationRequest;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
@@ -178,13 +179,13 @@ public class YarnClientImpl extends YarnClient {
   }
 
   @Override
-  public void failCurrentAttempt(ApplicationId applicationId)
+  public void failApplicationAttempt(ApplicationAttemptId attemptId)
       throws YarnException, IOException {
-    LOG.info("Failing current attempt of application " + applicationId);
-    FailCurrentAttemptRequest request =
-        Records.newRecord(FailCurrentAttemptRequest.class);
-    request.setApplicationId(applicationId);
-    rmClient.failCurrentAttempt(request);
+    LOG.info("Failing application attempt " + attemptId);
+    FailApplicationAttemptRequest request =
+        Records.newRecord(FailApplicationAttemptRequest.class);
+    request.setApplicationAttemptId(attemptId);
+    rmClient.failApplicationAttempt(request);
   }
 
   @Override

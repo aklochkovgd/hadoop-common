@@ -46,8 +46,8 @@ import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenResponse;
-import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptRequest;
-import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.FailApplicationAttemptRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.FailApplicationAttemptResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -129,12 +129,10 @@ public interface ApplicationClientProtocol {
   
   /**
    * <p>The interface used by clients to request the 
-   * <code>ResourceManager</code> to fail current attempt of a 
-   * submitted application.</p>
+   * <code>ResourceManager</code> to fail an application attempt.</p>
    * 
-   * <p>The client, via {@link FailCurrentAttemptRequest} provides the
-   * {@link ApplicationId} of the application the attempt to be failed
-   * belongs to.</p>
+   * <p>The client, via {@link FailApplicationAttemptRequest} provides the
+   * {@link ApplicationAttemptId} of the attempt to be failed.</p>
    * 
    * <p> In secure mode,the <code>ResourceManager</code> verifies access to the
    * application, queue etc. before failing the attempt.</p> 
@@ -154,8 +152,8 @@ public interface ApplicationClientProtocol {
    */
   @Public
   @Unstable
-  public FailCurrentAttemptResponse failCurrentAttempt(
-      FailCurrentAttemptRequest request) 
+  public FailApplicationAttemptResponse failApplicationAttempt(
+      FailApplicationAttemptRequest request) 
   throws YarnException, IOException;
 
   /**

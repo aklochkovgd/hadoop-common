@@ -54,7 +54,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttempt;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptState;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptLaunchFailedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNode;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNodeEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNodeEventType;
@@ -293,7 +292,8 @@ public class MockRM extends ResourceManager {
     MockAM am = new MockAM(getRMContext(), masterService, appAttemptId);
     am.waitForState(RMAppAttemptState.ALLOCATED);
     getRMContext().getDispatcher().getEventHandler()
-        .handle(new RMAppAttemptLaunchFailedEvent(appAttemptId, "Failed"));
+        .handle(new RMAppAttemptEvent(appAttemptId, 
+            RMAppAttemptEventType.LAUNCH_FAILED, "Failed"));
   }
 
   @Override

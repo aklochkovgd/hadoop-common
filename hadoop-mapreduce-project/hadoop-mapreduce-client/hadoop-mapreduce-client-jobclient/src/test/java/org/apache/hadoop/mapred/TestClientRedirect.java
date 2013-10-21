@@ -92,8 +92,8 @@ import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenResponse;
-import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptRequest;
-import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.FailApplicationAttemptRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.FailApplicationAttemptResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -304,9 +304,9 @@ public class TestClientRedirect {
     }
 
     @Override
-    public FailCurrentAttemptResponse failCurrentAttempt(
-        FailCurrentAttemptRequest request) throws IOException {
-      return recordFactory.newRecordInstance(FailCurrentAttemptResponse.class);
+    public FailApplicationAttemptResponse failApplicationAttempt(
+        FailApplicationAttemptRequest request) throws IOException {
+      return recordFactory.newRecordInstance(FailApplicationAttemptResponse.class);
     }
 
     @Override

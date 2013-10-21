@@ -18,29 +18,45 @@
 
 package org.apache.hadoop.yarn.api.protocolrecords;
 
-import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability.Stable;
-import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.util.Records;
 
 /**
- * <p>The response sent by the <code>ResourceManager</code> to the client
- * failing the current attempt of a submitted application.</p>
- *
- * <p>Currently it's empty.</p>
+ * <p>The request sent by the client to the <code>ResourceManager</code>
+ * to fail an application attempt.</p>
  * 
- * @see ApplicationClientProtocol#failCurrentAttempt(FailCurrentAttemptRequest)
+ * <p>The request includes the {@link ApplicationAttemptId} of the attempt to 
+ * be failed.</p>
+ * 
+ * @see ApplicationClientProtocol#failApplicationAttempt(FailApplicationAttemptRequest)
  */
 @Public
 @Stable
-public abstract class FailCurrentAttemptResponse {
-  @Private
-  @Unstable
-  public static FailCurrentAttemptResponse newInstance() {
-    FailCurrentAttemptResponse response =
-        Records.newRecord(FailCurrentAttemptResponse.class);
-    return response;
+public abstract class FailApplicationAttemptRequest {
+
+  @Public
+  @Stable 
+  public static FailApplicationAttemptRequest newInstance(
+      ApplicationAttemptId attemptId) {
+    FailApplicationAttemptRequest request =
+        Records.newRecord(FailApplicationAttemptRequest.class);
+    request.setApplicationAttemptId(attemptId);
+    return request;
   }
+
+  /**
+   * Get the <code>ApplicationAttemptId</code> of the attempt to be failed.
+   * @return <code>ApplicationAttemptId</code> of the attempt.
+   */
+  @Public
+  @Stable
+  public abstract ApplicationAttemptId getApplicationAttemptId();
+  
+  @Public
+  @Stable
+  public abstract void setApplicationAttemptId(
+      ApplicationAttemptId applicationAttemptId);
 }

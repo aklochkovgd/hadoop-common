@@ -678,12 +678,14 @@ public class TestRMAppTransitions {
     for (int i=1; i<maxAppAttempts; i++) {
       RMAppAttempt prevAttempt = application.getCurrentAppAttempt();
       prevAttempt.handle(new RMAppAttemptEvent(
-          prevAttempt.getAppAttemptId(), RMAppAttemptEventType.FAIL));
+          prevAttempt.getAppAttemptId(), RMAppAttemptEventType.FAIL,
+          "Attempt failed by user."));
       rmDispatcher.await();
       assertAppState(RMAppState.SUBMITTED, application);
       appAttempt = application.getCurrentAppAttempt();
       Assert.assertEquals(RMAppAttemptState.SUBMITTED, appAttempt.getAppAttemptState());
       Assert.assertEquals(RMAppAttemptState.FAILED, prevAttempt.getAppAttemptState());
+      Assert.assertTrue(prevAttempt.getDiagnostics().contains("Attempt failed by user."));
       Assert.assertEquals(++expectedAttemptId, 
           appAttempt.getAppAttemptId().getAttemptId());
       application.handle(new RMAppEvent(application.getApplicationId(), 

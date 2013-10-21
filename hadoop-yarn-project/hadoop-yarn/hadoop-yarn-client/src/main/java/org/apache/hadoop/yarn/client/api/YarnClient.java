@@ -29,6 +29,7 @@ import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.service.AbstractService;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
@@ -96,11 +97,11 @@ public abstract class YarnClient extends AbstractService {
 
   /**
    * <p>
-   * Fail current attempt of an application identified by given ID.
+   * Fail an application attempt identified by given ID.
    * </p>
    * 
-   * @param applicationId
-   *          {@link ApplicationId} of the application the attempt belongs to
+   * @param applicationAttemptId
+   *          {@link ApplicationAttemptId} of the attempt to fail.
    * @throws YarnException
    *           in case of errors or if YARN rejects the request due to
    *           access-control restrictions, recovery not being non supported
@@ -108,7 +109,7 @@ public abstract class YarnClient extends AbstractService {
    * @throws IOException
    * @see #getQueueAclsInfo()
    */
-  public void failCurrentAttempt(ApplicationId applicationId)
+  public void failApplicationAttempt(ApplicationAttemptId applicationAttemptId)
       throws YarnException, IOException {
     throw new UnsupportedOperationException();
   }

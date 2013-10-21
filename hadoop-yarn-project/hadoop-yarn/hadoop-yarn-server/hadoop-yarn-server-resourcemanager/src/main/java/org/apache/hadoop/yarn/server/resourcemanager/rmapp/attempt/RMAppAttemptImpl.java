@@ -77,7 +77,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppFinishedAttemptE
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppRejectedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAcquiredEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerFinishedEvent;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptLaunchFailedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptRegistrationEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptRejectedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptStatusupdateEvent;
@@ -255,7 +254,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       .addTransition(RMAppAttemptState.ALLOCATED, RMAppAttemptState.LAUNCHED,
           RMAppAttemptEventType.LAUNCHED, new AMLaunchedTransition())
       .addTransition(RMAppAttemptState.ALLOCATED, RMAppAttemptState.FAILED,
-          RMAppAttemptEventType.LAUNCH_FAILED, new LaunchFailedTransition())
+          RMAppAttemptEventType.LAUNCH_FAILED, 
+          new BaseFinalTransition(RMAppAttemptState.FAILED))
       .addTransition(RMAppAttemptState.ALLOCATED, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.KILL, new KillAllocatedAMTransition())
       .addTransition(RMAppAttemptState.ALLOCATED, RMAppAttemptState.FAILED,
@@ -891,6 +891,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
     @Override
     public void transition(RMAppAttemptImpl appAttempt,
         RMAppAttemptEvent event) {
+      if (event.getDiagnostics() != null) {
+        appAttempt.setDiagnostics(event.getDiagnostics());
+      }
+      
       ApplicationAttemptId appAttemptId = appAttempt.getAppAttemptId();
 
       // Tell the AMS. Unregister from the ApplicationMasterService
@@ -974,27 +978,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       
       super.transition(appAttempt, event);
     }    
-  }
-
-  private static final class LaunchFailedTransition extends BaseFinalTransition {
-
-    public LaunchFailedTransition() {
-      super(RMAppAttemptState.FAILED);
-    }
-
-    @Override
-    public void transition(RMAppAttemptImpl appAttempt,
-        RMAppAttemptEvent event) {
-
-      // Use diagnostic from launcher
-      RMAppAttemptLaunchFailedEvent launchFaileEvent
-        = (RMAppAttemptLaunchFailedEvent) event;
-      appAttempt.diagnostics.append(launchFaileEvent.getMessage());
-
-      // Tell the app, scheduler
-      super.transition(appAttempt, event);
-
-    }
   }
 
   private static final class KillAllocatedAMTransition extends
@@ -1161,7 +1144,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
       RMAppAttemptUnregistrationEvent unregisterEvent
         = (RMAppAttemptUnregistrationEvent) event;
-      appAttempt.diagnostics.append(unregisterEvent.getDiagnostics());
       appAttempt.origTrackingUrl =
           sanitizeTrackingUrl(unregisterEvent.getTrackingUrl());
       appAttempt.proxiedTrackingUrl = 
@@ -1175,6 +1157,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         new FinalTransition(RMAppAttemptState.FINISHED).transition(
             appAttempt, event);
         return RMAppAttemptState.FINISHED;
+      } else {
+        appAttempt.setDiagnostics(event.getDiagnostics());
       }
       appAttempt.rmContext.getAMFinishingMonitor().register(appAttemptId);
       ApplicationId applicationId =

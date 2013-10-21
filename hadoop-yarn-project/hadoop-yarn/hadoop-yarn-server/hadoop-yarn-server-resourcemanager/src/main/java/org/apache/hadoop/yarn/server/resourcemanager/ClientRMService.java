@@ -63,11 +63,12 @@ import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.KillApplicationResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RenewDelegationTokenResponse;
-import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptRequest;
-import org.apache.hadoop.yarn.api.protocolrecords.FailCurrentAttemptResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.FailApplicationAttemptRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.FailApplicationAttemptResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationAccessType;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
@@ -344,10 +345,11 @@ public class ClientRMService extends AbstractService implements
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
-  public FailCurrentAttemptResponse failCurrentAttempt(
-      FailCurrentAttemptRequest request) throws YarnException {
+  public FailApplicationAttemptResponse failApplicationAttempt(
+      FailApplicationAttemptRequest request) throws YarnException {
 
-    ApplicationId applicationId = request.getApplicationId();
+    ApplicationAttemptId attemptId = request.getApplicationAttemptId();
+    ApplicationId applicationId = attemptId.getApplicationId();
 
     UserGroupInformation callerUGI;
     try {
@@ -356,7 +358,7 @@ public class ClientRMService extends AbstractService implements
       LOG.info("Error getting UGI ", ie);
       RMAuditLogger.logFailure("UNKNOWN", AuditConstants.FAIL_ATTEMPT_REQUEST,
           "UNKNOWN", "ClientRMService" , "Error getting UGI",
-          applicationId);
+          applicationId, attemptId);
       throw RPCUtil.getRemoteException(ie);
     }
 
@@ -364,15 +366,10 @@ public class ClientRMService extends AbstractService implements
     if (application == null) {
       RMAuditLogger.logFailure(callerUGI.getUserName(),
           AuditConstants.FAIL_ATTEMPT_REQUEST, "UNKNOWN", "ClientRMService",
-          "Trying to fail an attempt of an absent application", applicationId);
-      throw new ApplicationNotFoundException("Trying to fail an attempt of " 
-          + " an absent application " + applicationId);
-    } else if (application.getCurrentAppAttempt() == null) {
-      RMAuditLogger.logFailure(callerUGI.getUserName(),
-          AuditConstants.FAIL_ATTEMPT_REQUEST, "UNKNOWN", "ClientRMService",
-          "Trying to fail an absent attempt of the application", applicationId);
-      throw new YarnException("Trying to fail an absent attempt "
-          + " of the application " + applicationId);
+          "Trying to fail an attempt of an absent application", applicationId, 
+          attemptId);
+      throw new ApplicationNotFoundException("Trying to fail an attempt " 
+          + attemptId + " of an absent application " + applicationId);
     }
 
     if (!checkAccess(callerUGI, application.getUser(),
@@ -388,14 +385,14 @@ public class ClientRMService extends AbstractService implements
     }
 
     EventHandler eventHandler = this.rmContext.getDispatcher().getEventHandler();
-    eventHandler.handle(new RMAppAttemptEvent(
-        application.getCurrentAppAttempt().getAppAttemptId(), 
-        RMAppAttemptEventType.FAIL));
+    eventHandler.handle(new RMAppAttemptEvent(attemptId,
+        RMAppAttemptEventType.FAIL, "Attempt failed by user."));
 
     RMAuditLogger.logSuccess(callerUGI.getShortUserName(), 
-        AuditConstants.FAIL_ATTEMPT_REQUEST, "ClientRMService" , applicationId);
-    FailCurrentAttemptResponse response = recordFactory
-        .newRecordInstance(FailCurrentAttemptResponse.class);
+        AuditConstants.FAIL_ATTEMPT_REQUEST, "ClientRMService", applicationId,
+        attemptId);
+    FailApplicationAttemptResponse response = recordFactory
+        .newRecordInstance(FailApplicationAttemptResponse.class);
     return response;
   }
   

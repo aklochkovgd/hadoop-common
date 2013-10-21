@@ -44,6 +44,7 @@ import org.apache.hadoop.mapreduce.v2.util.MRApps;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
@@ -279,9 +280,9 @@ public class ResourceMgrDelegate extends YarnClient {
   }
 
   @Override
-  public void failCurrentAttempt(ApplicationId appId) 
+  public void failApplicationAttempt(ApplicationAttemptId attemptId) 
       throws YarnException, IOException {
-    client.failCurrentAttempt(appId);
+    client.failApplicationAttempt(attemptId);
   }
 
   @Override
