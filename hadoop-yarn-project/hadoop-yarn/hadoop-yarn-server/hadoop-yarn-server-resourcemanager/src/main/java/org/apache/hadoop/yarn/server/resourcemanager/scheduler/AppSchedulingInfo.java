@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -35,6 +36,7 @@ import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
+import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
@@ -68,6 +70,11 @@ public class AppSchedulingInfo {
   
   /* Allocated by scheduler */
   boolean pending = true; // for app metrics
+
+  private final Map<ContainerId, ResourceUsage> runningContainersUsage = 
+      new HashMap<ContainerId, ResourceUsage>();
+  private long memorySeconds;
+  private long virtualCpuSeconds;
 
   public AppSchedulingInfo(ApplicationAttemptId appAttemptId,
       String user, Queue queue, ActiveUsersManager activeUsersManager) {
@@ -377,6 +384,27 @@ public class AppSchedulingInfo {
     LOG.debug("allocate: applicationId=" + applicationId + " container="
         + container.getId() + " host="
         + container.getNodeId().toString());
+    
+    ResourceUsage usage = new ResourceUsage(container.getResource(), 
+        System.currentTimeMillis());
+    runningContainersUsage.put(container.getId(), usage);
+  }
+
+  public synchronized void release(Container container) {
+    queue.getMetrics().releaseResources(getUser(), 1,  container.getResource());
+    
+    ResourceUsage usage = runningContainersUsage.get(container.getId());
+    if (usage != null) {
+      long timestamp = System.currentTimeMillis();
+      runningContainersUsage.remove(container.getId());
+      this.memorySeconds += usage.getMemoryMillis(timestamp) 
+          / DateUtils.MILLIS_PER_SECOND;
+      this.virtualCpuSeconds += usage.getVirtualCoresMillis(timestamp)
+          / DateUtils.MILLIS_PER_SECOND;
+    } else {
+      LOG.error("Can not record resources usage for the unknown container "
+          + container.getId());
+    }
   }
 
   synchronized public void stop(RMAppAttemptState rmAppAttemptFinalState) {
@@ -394,9 +422,71 @@ public class AppSchedulingInfo {
     
     // Clear requests themselves
     clearRequests();
+    
+    cleanupRunningContainers();
   }
 
   public synchronized void setQueue(Queue queue) {
     this.queue = queue;
   }
+
+  private void cleanupRunningContainers() {
+    if (!runningContainersUsage.isEmpty()) {
+      long timestamp = System.currentTimeMillis();
+      
+      for (Map.Entry<ContainerId, ResourceUsage> e : 
+          runningContainersUsage.entrySet()) {
+        ResourceUsage usage = e.getValue();
+        this.memorySeconds += usage.getMemoryMillis(timestamp) 
+            / DateUtils.MILLIS_PER_SECOND;
+        this.virtualCpuSeconds += usage.getVirtualCoresMillis(timestamp)
+            / DateUtils.MILLIS_PER_SECOND;
+      }
+
+      LOG.info("Application " + applicationAttemptId.getApplicationId()
+          + " has " + runningContainersUsage.size() + " containers running "
+          + "after the attempt " + applicationAttemptId + " has finished. "
+          + "Usage stats may be inaccurate.");
+      
+      runningContainersUsage.clear();
+    }
+  }
+  
+  void fillUsageStats(SchedulerAppReport report) {
+    long currentTimeMillis = System.currentTimeMillis();
+    long memorySeconds = this.memorySeconds;
+    long vcoreSeconds = this.virtualCpuSeconds;
+    for (ResourceUsage usage : this.runningContainersUsage.values()) {
+      memorySeconds += usage.getMemoryMillis(currentTimeMillis) / 
+          DateUtils.MILLIS_PER_SECOND;
+      vcoreSeconds += usage.getVirtualCoresMillis(currentTimeMillis) 
+          / DateUtils.MILLIS_PER_SECOND;
+    }
+    report.setMemorySeconds(memorySeconds);
+    report.setVcoreSeconds(vcoreSeconds);
+  }
+
+  private static class ResourceUsage {
+    private final Resource resource;
+    private final long startTimeMillis;
+    
+    ResourceUsage(Resource resource, long startTime) {
+      this.resource = resource;
+      this.startTimeMillis = startTime;
+    }
+    
+    long getMemoryMillis(long currentTimeMillis) {
+      return resource.getMemory() * getUsedMillis(currentTimeMillis);
+    }
+    
+    long getVirtualCoresMillis(long currentTimeMillis) {
+      return resource.getVirtualCores() * getUsedMillis(currentTimeMillis);
+    }
+
+    long getUsedMillis(long currentTimeMillis) {
+      return currentTimeMillis - startTimeMillis;
+    }
+
+  }
+
 }

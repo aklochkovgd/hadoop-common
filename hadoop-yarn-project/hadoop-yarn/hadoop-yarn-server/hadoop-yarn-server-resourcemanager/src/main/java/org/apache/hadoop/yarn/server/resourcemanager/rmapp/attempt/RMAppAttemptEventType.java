@@ -46,6 +46,7 @@ public enum RMAppAttemptEventType {
   // Source: Scheduler
   APP_REJECTED,
   APP_ACCEPTED,
+  APP_FINISHED,
   
   // Source: RMAttemptImpl.recover
   RECOVER

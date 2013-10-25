@@ -871,7 +871,7 @@ public class TestRMAppTransitions {
         any(List.class), any(List.class), any(List.class))).thenReturn(
       allocation);
     attempt.handle(new RMAppAttemptContainerAllocatedEvent(attempt
-      .getAppAttemptId(), container, -1));
+      .getAppAttemptId(), container));
     attempt
       .handle(new RMAppAttemptStoredEvent(attempt.getAppAttemptId(), null));
     attempt.handle(new RMAppAttemptEvent(attempt.getAppAttemptId(),

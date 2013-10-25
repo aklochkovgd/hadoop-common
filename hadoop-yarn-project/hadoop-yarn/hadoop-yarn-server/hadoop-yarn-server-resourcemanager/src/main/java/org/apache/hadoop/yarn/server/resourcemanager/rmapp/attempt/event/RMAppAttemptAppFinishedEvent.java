@@ -19,22 +19,27 @@
 package org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event;
 
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
-import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEventType;
 
-public class RMAppAttemptContainerFinishedEvent extends RMAppAttemptEvent {
+public class RMAppAttemptAppFinishedEvent extends RMAppAttemptEvent {
 
-  private final ContainerStatus containerStatus;
+  private final long memorySeconds;
+  private final long vcoreSeconds;
 
-  public RMAppAttemptContainerFinishedEvent(ApplicationAttemptId appAttemptId, 
-      ContainerStatus containerStatus) {
-    super(appAttemptId, RMAppAttemptEventType.CONTAINER_FINISHED);
-    this.containerStatus = containerStatus;
+  public RMAppAttemptAppFinishedEvent(ApplicationAttemptId appAttemptId,
+      long memorySeconds, long vcoreSeconds) {
+    super(appAttemptId, RMAppAttemptEventType.APP_FINISHED);
+    this.memorySeconds = memorySeconds;
+    this.vcoreSeconds = vcoreSeconds;
   }
 
-  public ContainerStatus getContainerStatus() {
-    return this.containerStatus;
+  public long getMemorySeconds() {
+    return memorySeconds;
+  }
+
+  public long getVcoreSeconds() {
+    return vcoreSeconds;
   }
 
 }

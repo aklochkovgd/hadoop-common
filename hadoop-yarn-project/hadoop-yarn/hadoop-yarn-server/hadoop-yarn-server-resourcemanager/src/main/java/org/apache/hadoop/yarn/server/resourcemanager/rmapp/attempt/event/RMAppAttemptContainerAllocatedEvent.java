@@ -28,8 +28,8 @@ public class RMAppAttemptContainerAllocatedEvent extends RMAppAttemptEvent {
   private final Container container;
 
   public RMAppAttemptContainerAllocatedEvent(ApplicationAttemptId appAttemptId, 
-      Container container, long timestamp) {
-    super(appAttemptId, RMAppAttemptEventType.CONTAINER_ALLOCATED, timestamp);
+      Container container) {
+    super(appAttemptId, RMAppAttemptEventType.CONTAINER_ALLOCATED);
     this.container = container;
   }
 

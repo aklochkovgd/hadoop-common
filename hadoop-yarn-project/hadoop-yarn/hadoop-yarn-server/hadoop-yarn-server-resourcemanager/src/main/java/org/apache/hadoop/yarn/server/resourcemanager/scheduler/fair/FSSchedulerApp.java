@@ -86,8 +86,7 @@ public class FSSchedulerApp extends SchedulerApplication {
         new RMContainerFinishedEvent(
             containerId,
             containerStatus, 
-            event,
-            System.currentTimeMillis())
+            event)
         );
     LOG.info("Completed container: " + rmContainer.getContainerId() + 
         " in state: " + rmContainer.getState() + " event:" + event);
@@ -100,9 +99,8 @@ public class FSSchedulerApp extends SchedulerApplication {
         getApplicationId(), containerId);
     
     // Update usage metrics 
-    Resource containerResource = rmContainer.getContainer().getResource();
-    queue.getMetrics().releaseResources(getUser(), 1, containerResource);
-    Resources.subtractFrom(currentConsumption, containerResource);
+    appSchedulingInfo.release(container);
+    Resources.subtractFrom(currentConsumption, container.getResource());
 
     // remove from preemption map if it is completed
     preemptionMap.remove(rmContainer);
@@ -287,8 +285,7 @@ public class FSSchedulerApp extends SchedulerApplication {
 
     // Inform the container
     rmContainer.handle(
-        new RMContainerEvent(container.getId(), RMContainerEventType.START,
-            System.currentTimeMillis()));
+        new RMContainerEvent(container.getId(), RMContainerEventType.START));
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("allocate: applicationAttemptId=" 

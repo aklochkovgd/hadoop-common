@@ -27,10 +27,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -39,7 +37,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import javax.crypto.SecretKey;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -78,8 +75,8 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppFailedAttemptEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppFinishedAttemptEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppRejectedEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptAppFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAcquiredEvent;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAllocatedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptLaunchFailedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptRegistrationEvent;
@@ -140,10 +137,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
     new HashSet<NodeId>();
   private final List<ContainerStatus> justFinishedContainers =
     new ArrayList<ContainerStatus>();
-  final Map<ContainerId, ResourceUsage> runningContainersUsage = 
-    new HashMap<ContainerId, ResourceUsage>();
-  private long memorySeconds;
-  private long virtualCpuSeconds;
   private Container masterContainer;
 
   private float progress = 0;
@@ -158,6 +151,11 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private FinalApplicationStatus finalStatus = null;
   private final StringBuilder diagnostics = new StringBuilder();
 
+  // Usage stats for a finished attempt. 
+  // Filled by Scheduler when app is finished and evicted from it's store.
+  private long finalMemorySeconds = 0;
+  private long finalVcoreSeconds = 0;
+  
   private Configuration conf;
   private String user;
   
@@ -276,8 +274,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       .addTransition(RMAppAttemptState.RUNNING, RMAppAttemptState.RUNNING,
           RMAppAttemptEventType.STATUS_UPDATE, new StatusUpdateTransition())
       .addTransition(RMAppAttemptState.RUNNING, RMAppAttemptState.RUNNING,
-          RMAppAttemptEventType.CONTAINER_ALLOCATED,
-          new ContainerAllocatedTransition())
+          RMAppAttemptEventType.CONTAINER_ALLOCATED)
       .addTransition(
                 RMAppAttemptState.RUNNING, RMAppAttemptState.RUNNING,
                 RMAppAttemptEventType.CONTAINER_ACQUIRED,
@@ -307,6 +304,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.STATUS_UPDATE,
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
               RMAppAttemptEventType.CONTAINER_FINISHED))
+      .addTransition(
+          RMAppAttemptState.FAILED, RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.APP_FINISHED,
+          new UsageMetricsUpdatedTransition())
 
       // Transitions from FINISHING State
       .addTransition(RMAppAttemptState.FINISHING,
@@ -333,6 +334,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
               RMAppAttemptEventType.CONTAINER_FINISHED,
               RMAppAttemptEventType.KILL))
+      .addTransition(
+          RMAppAttemptState.FINISHED, RMAppAttemptState.FINISHED,
+          RMAppAttemptEventType.APP_FINISHED,
+          new UsageMetricsUpdatedTransition())
 
       // Transitions from KILLED State
       .addTransition(
@@ -351,6 +356,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.KILL,
               RMAppAttemptEventType.STATUS_UPDATE))
+      .addTransition(
+          RMAppAttemptState.KILLED, RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.APP_FINISHED,
+          new UsageMetricsUpdatedTransition())
               
       // Transitions from RECOVERED State
       .addTransition(
@@ -654,6 +663,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           scheduler.getSchedulerAppInfo(this.getAppAttemptId());
       Collection<RMContainer> liveContainers;
       Collection<RMContainer> reservedContainers;
+      long memorySeconds;
+      long vcoreSeconds;
       if (schedApp != null) {
         liveContainers = schedApp.getLiveContainers();
         reservedContainers = schedApp.getReservedContainers();
@@ -669,24 +680,18 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
             Resources.addTo(reservedResources, rc.getContainer().getResource());
           }
         }
+        memorySeconds = schedApp.getMemorySeconds();
+        vcoreSeconds = schedApp.getVcoreSeconds();
+      } else {
+        memorySeconds = finalMemorySeconds;
+        vcoreSeconds = finalVcoreSeconds;
       }
 
-      long memorySeconds = this.memorySeconds;
-      long virtualCpuSeconds = this.virtualCpuSeconds;
-      long currentTimeMillis = System.currentTimeMillis();
-
-      for (ResourceUsage usage : this.runningContainersUsage.values()) {
-        memorySeconds += usage.getMemoryMillis(currentTimeMillis) / 
-            DateUtils.MILLIS_PER_SECOND;
-        virtualCpuSeconds += usage.getVirtualCoresMillis(currentTimeMillis) 
-            / DateUtils.MILLIS_PER_SECOND;
-      }
-      
       return BuilderUtils.newApplicationResourceUsageReport(
           numUsedContainers, numReservedContainers,
           currentConsumption, reservedResources,
           Resources.add(currentConsumption, reservedResources),
-          memorySeconds, virtualCpuSeconds);
+          memorySeconds, vcoreSeconds);
     } finally {
       this.readLock.unlock();
     }
@@ -729,29 +734,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
     rmContext.getAMRMTokenSecretManager().addPersistedPassword(this.amrmToken);
   }
 
-  private static class ResourceUsage {
-    private final Resource resource;
-    private final long startTimeMillis;
-    
-    ResourceUsage(Resource resource, long startTime) {
-      this.resource = resource;
-      this.startTimeMillis = startTime;
-    }
-    
-    long getMemoryMillis(long currentTimeMillis) {
-      return resource.getMemory() * getUsedMillis(currentTimeMillis);
-    }
-    
-    long getVirtualCoresMillis(long currentTimeMillis) {
-      return resource.getVirtualCores() * getUsedMillis(currentTimeMillis);
-    }
-
-    long getUsedMillis(long currentTimeMillis) {
-      return currentTimeMillis - startTimeMillis;
-    }
-
-  }
-  
   private static class BaseTransition implements
       SingleArcTransition<RMAppAttemptImpl, RMAppAttemptEvent> {
 
@@ -877,13 +859,12 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       // YarnScheduler#allocate will fetch it.
       assert amContainerAllocation.getContainers().size() != 0;
       // Set the masterContainer
-      Container container = amContainerAllocation.getContainers().get(0);
-      appAttempt.setMasterContainer(container);
+      appAttempt.setMasterContainer(amContainerAllocation.getContainers().get(
+                                                                           0));
       appAttempt.getSubmissionContext().setResource(
           appAttempt.getMasterContainer().getResource());
       RMStateStore store = appAttempt.rmContext.getStateStore();
       appAttempt.storeAttempt(store);
-      appAttempt.containerAllocated(container, event.getTimestamp());
     }
   }
   
@@ -949,8 +930,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         break;
       }
 
-      appAttempt.cleanupRunningContainers();
-      
       appAttempt.eventHandler.handle(appEvent);
       appAttempt.eventHandler.handle(new AppRemovedSchedulerEvent(appAttemptId,
         finalAttemptState));
@@ -1081,9 +1060,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           " exitCode: " + status.getExitStatus() +
           " due to: " +  status.getDiagnostics() + "." +
           "Failing this attempt.");
-      
-      appAttempt.containerFinished(status, event.getTimestamp());
-      
       // Tell the app, scheduler
       super.transition(appAttempt, finishEvent);
     }
@@ -1206,18 +1182,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
     }
   }
 
-  private static final class ContainerAllocatedTransition extends
-      BaseTransition {
-    @Override
-    public void transition(RMAppAttemptImpl appAttempt,
-        RMAppAttemptEvent event) {
-      RMAppAttemptContainerAllocatedEvent allocatedEvent
-          = (RMAppAttemptContainerAllocatedEvent) event;
-      Container container = allocatedEvent.getContainer();
-      appAttempt.containerAllocated(container, event.getTimestamp());
-    }
-  }
-
   private static final class ContainerAcquiredTransition extends
       BaseTransition {
     @Override
@@ -1242,8 +1206,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       ContainerStatus containerStatus =
           containerFinishedEvent.getContainerStatus();
 
-      appAttempt.containerFinished(containerStatus, event.getTimestamp());
-      
       // Is this container the AmContainer? If the finished container is same as
       // the AMContainer, AppAttempt fails
       if (appAttempt.masterContainer != null
@@ -1284,8 +1246,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       ContainerStatus containerStatus =
           containerFinishedEvent.getContainerStatus();
 
-      appAttempt.containerFinished(containerStatus, event.getTimestamp());
-      
       // Is this container the ApplicationMaster container?
       if (appAttempt.masterContainer.getId().equals(
           containerStatus.getContainerId())) {
@@ -1299,6 +1259,19 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       return RMAppAttemptState.FINISHING;
     }
   }
+  
+  private static final class UsageMetricsUpdatedTransition 
+      extends BaseTransition {
+
+    @Override
+    public void transition(RMAppAttemptImpl appAttempt, RMAppAttemptEvent event) {
+      RMAppAttemptAppFinishedEvent e = (RMAppAttemptAppFinishedEvent) event;
+      appAttempt.finalMemorySeconds = e.getMemorySeconds();
+      appAttempt.finalVcoreSeconds = e.getVcoreSeconds();
+      super.transition(appAttempt, event);
+    }
+    
+  }
 
   @Override
   public long getStartTime() {
@@ -1309,51 +1282,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       this.readLock.unlock();
     }
   }
-  
-  private void containerAllocated(Container container, long timestamp) {
-    ResourceUsage usage = new ResourceUsage(container.getResource(), 
-        timestamp);
-    runningContainersUsage.put(container.getId(), usage);
-  }
-  
-  private void containerFinished(ContainerStatus containerStatus, 
-      long timestamp) {
-    ResourceUsage usage = runningContainersUsage.get(
-        containerStatus.getContainerId());
-    if (usage != null) {
-      runningContainersUsage.remove(containerStatus.getContainerId());
-      this.memorySeconds += usage.getMemoryMillis(timestamp) 
-          / DateUtils.MILLIS_PER_SECOND;
-      this.virtualCpuSeconds += usage.getVirtualCoresMillis(timestamp)
-          / DateUtils.MILLIS_PER_SECOND;
-    } else {
-      LOG.error("Can not record resources usage for the unknown container "
-          + containerStatus.getContainerId());
-    }
-  }
-  
-  private void cleanupRunningContainers() {
-    if (!runningContainersUsage.isEmpty()) {
-      long timestamp = System.currentTimeMillis();
-      
-      for (Map.Entry<ContainerId, ResourceUsage> e : 
-          runningContainersUsage.entrySet()) {
-        ResourceUsage usage = e.getValue();
-        this.memorySeconds += usage.getMemoryMillis(timestamp) 
-            / DateUtils.MILLIS_PER_SECOND;
-        this.virtualCpuSeconds += usage.getVirtualCoresMillis(timestamp)
-            / DateUtils.MILLIS_PER_SECOND;
-      }
-      
-      LOG.info("Application " + applicationAttemptId.getApplicationId()
-          + " has " + runningContainersUsage.size() + " containers running "
-          + "after the attempt " + applicationAttemptId + " has finished. "
-          + "Usage stats may be inaccurate.");
-      
-      runningContainersUsage.clear();
-    }
-  }
-  
+
   private void launchAttempt(){
     // Send event to launch the AM Container
     eventHandler.handle(new AMLauncherEvent(AMLauncherEventType.LAUNCH, this));

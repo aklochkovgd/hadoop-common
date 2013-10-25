@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -39,7 +40,6 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,7 +53,6 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationResourceUsageReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
 import org.apache.hadoop.yarn.api.records.Container;
-import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.ContainerState;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
@@ -74,6 +73,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppFailedAttemptEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppRejectedEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptAppFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAcquiredEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAllocatedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerFinishedEvent;
@@ -84,6 +84,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAt
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptUnregistrationEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.ContainerAllocationExpirer;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.Allocation;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerAppReport;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.YarnScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppAddedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.SchedulerEvent;
@@ -93,7 +94,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.security.ClientToAMTokenSec
 import org.apache.hadoop.yarn.server.resourcemanager.security.NMTokenSecretManagerInRM;
 import org.apache.hadoop.yarn.server.resourcemanager.security.RMContainerTokenSecretManager;
 import org.apache.hadoop.yarn.server.utils.BuilderUtils;
-import org.apache.hadoop.yarn.util.resource.Resources;
 import org.apache.hadoop.yarn.server.webproxy.ProxyUriUtils;
 import org.apache.hadoop.yarn.webapp.util.WebAppUtils;
 import org.junit.After;
@@ -551,12 +551,8 @@ public class TestRMAppAttemptTransitions {
     testAppAttemptScheduledState();
   }
 
-  private Container allocateApplicationAttempt() {
-    return allocateApplicationAttempt(-1);
-  }
-  
   @SuppressWarnings("unchecked")
-  private Container allocateApplicationAttempt(long startTimeMillis) {
+  private Container allocateApplicationAttempt() {
     scheduleApplicationAttempt();
     
     // Mock the allocation of AM container 
@@ -580,7 +576,7 @@ public class TestRMAppAttemptTransitions {
     applicationAttempt.handle(
         new RMAppAttemptContainerAllocatedEvent(
             applicationAttempt.getAppAttemptId(), 
-            container, startTimeMillis));
+            container));
     
     assertEquals(RMAppAttemptState.ALLOCATED_SAVING, 
         applicationAttempt.getAppAttemptState());
@@ -646,8 +642,7 @@ public class TestRMAppAttemptTransitions {
     applicationAttempt.handle(new RMAppAttemptContainerAcquiredEvent(
         applicationAttempt.getAppAttemptId(), mock(Container.class)));
     applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
-        applicationAttempt.getAppAttemptId(), mock(ContainerStatus.class), -1));
-    
+        applicationAttempt.getAppAttemptId(), mock(ContainerStatus.class)));
     // complete AM
     String diagnostics = "Successful";
     FinalApplicationStatus finalStatus = FinalApplicationStatus.SUCCEEDED;
@@ -659,108 +654,46 @@ public class TestRMAppAttemptTransitions {
   }
   
   @Test
-  public void testUsageReport() {
-    long finishTime = System.currentTimeMillis();
-    long startTime = finishTime - 10 * DateUtils.MILLIS_PER_MINUTE;
+  public void testRunningAppUsageReport() {
+    // scheduler has info on running apps
+    SchedulerAppReport appReport = mock(SchedulerAppReport.class);
+    when(appReport.getMemorySeconds()).thenReturn(123456L);
+    when(appReport.getVcoreSeconds()).thenReturn(55544L);
+    when(scheduler.getSchedulerAppInfo(eq(applicationAttempt.getAppAttemptId())))
+        .thenReturn(appReport);
     
-    Container amContainer = allocateApplicationAttempt(startTime);
-    launchApplicationAttempt(amContainer);
-    runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
-    
-    ContainerId containerId = ContainerId.newInstance(
-        applicationAttempt.getAppAttemptId(), 7);
-    Resource resource = Resources.createResource(8, 3);
-    
-    Container containerMock = mock(Container.class);
-    when(containerMock.getId()).thenReturn(containerId);
-    when(containerMock.getResource()).thenReturn(resource);
-    
-    ContainerStatus containerStatusMock = mock(ContainerStatus.class);
-    when(containerStatusMock.getContainerId()).thenReturn(containerId);
-    
-    applicationAttempt.handle(new RMAppAttemptContainerAllocatedEvent(
-        applicationAttempt.getAppAttemptId(), containerMock, startTime));
-    applicationAttempt.handle(new RMAppAttemptContainerAcquiredEvent(
-        applicationAttempt.getAppAttemptId(), containerMock));
-    applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
-        applicationAttempt.getAppAttemptId(), containerStatusMock, finishTime));
-    applicationAttempt.handle(new RMAppAttemptUnregistrationEvent(
-        applicationAttempt.getAppAttemptId(), 
-        "", 
-        FinalApplicationStatus.SUCCEEDED, 
-        ""));
-    applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
-        applicationAttempt.getAppAttemptId(), 
-        ContainerStatus.newInstance(
-            amContainer.getId(), ContainerState.COMPLETE, "", 0), 
-        finishTime));
-    
+    // expect usage stats to come from the scheduler report
     ApplicationResourceUsageReport report = 
         applicationAttempt.getApplicationResourceUsageReport();
-    long usageSeconds = (finishTime - startTime) / DateUtils.MILLIS_PER_SECOND;
-    long expectedMemSeconds = 
-        amContainer.getResource().getMemory() * usageSeconds +
-        8 * usageSeconds;
-    long expectedCpuSeconds =
-        amContainer.getResource().getVirtualCores() * usageSeconds + 
-        3 * usageSeconds;
-    Assert.assertEquals(expectedMemSeconds, report.getMemorySeconds());
-    Assert.assertEquals(expectedCpuSeconds, report.getVcoreSeconds());
+    Assert.assertEquals(123456L, report.getMemorySeconds());
+    Assert.assertEquals(55544L, report.getVcoreSeconds());
   }
 
   @Test
-  // very similar to testUsageReport, but the AM container is stopped 
-  // before the worker container, and the final usage report should 
-  // not include that extra time the worker stayed alive. 
-  public void testLeaksInUsageReport() throws Exception {
-    long startTime = System.currentTimeMillis() - 10 * DateUtils.MILLIS_PER_MINUTE;
-    
-    Container amContainer = allocateApplicationAttempt(startTime);
+  public void testFinishedAppUsageReport() {
+    // start and finish the attempt
+    ApplicationAttemptId attemptId = applicationAttempt.getAppAttemptId();
+    Container amContainer = allocateApplicationAttempt();
     launchApplicationAttempt(amContainer);
     runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
-    
-    ContainerId containerId = ContainerId.newInstance(
-        applicationAttempt.getAppAttemptId(), 7);
-    Resource resource = Resources.createResource(8, 3);
-    
-    Container containerMock = mock(Container.class);
-    when(containerMock.getId()).thenReturn(containerId);
-    when(containerMock.getResource()).thenReturn(resource);
-    
-    ContainerStatus containerStatusMock = mock(ContainerStatus.class);
-    when(containerStatusMock.getContainerId()).thenReturn(containerId);
-    
-    applicationAttempt.handle(new RMAppAttemptContainerAllocatedEvent(
-        applicationAttempt.getAppAttemptId(), containerMock, startTime));
-    applicationAttempt.handle(new RMAppAttemptContainerAcquiredEvent(
-        applicationAttempt.getAppAttemptId(), containerMock));
-    applicationAttempt.handle(new RMAppAttemptUnregistrationEvent(
-        applicationAttempt.getAppAttemptId(), 
-        "", 
-        FinalApplicationStatus.SUCCEEDED, 
-        ""));
-    
-    // stop the AM container first, and then the worker container
-    applicationAttempt.handle(new RMAppAttemptEvent(
-        applicationAttempt.getAppAttemptId(), RMAppAttemptEventType.EXPIRE));
-   
-    Assert.assertTrue(((RMAppAttemptImpl) applicationAttempt)
-        .runningContainersUsage.isEmpty());
-    
-    ApplicationResourceUsageReport report1 = 
-        applicationAttempt.getApplicationResourceUsageReport();
-    
-    // final report shouldn't include this extra time of the worker usage
-    Thread.sleep(200);
-    
+    applicationAttempt.handle(new RMAppAttemptUnregistrationEvent(attemptId,
+        "", FinalApplicationStatus.SUCCEEDED, ""));
     applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
-        applicationAttempt.getAppAttemptId(), containerStatusMock, 
-        System.currentTimeMillis()));
+        applicationAttempt.getAppAttemptId(), 
+        ContainerStatus.newInstance(
+            amContainer.getId(), ContainerState.COMPLETE, "", 0)));
     
-    ApplicationResourceUsageReport report2 = 
+    // scheduler doesn't have info on finished apps
+    when(scheduler.getSchedulerAppInfo(eq(attemptId))).thenReturn(null);
+
+    // set usage stats
+    applicationAttempt.handle(new RMAppAttemptAppFinishedEvent(attemptId,
+        333222L, 1234L));
+    
+    ApplicationResourceUsageReport report = 
         applicationAttempt.getApplicationResourceUsageReport();
-    Assert.assertEquals(report1.getMemorySeconds(), report2.getMemorySeconds());
-    Assert.assertEquals(report1.getVcoreSeconds(), report2.getVcoreSeconds());
+    Assert.assertEquals(333222L, report.getMemorySeconds());
+    Assert.assertEquals(1234L, report.getVcoreSeconds());
   }
 
   @Test
@@ -859,7 +792,7 @@ public class TestRMAppAttemptTransitions {
         BuilderUtils.newContainerStatus(amContainer.getId(),
           ContainerState.COMPLETE, containerDiagMsg, exitCode);
     applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
-      applicationAttempt.getAppAttemptId(), cs, -1));
+      applicationAttempt.getAppAttemptId(), cs));
     assertEquals(RMAppAttemptState.FAILED,
       applicationAttempt.getAppAttemptState());
     verifyTokenCount(applicationAttempt.getAppAttemptId(), 1);
@@ -876,7 +809,7 @@ public class TestRMAppAttemptTransitions {
         ContainerState.COMPLETE, containerDiagMsg, exitCode);
     ApplicationAttemptId appAttemptId = applicationAttempt.getAppAttemptId();
     applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
-        appAttemptId, cs, -1));
+        appAttemptId, cs));
     assertEquals(RMAppAttemptState.FAILED,
         applicationAttempt.getAppAttemptState());
     assertEquals(0,applicationAttempt.getJustFinishedContainers().size());
@@ -1054,7 +987,7 @@ public class TestRMAppAttemptTransitions {
             BuilderUtils.newContainerStatus(
                 BuilderUtils.newContainerId(
                     applicationAttempt.getAppAttemptId(), 42),
-                ContainerState.COMPLETE, "", 0), -1));
+                ContainerState.COMPLETE, "", 0)));
     testAppAttemptFinishingState(amContainer, finalStatus, trackingUrl,
         diagnostics);
   }
@@ -1073,7 +1006,7 @@ public class TestRMAppAttemptTransitions {
         new RMAppAttemptContainerFinishedEvent(
             applicationAttempt.getAppAttemptId(),
             BuilderUtils.newContainerStatus(amContainer.getId(),
-                ContainerState.COMPLETE, "", 0), -1));
+                ContainerState.COMPLETE, "", 0)));
     testAppAttemptFinishedState(amContainer, finalStatus, trackingUrl,
         diagnostics, 0, false);
   }
