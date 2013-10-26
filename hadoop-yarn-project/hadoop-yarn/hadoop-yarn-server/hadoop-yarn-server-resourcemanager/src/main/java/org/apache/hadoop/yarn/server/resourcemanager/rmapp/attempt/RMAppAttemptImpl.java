@@ -922,8 +922,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         appAttempt.finalMemorySeconds = schedApp.getMemorySeconds();
         appAttempt.finalVcoreSeconds = schedApp.getVcoreSeconds();
       } else {
-        LOG.error("Attempt is not registered in Scheduler. No usage stats "
-            + "recorded");
+        LOG.error("Attempt " + appAttempt.getAppAttemptId() + " is not "
+            + "registered in Scheduler. No usage stats recorded");
       }
       
       appAttempt.eventHandler.handle(appEvent);
