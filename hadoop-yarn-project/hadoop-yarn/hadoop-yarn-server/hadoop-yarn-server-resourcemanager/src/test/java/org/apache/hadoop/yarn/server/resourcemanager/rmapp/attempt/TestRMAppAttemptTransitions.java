@@ -221,9 +221,6 @@ public class TestRMAppAttemptTransitions {
         ApplicationAttemptId.newInstance(applicationId, 0);
     
     scheduler = mock(YarnScheduler.class);
-    SchedulerAppReport appReport = mock(SchedulerAppReport.class);
-    when(scheduler.getSchedulerAppInfo(applicationAttemptId)).thenReturn(
-        appReport);
     
     masterService = mock(ApplicationMasterService.class);
     applicationMasterLauncher = mock(ApplicationMasterLauncher.class);

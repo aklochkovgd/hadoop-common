@@ -150,8 +150,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private FinalApplicationStatus finalStatus = null;
   private final StringBuilder diagnostics = new StringBuilder();
 
-  // Usage stats for a finished attempt. 
-  // Filled when the attempt is finished before evicting it from scheduler
+  // Filled when the attempt is finished before evicting it from Scheduler
   private long finalMemorySeconds = 0;
   private long finalVcoreSeconds = 0;
   
@@ -919,8 +918,13 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
       SchedulerAppReport schedApp = 
           appAttempt.scheduler.getSchedulerAppInfo(appAttempt.getAppAttemptId());
-      appAttempt.finalMemorySeconds = schedApp.getMemorySeconds();
-      appAttempt.finalVcoreSeconds = schedApp.getVcoreSeconds();
+      if (schedApp != null) {
+        appAttempt.finalMemorySeconds = schedApp.getMemorySeconds();
+        appAttempt.finalVcoreSeconds = schedApp.getVcoreSeconds();
+      } else {
+        LOG.error("Attempt is not registered in Scheduler. No usage stats "
+            + "recorded");
+      }
       
       appAttempt.eventHandler.handle(appEvent);
       appAttempt.eventHandler.handle(new AppRemovedSchedulerEvent(appAttemptId,
