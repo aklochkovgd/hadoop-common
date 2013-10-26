@@ -216,12 +216,7 @@ public class TestRMAppAttemptTransitions {
     RMStateStore store = mock(RMStateStore.class);
     ((RMContextImpl) rmContext).setStateStore(store);
     
-    ApplicationId applicationId = MockApps.newAppID(appId++);
-    ApplicationAttemptId applicationAttemptId =
-        ApplicationAttemptId.newInstance(applicationId, 0);
-    
-    scheduler = mock(YarnScheduler.class);
-    
+    scheduler = mock(YarnScheduler.class);    
     masterService = mock(ApplicationMasterService.class);
     applicationMasterLauncher = mock(ApplicationMasterLauncher.class);
     
@@ -239,6 +234,11 @@ public class TestRMAppAttemptTransitions {
 
     rmDispatcher.init(conf);
     rmDispatcher.start();
+    
+
+    ApplicationId applicationId = MockApps.newAppID(appId++);
+    ApplicationAttemptId applicationAttemptId =
+        ApplicationAttemptId.newInstance(applicationId, 0);
     
     final String user = MockApps.newUserName();
     final String queue = MockApps.newQueue();

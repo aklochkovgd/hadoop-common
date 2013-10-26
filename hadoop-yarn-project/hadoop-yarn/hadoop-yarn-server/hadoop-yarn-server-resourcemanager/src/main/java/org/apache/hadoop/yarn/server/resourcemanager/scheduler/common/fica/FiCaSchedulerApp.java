@@ -20,17 +20,13 @@ package org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.fica;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
-import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
@@ -52,8 +48,6 @@ import org.apache.hadoop.yarn.util.resource.Resources;
 @Unstable
 public class FiCaSchedulerApp extends SchedulerApplication {
 
-  private static final Log LOG = LogFactory.getLog(FiCaSchedulerApp.class);
-
   private final Set<ContainerId> containersToPreempt =
     new HashSet<ContainerId>();
 
@@ -72,38 +66,6 @@ public class FiCaSchedulerApp extends SchedulerApplication {
     
     containersToPreempt.remove(rmContainer.getContainerId());
     return true;
-  }
-
-  public synchronized boolean unreserve(FiCaSchedulerNode node, Priority priority) {
-    Map<NodeId, RMContainer> reservedContainers =
-      this.reservedContainers.get(priority);
-
-    if (reservedContainers != null) {
-      RMContainer reservedContainer = reservedContainers.remove(node.getNodeID());
-
-      // unreserve is now triggered in new scenarios (preemption)
-      // as a consequence reservedcontainer might be null, adding NP-checks
-      if (reservedContainer != null
-          && reservedContainer.getContainer() != null
-          && reservedContainer.getContainer().getResource() != null) {
-
-        if (reservedContainers.isEmpty()) {
-          this.reservedContainers.remove(priority);
-        }
-        // Reset the re-reservation count
-        resetReReservations(priority);
-
-        Resource resource = reservedContainer.getContainer().getResource();
-        Resources.subtractFrom(currentReservation, resource);
-
-        LOG.info("Application " + getApplicationId() + " unreserved "
-            + " on node " + node + ", currently has " + reservedContainers.size()
-            + " at priority " + priority + "; currentReservation "
-            + currentReservation);
-        return true;
-      }
-    }
-    return false;
   }
 
   public synchronized float getLocalityWaitFactor(

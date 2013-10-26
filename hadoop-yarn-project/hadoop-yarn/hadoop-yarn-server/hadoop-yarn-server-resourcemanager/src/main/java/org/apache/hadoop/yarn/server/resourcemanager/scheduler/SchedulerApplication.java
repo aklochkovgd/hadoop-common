@@ -70,20 +70,20 @@ public abstract class SchedulerApplication {
   
   private final Map<ContainerId, RMContainer> liveContainers =
       new HashMap<ContainerId, RMContainer>();
-  protected final Map<Priority, Map<NodeId, RMContainer>> reservedContainers = 
+  private final Map<Priority, Map<NodeId, RMContainer>> reservedContainers =
       new HashMap<Priority, Map<NodeId, RMContainer>>();
 
   private final Multiset<Priority> reReservations = HashMultiset.create();
   
-  protected final Resource currentReservation = Resource.newInstance(0, 0);
+  private final Resource currentReservation = Resource.newInstance(0, 0);
   private Resource resourceLimit = Resource.newInstance(0, 0);
-  protected final Resource currentConsumption = Resource.newInstance(0, 0);
+  private final Resource currentConsumption = Resource.newInstance(0, 0);
 
-  protected List<RMContainer> newlyAllocatedContainers = 
+  private List<RMContainer> newlyAllocatedContainers =
       new ArrayList<RMContainer>();
   
   private long memorySeconds;
-  private long virtualCpuSeconds;
+  private long vcoreSeconds;
 
   /**
    * Count how many times the application has been given an opportunity
@@ -131,6 +131,7 @@ public abstract class SchedulerApplication {
     if (isStopped) {
       return null;
     }
+    
     // Required sanity check - AM can call 'allocate' to update resource 
     // request without locking the scheduler, hence we need to check
     if (getTotalRequiredResources(priority) <= 0) {
@@ -190,7 +191,7 @@ public abstract class SchedulerApplication {
     long usedMillis = System.currentTimeMillis() - container.getStartTime();
     this.memorySeconds += resource.getMemory() * usedMillis 
         / DateUtils.MILLIS_PER_SECOND;
-    this.virtualCpuSeconds += resource.getVirtualCores() * usedMillis
+    this.vcoreSeconds += resource.getVirtualCores() * usedMillis
         / DateUtils.MILLIS_PER_SECOND;
     
     // Inform the container
@@ -445,6 +446,35 @@ public abstract class SchedulerApplication {
     return returnContainerList;
   }
 
+  public synchronized boolean unreserve(SchedulerNode node, Priority priority) {
+    Map<NodeId, RMContainer> reservedContainers =
+        this.reservedContainers.get(priority);
+    if (reservedContainers == null) {
+      return false;
+    }
+
+    RMContainer reservedContainer = reservedContainers.remove(node.getNodeID());
+    if (reservedContainers.isEmpty()) {
+      this.reservedContainers.remove(priority);
+    }
+
+    // Reset the re-reservation count
+    resetReReservations(priority);
+
+    if (reservedContainer != null
+        && reservedContainer.getContainer() != null
+        && reservedContainer.getContainer().getResource() != null) {
+      Resource resource = reservedContainer.getContainer().getResource();
+      Resources.subtractFrom(currentReservation, resource);
+    }
+
+    LOG.info("Application " + getApplicationId() + " unreserved " + " on node "
+        + node + ", currently has " + reservedContainers.size() + " at priority "
+        + priority + "; currentReservation " + currentReservation);
+
+    return true;
+  }
+
   public synchronized void updateBlacklist(
       List<String> blacklistAdditions, List<String> blacklistRemovals) {
     if (!isStopped) {
@@ -496,7 +526,7 @@ public abstract class SchedulerApplication {
   synchronized void fillUsageStats(SchedulerAppReport report) {
     long currentTimeMillis = System.currentTimeMillis();
     long memorySeconds = this.memorySeconds;
-    long vcoreSeconds = this.virtualCpuSeconds;
+    long vcoreSeconds = this.vcoreSeconds;
     for (RMContainer rmContainer : this.liveContainers.values()) {
       long usedMillis = currentTimeMillis - rmContainer.getStartTime();
       Resource resource = rmContainer.getContainer().getResource();

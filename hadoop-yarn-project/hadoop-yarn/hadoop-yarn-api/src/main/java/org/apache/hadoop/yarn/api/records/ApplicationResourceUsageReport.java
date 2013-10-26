@@ -35,7 +35,7 @@ public abstract class ApplicationResourceUsageReport {
   @Unstable
   public static ApplicationResourceUsageReport newInstance(
       int numUsedContainers, int numReservedContainers, Resource usedResources,
-      Resource reservedResources, Resource neededResources, long memorySeconds, 
+      Resource reservedResources, Resource neededResources, long memorySeconds,
       long vcoreSeconds) {
     ApplicationResourceUsageReport report =
         Records.newRecord(ApplicationResourceUsageReport.class);
@@ -116,15 +116,15 @@ public abstract class ApplicationResourceUsageReport {
   @Private
   @Unstable
   public abstract void setNeededResources(Resource needed_resources);
-  
+
   @Private
   @Unstable
   public abstract void setMemorySeconds(long memory_seconds);
-  
+
   @Public
   @Unstable
   public abstract long getMemorySeconds();
-  
+
   @Private
   @Unstable
   public abstract void setVcoreSeconds(long vcore_seconds);

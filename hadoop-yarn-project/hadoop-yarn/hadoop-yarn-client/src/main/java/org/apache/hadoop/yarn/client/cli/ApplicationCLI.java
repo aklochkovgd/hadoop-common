@@ -286,7 +286,7 @@ public class ApplicationCLI extends YarnCLI {
       appReportStr.print("\tAM Host : ");
       appReportStr.println(appReport.getHost());
       appReportStr.print("\tResources used : ");
-      
+
       ApplicationResourceUsageReport usageReport = appReport.getApplicationResourceUsageReport();
       appReportStr.print(usageReport.getMemorySeconds() + " MB-seconds, ");
       appReportStr.println(usageReport.getVcoreSeconds() + " vcore-seconds");
