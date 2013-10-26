@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -2433,5 +2434,56 @@ public class TestFairScheduler {
     createSchedulingRequest(1024, "default", "jerry");
     assertEquals(2, jerryQueue.getAppSchedulables().size());
     assertEquals(2, defaultQueue.getAppSchedulables().size());
+  }
+
+  @SuppressWarnings("resource")
+  @Test
+  public void testBlacklistNodes() throws Exception {
+    final int GB = 1024;
+    String host = "127.0.0.1";
+    RMNode node =
+        MockNodes.newNodeInfo(1, Resources.createResource(16 * GB, 16),
+            0, host);
+    NodeAddedSchedulerEvent nodeEvent = new NodeAddedSchedulerEvent(node);
+    NodeUpdateSchedulerEvent updateEvent = new NodeUpdateSchedulerEvent(node);
+    scheduler.handle(nodeEvent);
+
+    ApplicationAttemptId appAttemptId =
+        createSchedulingRequest(GB, "root.default", "user", 1);
+    FSSchedulerApp app = scheduler.applications.get(appAttemptId);
+
+    // Verify the blacklist can be updated independent of requesting containers
+    scheduler.allocate(appAttemptId, Collections.<ResourceRequest>emptyList(),
+        Collections.<ContainerId>emptyList(),
+        Collections.singletonList(host), null);
+    assertTrue(app.isBlacklisted(host));
+    scheduler.allocate(appAttemptId, Collections.<ResourceRequest>emptyList(),
+        Collections.<ContainerId>emptyList(), null,
+        Collections.singletonList(host));
+    assertFalse(scheduler.applications.get(appAttemptId).isBlacklisted(host));
+
+    List<ResourceRequest> update = Arrays.asList(
+        createResourceRequest(GB, node.getHostName(), 1, 0, true));
+
+    // Verify a container does not actually get placed on the blacklisted host
+    scheduler.allocate(appAttemptId, update,
+        Collections.<ContainerId>emptyList(),
+        Collections.singletonList(host), null);
+    assertTrue(app.isBlacklisted(host));
+    scheduler.update();
+    scheduler.handle(updateEvent);
+    assertEquals("Incorrect number of containers allocated", 0, app
+        .getLiveContainers().size());
+
+    // Verify a container gets placed on the empty blacklist
+    scheduler.allocate(appAttemptId, update,
+        Collections.<ContainerId>emptyList(), null,
+        Collections.singletonList(host));
+    assertFalse(app.isBlacklisted(host));
+    createSchedulingRequest(GB, "root.default", "user", 1);
+    scheduler.update();
+    scheduler.handle(updateEvent);
+    assertEquals("Incorrect number of containers allocated", 1, app
+        .getLiveContainers().size());
   }
 }
