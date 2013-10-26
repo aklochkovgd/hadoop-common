@@ -306,7 +306,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       .addTransition(
           RMAppAttemptState.FAILED, RMAppAttemptState.FAILED,
           RMAppAttemptEventType.APP_FINISHED,
-          new UsageMetricsUpdatedTransition())
+          new UpdateUsageMetricsTransition())
 
       // Transitions from FINISHING State
       .addTransition(RMAppAttemptState.FINISHING,
@@ -336,7 +336,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       .addTransition(
           RMAppAttemptState.FINISHED, RMAppAttemptState.FINISHED,
           RMAppAttemptEventType.APP_FINISHED,
-          new UsageMetricsUpdatedTransition())
+          new UpdateUsageMetricsTransition())
 
       // Transitions from KILLED State
       .addTransition(
@@ -358,7 +358,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       .addTransition(
           RMAppAttemptState.KILLED, RMAppAttemptState.KILLED,
           RMAppAttemptEventType.APP_FINISHED,
-          new UsageMetricsUpdatedTransition())
+          new UpdateUsageMetricsTransition())
               
       // Transitions from RECOVERED State
       .addTransition(
@@ -1259,7 +1259,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
     }
   }
 
-  private static final class UsageMetricsUpdatedTransition extends
+  private static final class UpdateUsageMetricsTransition extends
       BaseTransition {
 
     @Override
