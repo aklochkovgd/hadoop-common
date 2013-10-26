@@ -25,7 +25,7 @@ public class AppRemovedSchedulerEvent extends SchedulerEvent {
   private final ApplicationAttemptId applicationAttemptId;
 
   public AppRemovedSchedulerEvent(ApplicationAttemptId applicationAttemptId) {
-    super(SchedulerEventType.APP_FINISHED);
+    super(SchedulerEventType.APP_REMOVED);
     this.applicationAttemptId = applicationAttemptId;
   }
 
