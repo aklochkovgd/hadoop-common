@@ -42,7 +42,7 @@ public class SchedulerAppReport {
     this.live = app.getLiveContainers();
     this.reserved = app.getReservedContainers();
     this.pending = app.isPending();
-    app.appSchedulingInfo.fillUsageStats(this);
+    app.fillUsageStats(this);
   }
   
   /**

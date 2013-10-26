@@ -130,6 +130,7 @@ public class RMContainerImpl implements RMContainer {
   private final ReadLock readLock;
   private final WriteLock writeLock;
   private final ContainerId containerId;
+  private Long startTime;
   private final ApplicationAttemptId appAttemptId;
   private final NodeId nodeId;
   private final Container container;
@@ -160,6 +161,11 @@ public class RMContainerImpl implements RMContainer {
   @Override
   public ContainerId getContainerId() {
     return this.containerId;
+  }
+
+  @Override
+  public Long getStartTime() {
+    return this.startTime;
   }
 
   @Override
@@ -254,6 +260,7 @@ public class RMContainerImpl implements RMContainer {
 
     @Override
     public void transition(RMContainerImpl container, RMContainerEvent event) {
+      container.startTime = event.getTimestamp();
       container.eventHandler.handle(new RMAppAttemptContainerAllocatedEvent(
           container.appAttemptId, container.container));
     }

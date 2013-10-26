@@ -29,101 +29,98 @@ import java.util.Collections;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
+import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptState;
+import org.apache.hadoop.yarn.event.Dispatcher;
+import org.apache.hadoop.yarn.event.EventHandler;
+import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
+import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.internal.matchers.CapturingMatcher;
 import org.mockito.internal.matchers.GreaterOrEqual;
 
 /**
- * Test resource usage tracking in {@link AppSchedulingInfo}
+ * Test resource usage tracking in {@link SchedulerApplication}
  */
 public class TestResourceUsage {
 
-  private final static int MEMORY = 5000000;
-  private final static int CORES = 300;
+  private static final int MEMORY = 5000000;
+  private static final int CORES = 300;
   
-  private AppSchedulingInfo info;
-  private SchedulerNode node;
-  private ResourceRequest request;
+  private SchedulerApplication app;
+  private RMContainer rmContainer;
   private Container container;
+  private SchedulerNode node;
+  private ResourceRequest resourceRequest;
   
   @Before
   public void before() {
     ApplicationId appId = ApplicationId.newInstance(System.currentTimeMillis(), 0);
     ApplicationAttemptId attemptId = ApplicationAttemptId.newInstance(appId , 0);
-    
+    ContainerId containerId = ContainerId.newInstance(attemptId, 5);
+    NodeId nodeId = NodeId.newInstance("localhost", 666);
     ActiveUsersManager activeUsersManager = mock(ActiveUsersManager.class);
+    Resource resource = Resource.newInstance(MEMORY, CORES);
 
     QueueMetrics metrics = mock(QueueMetrics.class);
     Queue queue = mock(Queue.class);
     when(queue.getMetrics()).thenReturn(metrics);
 
+    container = Container.newInstance(containerId, nodeId, null, resource,
+        Priority.UNDEFINED, null);
     node = mock(SchedulerNode.class);
     when(node.getRackName()).thenReturn(ResourceRequest.ANY);
-
-    Resource resource = Resource.newInstance(MEMORY, CORES);
-    request = ResourceRequest.newInstance(Priority.UNDEFINED, 
+    
+    rmContainer = mock(RMContainer.class);
+    when(rmContainer.getApplicationAttemptId()).thenReturn(attemptId);
+    when(rmContainer.getContainer()).thenReturn(container);
+    when(rmContainer.getContainerId()).thenReturn(containerId);
+    
+    resourceRequest = ResourceRequest.newInstance(Priority.UNDEFINED,
         ResourceRequest.ANY, resource, 1);
     
-    container = mock(Container.class);
-    when(container.getNodeId()).thenReturn(NodeId.newInstance("localhost", 666));
-    when(container.getResource()).thenReturn(resource);
+    RMContext rmContext = mock(RMContext.class);
+    Dispatcher dispatcher = mock(Dispatcher.class);
+    EventHandler<?> eventHandler = mock(EventHandler.class);
+    when(dispatcher.getEventHandler()).thenReturn(eventHandler );
+    when(rmContext.getDispatcher()).thenReturn(dispatcher);
     
-    info = new AppSchedulingInfo(attemptId, "bob", queue, activeUsersManager);
+    app = new SchedulerApplication(attemptId, "bob", queue, activeUsersManager,
+        rmContext) {
+    };
+    app.updateResourceRequests(Collections.singletonList(resourceRequest));
   }
   
   @Test(timeout=2000)
   public void testUsageReporting() throws Exception {
-    testUsageReportingInternal(new Runnable() {
-
-      @Override
-      public void run() {
-        info.release(container);
-      }
-      
-    });
-  }
-  
-  @Test(timeout=2000)
-  public void testUsageLeaksPrevention() throws Exception {
-    testUsageReportingInternal(new Runnable() {
-
-      @Override
-      public void run() {
-        info.stop(RMAppAttemptState.FAILED);
-      }
-      
-    });
-  }
-  
-  private void testUsageReportingInternal(Runnable stopRunner) throws Exception {
     final long sleepMs = 200;
     
-    info.updateResourceRequests(Collections.singletonList(request));
-    info.allocate(NodeType.NODE_LOCAL, node, Priority.UNDEFINED, request, container);
+    long startTime = System.currentTimeMillis();
+    when(rmContainer.getStartTime()).thenReturn(startTime);
+    app.allocate(NodeType.NODE_LOCAL, node, Priority.UNDEFINED,
+        resourceRequest, container);
     
     Thread.sleep(sleepMs);
     
     // verify that an allocated container add up usage
     SchedulerAppReport report = mock(SchedulerAppReport.class);
-    info.fillUsageStats(report);
+    app.fillUsageStats(report);
     verify(report).setMemorySeconds(longThat(new GreaterOrEqual<Long>(
         (long)(sleepMs / 1000.0 * MEMORY))));
     verify(report).setVcoreSeconds(longThat(new GreaterOrEqual<Long>(
         (long)(sleepMs / 1000.0 * CORES))));
 
-    stopRunner.run();
+    app.containerCompleted(rmContainer, null, null);
 
     // capture current metrics
     CapturingMatcher<Long> memoryMatcher = new CapturingMatcher<Long>();
     CapturingMatcher<Long> vcoresMatcher = new CapturingMatcher<Long>();
     report = mock(SchedulerAppReport.class);
-    info.fillUsageStats(report);
+    app.fillUsageStats(report);
     verify(report).setMemorySeconds(longThat(memoryMatcher));
     verify(report).setVcoreSeconds(longThat(vcoresMatcher));
 
@@ -131,7 +128,7 @@ public class TestResourceUsage {
     
     // check that no tracking is performed
     report = mock(SchedulerAppReport.class);
-    info.fillUsageStats(report);
+    app.fillUsageStats(report);
     verify(report).setMemorySeconds(eq(memoryMatcher.getLastValue()));
     verify(report).setVcoreSeconds(eq(vcoresMatcher.getLastValue()));
   }

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -32,18 +33,22 @@ import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
+import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
+import org.apache.hadoop.yarn.server.resourcemanager.RMAuditLogger;
+import org.apache.hadoop.yarn.server.resourcemanager.RMAuditLogger.AuditConstants;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptState;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptAppFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainer;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerEventType;
+import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerImpl;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerReservedEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerStartedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNodeCleanContainerEvent;
 import org.apache.hadoop.yarn.util.resource.Resources;
 
@@ -63,7 +68,7 @@ public abstract class SchedulerApplication {
 
   protected final AppSchedulingInfo appSchedulingInfo;
   
-  protected final Map<ContainerId, RMContainer> liveContainers =
+  private final Map<ContainerId, RMContainer> liveContainers =
       new HashMap<ContainerId, RMContainer>();
   protected final Map<Priority, Map<NodeId, RMContainer>> reservedContainers = 
       new HashMap<Priority, Map<NodeId, RMContainer>>();
@@ -76,6 +81,9 @@ public abstract class SchedulerApplication {
 
   protected List<RMContainer> newlyAllocatedContainers = 
       new ArrayList<RMContainer>();
+  
+  private long memorySeconds;
+  private long virtualCpuSeconds;
 
   /**
    * Count how many times the application has been given an opportunity
@@ -111,6 +119,92 @@ public abstract class SchedulerApplication {
    */
   public synchronized Collection<RMContainer> getLiveContainers() {
     return new ArrayList<RMContainer>(liveContainers.values());
+  }
+  
+  protected synchronized RMContainer getLiveContainer(ContainerId containerId) {
+    return liveContainers.get(containerId);
+  }
+  
+  public synchronized RMContainer allocate(NodeType type,
+      SchedulerNode node, Priority priority, ResourceRequest request,
+      Container container) {
+    if (isStopped) {
+      return null;
+    }
+    // Required sanity check - AM can call 'allocate' to update resource 
+    // request without locking the scheduler, hence we need to check
+    if (getTotalRequiredResources(priority) <= 0) {
+      return null;
+    }
+    
+    // Create RMContainer
+    RMContainer rmContainer = new RMContainerImpl(container, 
+        getApplicationAttemptId(), node.getNodeID(), rmContext
+        .getDispatcher().getEventHandler(), rmContext
+        .getContainerAllocationExpirer());
+
+    // Add it to allContainers list.
+    newlyAllocatedContainers.add(rmContainer);
+    liveContainers.put(rmContainer.getContainerId(), rmContainer);   
+    
+    // Update consumption and track allocations
+    appSchedulingInfo.allocate(type, node, priority, request, container);
+    Resources.addTo(currentConsumption, container.getResource());
+
+    // Inform the container
+    rmContainer.handle(new RMContainerStartedEvent(container.getId(), System
+        .currentTimeMillis()));
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("allocate: applicationAttemptId=" 
+          + container.getId().getApplicationAttemptId() 
+          + " container=" + container.getId() + " host="
+          + container.getNodeId().getHost() + " type=" + type);
+    }
+    
+    RMAuditLogger.logSuccess(getUser(), 
+        AuditConstants.ALLOC_CONTAINER, "SchedulerApp", 
+        getApplicationId(), container.getId());
+    
+    return rmContainer;
+  }
+  
+  public synchronized boolean containerCompleted(RMContainer rmContainer,
+      ContainerStatus containerStatus, RMContainerEventType event) {
+    RMContainer container = liveContainers.remove(rmContainer.getContainerId());
+    
+    if (null == container) {
+      return false;
+    }
+    
+    Resource resource = container.getContainer().getResource();
+
+    RMAuditLogger.logSuccess(getUser(), 
+        AuditConstants.RELEASE_CONTAINER, "SchedulerApp", 
+        getApplicationId(), rmContainer.getContainerId());
+    
+    // Update usage metrics 
+    queue.getMetrics().releaseResources(getUser(), 1,  resource);
+    Resources.subtractFrom(currentConsumption, resource);
+    
+    long usedMillis = System.currentTimeMillis() - container.getStartTime();
+    this.memorySeconds += resource.getMemory() * usedMillis 
+        / DateUtils.MILLIS_PER_SECOND;
+    this.virtualCpuSeconds += resource.getVirtualCores() * usedMillis
+        / DateUtils.MILLIS_PER_SECOND;
+    
+    // Inform the container
+    rmContainer.handle(
+        new RMContainerFinishedEvent(
+            rmContainer.getContainerId(),
+            containerStatus, 
+            event)
+        );
+    
+    LOG.info("Completed container: " + rmContainer.getContainerId() + 
+        " in state: " + rmContainer.getState() + " event:" + event);
+
+    return true;
   }
   
   /**
@@ -203,20 +297,10 @@ public abstract class SchedulerApplication {
     }
   }
   
-  @SuppressWarnings("unchecked")
   public synchronized void stop(RMAppAttemptState rmAppAttemptFinalState) {
     // Cleanup all scheduling information
     isStopped = true;
     appSchedulingInfo.stop(rmAppAttemptFinalState);
-    
-    // Send resource usage metrics to the attempt to keep them stored 
-    // in RMContext after the app is finished and evicted from Scheduler 
-    SchedulerAppReport appReport = new SchedulerAppReport(this);
-    rmContext.getDispatcher().getEventHandler()
-        .handle(new RMAppAttemptAppFinishedEvent(
-            appSchedulingInfo.getApplicationAttemptId(), 
-            appReport.getMemorySeconds(), 
-            appReport.getVcoreSeconds()));
   }
 
   public synchronized boolean isStopped() {
@@ -407,6 +491,22 @@ public abstract class SchedulerApplication {
       long currentTimeMs) {
     lastScheduledContainer.put(priority, currentTimeMs);
     schedulingOpportunities.setCount(priority, 0);
+  }
+  
+  synchronized void fillUsageStats(SchedulerAppReport report) {
+    long currentTimeMillis = System.currentTimeMillis();
+    long memorySeconds = this.memorySeconds;
+    long vcoreSeconds = this.virtualCpuSeconds;
+    for (RMContainer rmContainer : this.liveContainers.values()) {
+      long usedMillis = currentTimeMillis - rmContainer.getStartTime();
+      Resource resource = rmContainer.getContainer().getResource();
+      memorySeconds += resource.getMemory() * usedMillis / 
+          DateUtils.MILLIS_PER_SECOND;
+      vcoreSeconds += resource.getVirtualCores() * usedMillis 
+          / DateUtils.MILLIS_PER_SECOND;
+    }
+    report.setMemorySeconds(memorySeconds);
+    report.setVcoreSeconds(vcoreSeconds);
   }
 
 }

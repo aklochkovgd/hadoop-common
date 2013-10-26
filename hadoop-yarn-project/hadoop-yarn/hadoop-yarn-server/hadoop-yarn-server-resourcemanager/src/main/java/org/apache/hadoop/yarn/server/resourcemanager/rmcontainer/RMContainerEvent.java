@@ -25,6 +25,12 @@ public class RMContainerEvent extends AbstractEvent<RMContainerEventType> {
 
   private final ContainerId containerId;
 
+  public RMContainerEvent(ContainerId containerId, RMContainerEventType type, 
+      long timestamp) {
+    super(type, timestamp);
+    this.containerId = containerId;
+  }
+
   public RMContainerEvent(ContainerId containerId, RMContainerEventType type) {
     super(type);
     this.containerId = containerId;

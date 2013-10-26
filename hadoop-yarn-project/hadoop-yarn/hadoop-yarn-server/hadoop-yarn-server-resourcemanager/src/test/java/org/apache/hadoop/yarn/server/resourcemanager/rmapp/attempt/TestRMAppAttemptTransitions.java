@@ -73,7 +73,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppFailedAttemptEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppRejectedEvent;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptAppFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAcquiredEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAllocatedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerFinishedEvent;
@@ -217,7 +216,15 @@ public class TestRMAppAttemptTransitions {
     RMStateStore store = mock(RMStateStore.class);
     ((RMContextImpl) rmContext).setStateStore(store);
     
+    ApplicationId applicationId = MockApps.newAppID(appId++);
+    ApplicationAttemptId applicationAttemptId =
+        ApplicationAttemptId.newInstance(applicationId, 0);
+    
     scheduler = mock(YarnScheduler.class);
+    SchedulerAppReport appReport = mock(SchedulerAppReport.class);
+    when(scheduler.getSchedulerAppInfo(applicationAttemptId)).thenReturn(
+        appReport);
+    
     masterService = mock(ApplicationMasterService.class);
     applicationMasterLauncher = mock(ApplicationMasterLauncher.class);
     
@@ -235,11 +242,6 @@ public class TestRMAppAttemptTransitions {
 
     rmDispatcher.init(conf);
     rmDispatcher.start();
-    
-
-    ApplicationId applicationId = MockApps.newAppID(appId++);
-    ApplicationAttemptId applicationAttemptId =
-        ApplicationAttemptId.newInstance(applicationId, 0);
     
     final String user = MockApps.newUserName();
     final String queue = MockApps.newQueue();
@@ -654,46 +656,40 @@ public class TestRMAppAttemptTransitions {
   }
   
   @Test
-  public void testRunningAppUsageReport() {
+  public void testUsageReport() {
     // scheduler has info on running apps
     SchedulerAppReport appReport = mock(SchedulerAppReport.class);
     when(appReport.getMemorySeconds()).thenReturn(123456L);
     when(appReport.getVcoreSeconds()).thenReturn(55544L);
-    when(scheduler.getSchedulerAppInfo(eq(applicationAttempt.getAppAttemptId())))
+    ApplicationAttemptId attemptId = applicationAttempt.getAppAttemptId();
+    when(scheduler.getSchedulerAppInfo(eq(attemptId)))
         .thenReturn(appReport);
+
+    // start and finish the attempt
+    Container amContainer = allocateApplicationAttempt();
+    launchApplicationAttempt(amContainer);
+    runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
+    applicationAttempt.handle(new RMAppAttemptUnregistrationEvent(attemptId,
+        "", FinalApplicationStatus.SUCCEEDED, ""));
     
     // expect usage stats to come from the scheduler report
     ApplicationResourceUsageReport report = 
         applicationAttempt.getApplicationResourceUsageReport();
     Assert.assertEquals(123456L, report.getMemorySeconds());
     Assert.assertEquals(55544L, report.getVcoreSeconds());
-  }
 
-  @Test
-  public void testFinishedAppUsageReport() {
-    // start and finish the attempt
-    ApplicationAttemptId attemptId = applicationAttempt.getAppAttemptId();
-    Container amContainer = allocateApplicationAttempt();
-    launchApplicationAttempt(amContainer);
-    runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
-    applicationAttempt.handle(new RMAppAttemptUnregistrationEvent(attemptId,
-        "", FinalApplicationStatus.SUCCEEDED, ""));
+    // finish app attempt and remove it from scheduler 
+    when(appReport.getMemorySeconds()).thenReturn(223456L);
+    when(appReport.getVcoreSeconds()).thenReturn(75544L);
     applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
-        applicationAttempt.getAppAttemptId(), 
+        attemptId, 
         ContainerStatus.newInstance(
             amContainer.getId(), ContainerState.COMPLETE, "", 0)));
-    
-    // scheduler doesn't have info on finished apps
     when(scheduler.getSchedulerAppInfo(eq(attemptId))).thenReturn(null);
 
-    // set usage stats
-    applicationAttempt.handle(new RMAppAttemptAppFinishedEvent(attemptId,
-        333222L, 1234L));
-    
-    ApplicationResourceUsageReport report = 
-        applicationAttempt.getApplicationResourceUsageReport();
-    Assert.assertEquals(333222L, report.getMemorySeconds());
-    Assert.assertEquals(1234L, report.getVcoreSeconds());
+    report = applicationAttempt.getApplicationResourceUsageReport();
+    Assert.assertEquals(223456, report.getMemorySeconds());
+    Assert.assertEquals(75544, report.getVcoreSeconds());
   }
 
   @Test

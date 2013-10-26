@@ -75,7 +75,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppFailedAttemptEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppFinishedAttemptEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppRejectedEvent;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptAppFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAcquiredEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptLaunchFailedEvent;
@@ -152,7 +151,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private final StringBuilder diagnostics = new StringBuilder();
 
   // Usage stats for a finished attempt. 
-  // Filled by Scheduler when app is finished and evicted from it's store.
+  // Filled when the attempt is finished before evicting it from scheduler
   private long finalMemorySeconds = 0;
   private long finalVcoreSeconds = 0;
   
@@ -304,10 +303,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.STATUS_UPDATE,
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
               RMAppAttemptEventType.CONTAINER_FINISHED))
-      .addTransition(
-          RMAppAttemptState.FAILED, RMAppAttemptState.FAILED,
-          RMAppAttemptEventType.APP_FINISHED,
-          new UsageMetricsUpdatedTransition())
 
       // Transitions from FINISHING State
       .addTransition(RMAppAttemptState.FINISHING,
@@ -334,10 +329,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
               RMAppAttemptEventType.CONTAINER_FINISHED,
               RMAppAttemptEventType.KILL))
-      .addTransition(
-          RMAppAttemptState.FINISHED, RMAppAttemptState.FINISHED,
-          RMAppAttemptEventType.APP_FINISHED,
-          new UsageMetricsUpdatedTransition())
 
       // Transitions from KILLED State
       .addTransition(
@@ -356,10 +347,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.KILL,
               RMAppAttemptEventType.STATUS_UPDATE))
-      .addTransition(
-          RMAppAttemptState.KILLED, RMAppAttemptState.KILLED,
-          RMAppAttemptEventType.APP_FINISHED,
-          new UsageMetricsUpdatedTransition())
               
       // Transitions from RECOVERED State
       .addTransition(
@@ -930,6 +917,11 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         break;
       }
 
+      SchedulerAppReport schedApp = 
+          appAttempt.scheduler.getSchedulerAppInfo(appAttempt.getAppAttemptId());
+      appAttempt.finalMemorySeconds = schedApp.getMemorySeconds();
+      appAttempt.finalVcoreSeconds = schedApp.getVcoreSeconds();
+      
       appAttempt.eventHandler.handle(appEvent);
       appAttempt.eventHandler.handle(new AppRemovedSchedulerEvent(appAttemptId,
         finalAttemptState));
@@ -1258,19 +1250,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       appAttempt.justFinishedContainers.add(containerStatus);
       return RMAppAttemptState.FINISHING;
     }
-  }
-  
-  private static final class UsageMetricsUpdatedTransition 
-      extends BaseTransition {
-
-    @Override
-    public void transition(RMAppAttemptImpl appAttempt, RMAppAttemptEvent event) {
-      RMAppAttemptAppFinishedEvent e = (RMAppAttemptAppFinishedEvent) event;
-      appAttempt.finalMemorySeconds = e.getMemorySeconds();
-      appAttempt.finalVcoreSeconds = e.getVcoreSeconds();
-      super.transition(appAttempt, event);
-    }
-    
   }
 
   @Override
