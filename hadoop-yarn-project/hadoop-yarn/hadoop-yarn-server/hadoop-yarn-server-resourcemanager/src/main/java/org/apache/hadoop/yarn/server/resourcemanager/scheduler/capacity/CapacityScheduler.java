@@ -70,6 +70,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerUtils;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.fica.FiCaSchedulerApp;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.fica.FiCaSchedulerNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppAddedSchedulerEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppFinishedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppRemovedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.ContainerExpiredSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.NodeAddedSchedulerEvent;
@@ -509,7 +510,12 @@ public class CapacityScheduler
     } else {
       queue.finishApplication(application, queue.getQueueName());
     }
-    
+  }
+
+  private synchronized void removeApplication(
+      ApplicationAttemptId applicationAttemptId) {
+    LOG.info("Application " + applicationAttemptId + " is removed.");
+
     // Remove from our data-structure
     applications.remove(applicationAttemptId);
   }
@@ -741,11 +747,17 @@ public class CapacityScheduler
           .getQueue(), appAddedEvent.getUser());
     }
     break;
+    case APP_FINISHED:
+    {
+      AppFinishedSchedulerEvent appFinishedEvent = (AppFinishedSchedulerEvent)event;
+      doneApplication(appFinishedEvent.getApplicationAttemptID(),
+          appFinishedEvent.getFinalAttemptState());
+    }
+    break;
     case APP_REMOVED:
     {
       AppRemovedSchedulerEvent appRemovedEvent = (AppRemovedSchedulerEvent)event;
-      doneApplication(appRemovedEvent.getApplicationAttemptID(),
-          appRemovedEvent.getFinalAttemptState());
+      removeApplication(appRemovedEvent.getApplicationAttemptID());
     }
     break;
     case CONTAINER_EXPIRED:

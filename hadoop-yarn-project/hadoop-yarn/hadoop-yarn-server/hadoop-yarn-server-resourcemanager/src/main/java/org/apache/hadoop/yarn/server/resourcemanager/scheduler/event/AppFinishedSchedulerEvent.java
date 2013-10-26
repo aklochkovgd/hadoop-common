@@ -18,18 +18,26 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.scheduler.event;
 
-public enum SchedulerEventType {
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptState;
 
-  // Source: Node
-  NODE_ADDED,
-  NODE_REMOVED,
-  NODE_UPDATE,
-  
-  // Source: App
-  APP_ADDED,
-  APP_FINISHED,
-  APP_REMOVED,
+public class AppFinishedSchedulerEvent extends SchedulerEvent {
 
-  // Source: ContainerAllocationExpirer
-  CONTAINER_EXPIRED
+  private final ApplicationAttemptId applicationAttemptId;
+  private final RMAppAttemptState finalAttemptState;
+
+  public AppFinishedSchedulerEvent(ApplicationAttemptId applicationAttemptId,
+      RMAppAttemptState finalAttemptState) {
+    super(SchedulerEventType.APP_FINISHED);
+    this.applicationAttemptId = applicationAttemptId;
+    this.finalAttemptState = finalAttemptState;
+  }
+
+  public ApplicationAttemptId getApplicationAttemptID() {
+    return this.applicationAttemptId;
+  }
+
+  public RMAppAttemptState getFinalAttemptState() {
+    return this.finalAttemptState;
+  }
 }

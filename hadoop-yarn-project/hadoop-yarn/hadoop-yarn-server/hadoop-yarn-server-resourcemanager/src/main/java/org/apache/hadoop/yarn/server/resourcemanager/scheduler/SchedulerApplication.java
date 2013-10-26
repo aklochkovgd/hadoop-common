@@ -42,6 +42,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.RMAuditLogger;
 import org.apache.hadoop.yarn.server.resourcemanager.RMAuditLogger.AuditConstants;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptState;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptAppFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainer;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerEventType;
@@ -297,10 +298,15 @@ public abstract class SchedulerApplication {
     }
   }
   
+  @SuppressWarnings("unchecked")
   public synchronized void stop(RMAppAttemptState rmAppAttemptFinalState) {
     // Cleanup all scheduling information
     isStopped = true;
     appSchedulingInfo.stop(rmAppAttemptFinalState);
+    
+    rmContext.getDispatcher().getEventHandler().handle(
+        new RMAppAttemptAppFinishedEvent(
+            appSchedulingInfo.getApplicationAttemptId())); 
   }
 
   public synchronized boolean isStopped() {

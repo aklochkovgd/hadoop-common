@@ -74,6 +74,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerAppRepor
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerNodeReport;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerUtils;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppAddedSchedulerEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppFinishedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppRemovedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.ContainerExpiredSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.NodeAddedSchedulerEvent;
@@ -694,7 +695,7 @@ public class FairScheduler implements ResourceScheduler {
     return queue;
   }
 
-  private synchronized void removeApplication(
+  private synchronized void doneApplication(
       ApplicationAttemptId applicationAttemptId,
       RMAppAttemptState rmAppAttemptFinalState) {
     LOG.info("Application " + applicationAttemptId + " is done." +
@@ -732,7 +733,11 @@ public class FairScheduler implements ResourceScheduler {
     FSLeafQueue queue = queueMgr.getLeafQueue(application.getQueue()
         .getQueueName(), false);
     queue.removeApp(application);
-
+  }
+  
+  private synchronized void removeApplication(
+        ApplicationAttemptId applicationAttemptId) {
+    LOG.info("Application " + applicationAttemptId + " is removed.");
     // Remove from our data-structure
     applications.remove(applicationAttemptId);
   }
@@ -1078,13 +1083,20 @@ public class FairScheduler implements ResourceScheduler {
       addApplication(appAddedEvent.getApplicationAttemptId(), queue,
           appAddedEvent.getUser());
       break;
+    case APP_FINISHED:
+      if (!(event instanceof AppFinishedSchedulerEvent)) {
+        throw new RuntimeException("Unexpected event type: " + event);
+      }
+      AppFinishedSchedulerEvent appFinishedEvent = (AppFinishedSchedulerEvent)event;
+      doneApplication(appFinishedEvent.getApplicationAttemptID(),
+          appFinishedEvent.getFinalAttemptState());
+      break;
     case APP_REMOVED:
       if (!(event instanceof AppRemovedSchedulerEvent)) {
         throw new RuntimeException("Unexpected event type: " + event);
       }
       AppRemovedSchedulerEvent appRemovedEvent = (AppRemovedSchedulerEvent)event;
-      removeApplication(appRemovedEvent.getApplicationAttemptID(),
-          appRemovedEvent.getFinalAttemptState());
+      removeApplication(appRemovedEvent.getApplicationAttemptID());
       break;
     case CONTAINER_EXPIRED:
       if (!(event instanceof ContainerExpiredSchedulerEvent)) {

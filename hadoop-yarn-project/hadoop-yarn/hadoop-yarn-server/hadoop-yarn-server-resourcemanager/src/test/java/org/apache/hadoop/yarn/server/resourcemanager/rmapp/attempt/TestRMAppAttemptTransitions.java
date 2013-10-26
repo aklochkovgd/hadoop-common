@@ -73,6 +73,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppFailedAttemptEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppRejectedEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptAppFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAcquiredEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAllocatedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerFinishedEvent;
@@ -682,6 +683,7 @@ public class TestRMAppAttemptTransitions {
         attemptId, 
         ContainerStatus.newInstance(
             amContainer.getId(), ContainerState.COMPLETE, "", 0)));
+    applicationAttempt.handle(new RMAppAttemptAppFinishedEvent(attemptId));
     when(scheduler.getSchedulerAppInfo(eq(attemptId))).thenReturn(null);
 
     report = applicationAttempt.getApplicationResourceUsageReport();

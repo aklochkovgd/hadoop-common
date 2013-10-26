@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,20 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.yarn.server.resourcemanager.scheduler.event;
+package org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event;
 
-public enum SchedulerEventType {
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEventType;
 
-  // Source: Node
-  NODE_ADDED,
-  NODE_REMOVED,
-  NODE_UPDATE,
+public class RMAppAttemptAppFinishedEvent extends RMAppAttemptEvent {
+
+  public RMAppAttemptAppFinishedEvent(ApplicationAttemptId appAttemptId) {
+    super(appAttemptId, RMAppAttemptEventType.APP_FINISHED);
+  }
   
-  // Source: App
-  APP_ADDED,
-  APP_FINISHED,
-  APP_REMOVED,
-
-  // Source: ContainerAllocationExpirer
-  CONTAINER_EXPIRED
 }

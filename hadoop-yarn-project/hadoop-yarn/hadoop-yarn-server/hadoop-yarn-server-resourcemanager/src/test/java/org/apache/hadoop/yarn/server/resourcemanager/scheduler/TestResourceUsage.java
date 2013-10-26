@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.scheduler;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.longThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +39,8 @@ import org.apache.hadoop.yarn.api.records.ResourceRequest;
 import org.apache.hadoop.yarn.event.Dispatcher;
 import org.apache.hadoop.yarn.event.EventHandler;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptState;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptAppFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainer;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +60,9 @@ public class TestResourceUsage {
   private Container container;
   private SchedulerNode node;
   private ResourceRequest resourceRequest;
+  
+  @SuppressWarnings("rawtypes")
+  private EventHandler eventHandler;
   
   @Before
   public void before() {
@@ -85,8 +92,8 @@ public class TestResourceUsage {
     
     RMContext rmContext = mock(RMContext.class);
     Dispatcher dispatcher = mock(Dispatcher.class);
-    EventHandler<?> eventHandler = mock(EventHandler.class);
-    when(dispatcher.getEventHandler()).thenReturn(eventHandler );
+    eventHandler = mock(EventHandler.class);
+    when(dispatcher.getEventHandler()).thenReturn(eventHandler);
     when(rmContext.getDispatcher()).thenReturn(dispatcher);
     
     app = new SchedulerApplication(attemptId, "bob", queue, activeUsersManager,
@@ -95,6 +102,7 @@ public class TestResourceUsage {
     app.updateResourceRequests(Collections.singletonList(resourceRequest));
   }
   
+  @SuppressWarnings("unchecked")
   @Test(timeout=2000)
   public void testUsageReporting() throws Exception {
     final long sleepMs = 200;
@@ -131,6 +139,10 @@ public class TestResourceUsage {
     app.fillUsageStats(report);
     verify(report).setMemorySeconds(eq(memoryMatcher.getLastValue()));
     verify(report).setVcoreSeconds(eq(vcoresMatcher.getLastValue()));
+    
+    reset(eventHandler);
+    app.stop(RMAppAttemptState.FINISHED);
+    verify(eventHandler).handle(any(RMAppAttemptAppFinishedEvent.class));
   }
 
 }

@@ -88,6 +88,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.Allocation;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerAppReport;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.YarnScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppAddedSchedulerEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppFinishedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppRemovedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.security.ClientToAMTokenSecretManagerInRM;
 import org.apache.hadoop.yarn.server.utils.BuilderUtils;
@@ -302,6 +303,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.STATUS_UPDATE,
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
               RMAppAttemptEventType.CONTAINER_FINISHED))
+      .addTransition(
+          RMAppAttemptState.FAILED, RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.APP_FINISHED,
+          new UsageMetricsUpdatedTransition())
 
       // Transitions from FINISHING State
       .addTransition(RMAppAttemptState.FINISHING,
@@ -328,6 +333,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
               RMAppAttemptEventType.CONTAINER_FINISHED,
               RMAppAttemptEventType.KILL))
+      .addTransition(
+          RMAppAttemptState.FINISHED, RMAppAttemptState.FINISHED,
+          RMAppAttemptEventType.APP_FINISHED,
+          new UsageMetricsUpdatedTransition())
 
       // Transitions from KILLED State
       .addTransition(
@@ -346,6 +355,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.KILL,
               RMAppAttemptEventType.STATUS_UPDATE))
+      .addTransition(
+          RMAppAttemptState.KILLED, RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.APP_FINISHED,
+          new UsageMetricsUpdatedTransition())
               
       // Transitions from RECOVERED State
       .addTransition(
@@ -916,18 +929,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         break;
       }
 
-      SchedulerAppReport schedApp = 
-          appAttempt.scheduler.getSchedulerAppInfo(appAttempt.getAppAttemptId());
-      if (schedApp != null) {
-        appAttempt.finalMemorySeconds = schedApp.getMemorySeconds();
-        appAttempt.finalVcoreSeconds = schedApp.getVcoreSeconds();
-      } else {
-        LOG.error("Attempt " + appAttempt.getAppAttemptId() + " is not "
-            + "registered in Scheduler. No usage stats recorded");
-      }
-      
       appAttempt.eventHandler.handle(appEvent);
-      appAttempt.eventHandler.handle(new AppRemovedSchedulerEvent(appAttemptId,
+      appAttempt.eventHandler.handle(new AppFinishedSchedulerEvent(appAttemptId,
         finalAttemptState));
 
       appAttempt.removeCredentials(appAttempt);
@@ -1254,6 +1257,30 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       appAttempt.justFinishedContainers.add(containerStatus);
       return RMAppAttemptState.FINISHING;
     }
+  }
+
+  private static final class UsageMetricsUpdatedTransition extends
+      BaseTransition {
+
+    @Override
+    public void transition(RMAppAttemptImpl appAttempt, RMAppAttemptEvent event) {
+      ApplicationAttemptId appAttemptId = appAttempt.getAppAttemptId();
+      SchedulerAppReport schedApp = 
+          appAttempt.scheduler.getSchedulerAppInfo(appAttemptId);
+      if (schedApp != null) {
+        appAttempt.finalMemorySeconds = schedApp.getMemorySeconds();
+        appAttempt.finalVcoreSeconds = schedApp.getVcoreSeconds();
+      } else {
+        LOG.error("Attempt " + appAttemptId + " is not "
+            + "registered in Scheduler. No usage stats recorded");
+      }
+      
+      // let the scheduler evict the attempt
+      appAttempt.eventHandler.handle(new AppRemovedSchedulerEvent(appAttemptId));
+      
+      super.transition(appAttempt, event);
+    }
+
   }
 
   @Override

@@ -78,6 +78,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.fica.FiCaS
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.fica.FiCaSchedulerNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.fica.FiCaSchedulerUtils;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppAddedSchedulerEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppFinishedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppRemovedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.ContainerExpiredSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.NodeAddedSchedulerEvent;
@@ -382,7 +383,10 @@ public class FifoScheduler implements ResourceScheduler, Configurable {
 
     // Clean up pending requests, metrics etc.
     application.stop(rmAppAttemptFinalState);
+  }
 
+  private synchronized void removeApplication(
+      ApplicationAttemptId applicationAttemptId) {
     // Remove the application
     applications.remove(applicationAttemptId);
   }
@@ -693,18 +697,25 @@ public class FifoScheduler implements ResourceScheduler, Configurable {
           .getUser());
     }
     break;
-    case APP_REMOVED:
+    case APP_FINISHED:
     {
-      AppRemovedSchedulerEvent appRemovedEvent = (AppRemovedSchedulerEvent)event;
+      AppFinishedSchedulerEvent appFinishedEvent = (AppFinishedSchedulerEvent)event;
       try {
-        doneApplication(appRemovedEvent.getApplicationAttemptID(),
-            appRemovedEvent.getFinalAttemptState());
+        doneApplication(appFinishedEvent.getApplicationAttemptID(),
+            appFinishedEvent.getFinalAttemptState());
       } catch(IOException ie) {
-        LOG.error("Unable to remove application "
-            + appRemovedEvent.getApplicationAttemptID(), ie);
+        LOG.error("Unable to finish application "
+            + appFinishedEvent.getApplicationAttemptID(), ie);
       }
     }
     break;
+    case APP_REMOVED:
+      if (!(event instanceof AppRemovedSchedulerEvent)) {
+        throw new RuntimeException("Unexpected event type: " + event);
+      }
+      AppRemovedSchedulerEvent appRemovedEvent = (AppRemovedSchedulerEvent)event;
+      removeApplication(appRemovedEvent.getApplicationAttemptID());
+      break;
     case CONTAINER_EXPIRED:
     {
       ContainerExpiredSchedulerEvent containerExpiredEvent = 
