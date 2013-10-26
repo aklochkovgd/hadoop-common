@@ -178,22 +178,6 @@ public abstract class SchedulerApplication {
       return false;
     }
     
-    Resource resource = container.getContainer().getResource();
-
-    RMAuditLogger.logSuccess(getUser(), 
-        AuditConstants.RELEASE_CONTAINER, "SchedulerApp", 
-        getApplicationId(), rmContainer.getContainerId());
-    
-    // Update usage metrics 
-    queue.getMetrics().releaseResources(getUser(), 1,  resource);
-    Resources.subtractFrom(currentConsumption, resource);
-    
-    long usedMillis = System.currentTimeMillis() - container.getStartTime();
-    this.memorySeconds += resource.getMemory() * usedMillis 
-        / DateUtils.MILLIS_PER_SECOND;
-    this.vcoreSeconds += resource.getVirtualCores() * usedMillis
-        / DateUtils.MILLIS_PER_SECOND;
-    
     // Inform the container
     rmContainer.handle(
         new RMContainerFinishedEvent(
@@ -205,6 +189,21 @@ public abstract class SchedulerApplication {
     LOG.info("Completed container: " + rmContainer.getContainerId() + 
         " in state: " + rmContainer.getState() + " event:" + event);
 
+    RMAuditLogger.logSuccess(getUser(), 
+        AuditConstants.RELEASE_CONTAINER, "SchedulerApp", 
+        getApplicationId(), rmContainer.getContainerId());
+    
+    // Update usage metrics 
+    Resource containerResource = container.getContainer().getResource();
+    queue.getMetrics().releaseResources(getUser(), 1, containerResource);
+    Resources.subtractFrom(currentConsumption, containerResource);
+    
+    long usedMillis = System.currentTimeMillis() - container.getStartTime();
+    this.memorySeconds += containerResource.getMemory() * usedMillis 
+        / DateUtils.MILLIS_PER_SECOND;
+    this.vcoreSeconds += containerResource.getVirtualCores() * usedMillis
+        / DateUtils.MILLIS_PER_SECOND;
+    
     return true;
   }
   
