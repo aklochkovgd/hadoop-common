@@ -43,11 +43,12 @@ import org.apache.hadoop.mapreduce.MapReduceTestUtil;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.task.MapContextImpl;
+import org.apache.hadoop.test.PathUtils;
 import org.junit.Test;
 
-public class TestCombineSequenceFileInputFormat {
+public class TestMRCombineSequenceFileInputFormat {
   private static final Log LOG =
-    LogFactory.getLog(TestCombineSequenceFileInputFormat.class);
+    LogFactory.getLog(TestMRCombineSequenceFileInputFormat.class);
   private static Configuration conf = new Configuration();
   private static FileSystem localFs = null;
 
@@ -60,9 +61,8 @@ public class TestCombineSequenceFileInputFormat {
     }
   }
 
-  private static Path workDir =
-    new Path(new Path(System.getProperty("test.build.data", "."), "data"),
-             "TestCombineSequenceFileInputFormat");
+  private static Path workDir = PathUtils.getTestPath(
+      TestMRCombineSequenceFileInputFormat.class);
 
   @Test(timeout=10000)
   public void testFormat() throws IOException, InterruptedException {

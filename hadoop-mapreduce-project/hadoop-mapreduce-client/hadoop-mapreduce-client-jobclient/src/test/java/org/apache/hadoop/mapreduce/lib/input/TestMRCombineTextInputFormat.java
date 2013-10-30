@@ -49,12 +49,13 @@ import org.apache.hadoop.mapreduce.MapReduceTestUtil;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.task.MapContextImpl;
+import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.junit.Test;
 
-public class TestCombineTextInputFormat {
+public class TestMRCombineTextInputFormat {
   private static final Log LOG =
-    LogFactory.getLog(TestCombineTextInputFormat.class);
+    LogFactory.getLog(TestMRCombineTextInputFormat.class);
 
   private static Configuration defaultConf = new Configuration();
   private static FileSystem localFs = null;
@@ -68,9 +69,8 @@ public class TestCombineTextInputFormat {
     }
   }
 
-  private static Path workDir =
-    new Path(new Path(System.getProperty("test.build.data", "."), "data"),
-             "TestCombineTextInputFormat");
+  private static Path workDir = PathUtils.getTestPath(
+      TestMRCombineTextInputFormat.class);
 
   @Test(timeout=10000)
   public void testFormat() throws Exception {

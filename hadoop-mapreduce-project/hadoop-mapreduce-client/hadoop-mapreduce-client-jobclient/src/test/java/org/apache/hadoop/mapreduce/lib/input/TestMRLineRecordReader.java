@@ -35,9 +35,9 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.test.PathUtils;
 import org.junit.Test;
 
-public class TestLineRecordReader extends TestCase {
+public class TestMRLineRecordReader extends TestCase {
 
-  private static Path workDir = PathUtils.getTestPath(TestLineRecordReader.class);
+  private static Path workDir = PathUtils.getTestPath(TestMRLineRecordReader.class);
   private static Path inputDir = new Path(workDir, "input");
   private static Path outputDir = new Path(workDir, "output");
 
@@ -79,7 +79,7 @@ public class TestLineRecordReader extends TestCase {
   public void createAndRunJob(Configuration conf) throws IOException,
       InterruptedException, ClassNotFoundException {
     Job job = Job.getInstance(conf);
-    job.setJarByClass(TestLineRecordReader.class);
+    job.setJarByClass(TestMRLineRecordReader.class);
     job.setMapperClass(Mapper.class);
     job.setReducerClass(Reducer.class);
     FileInputFormat.addInputPath(job, inputDir);

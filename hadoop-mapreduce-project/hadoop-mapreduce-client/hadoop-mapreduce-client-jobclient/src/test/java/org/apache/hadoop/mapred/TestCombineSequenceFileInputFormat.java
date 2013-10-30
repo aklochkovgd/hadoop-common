@@ -35,6 +35,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapred.lib.CombineSequenceFileInputFormat;
+import org.apache.hadoop.test.PathUtils;
 import org.junit.Test;
 
 public class TestCombineSequenceFileInputFormat {
@@ -53,10 +54,8 @@ public class TestCombineSequenceFileInputFormat {
     }
   }
 
-  @SuppressWarnings("deprecation")
-  private static Path workDir =
-    new Path(new Path(System.getProperty("test.build.data", "/tmp")),
-             "TestCombineSequenceFileInputFormat").makeQualified(localFs);
+  private static Path workDir = PathUtils.getTestPath(
+      TestCombineSequenceFileInputFormat.class);
 
   @Test(timeout=10000)
   public void testFormat() throws Exception {

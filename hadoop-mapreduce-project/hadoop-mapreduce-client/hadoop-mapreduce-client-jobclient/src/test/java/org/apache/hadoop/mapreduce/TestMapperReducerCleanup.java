@@ -38,7 +38,9 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
+import org.apache.hadoop.test.PathUtils;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestMapperReducerCleanup {
@@ -171,6 +173,12 @@ public class TestMapperReducerCleanup {
   
   }
 
+  @BeforeClass
+  public static void before() throws Exception {
+    FileSystem localFs = FileSystem.getLocal(new Configuration());
+    localFs.mkdirs(INPUT_PATH);
+    localFs.mkdirs(OUTPUT_PATH);
+  }
 
   /**
    * Create a single input file in the input directory.
@@ -196,41 +204,24 @@ public class TestMapperReducerCleanup {
     w.close();
   }
 
-  private final String INPUT_DIR = "input";
-  private final String OUTPUT_DIR = "output";
-
-  private Path getInputPath() {
-    String dataDir = System.getProperty("test.build.data");
-    if (null == dataDir) {
-      return new Path(INPUT_DIR);
-    } else {
-      return new Path(new Path(dataDir), INPUT_DIR);
-    }
-  }
-
-  private Path getOutputPath() {
-    String dataDir = System.getProperty("test.build.data");
-    if (null == dataDir) {
-      return new Path(OUTPUT_DIR);
-    } else {
-      return new Path(new Path(dataDir), OUTPUT_DIR);
-    }
-  }
+  private final static Path INPUT_PATH = new Path(
+      PathUtils.getTestPath(TestMapperReducerCleanup.class), "input");
+  private final static Path OUTPUT_PATH = new Path(
+      PathUtils.getTestPath(TestMapperReducerCleanup.class), "output");
 
   private Path createInput() throws IOException {
     Configuration conf = new Configuration();
     FileSystem fs = FileSystem.getLocal(conf);
-    Path inputPath = getInputPath();
 
     // Clear the input directory if it exists, first.
-    if (fs.exists(inputPath)) {
-      fs.delete(inputPath, true);
+    if (fs.exists(INPUT_PATH)) {
+      fs.delete(INPUT_PATH, true);
     }
 
     // Create an input file
-    createInputFile(inputPath, 0, 10);
+    createInputFile(INPUT_PATH, 0, 10);
 
-    return inputPath;
+    return INPUT_PATH;
   }
 
   @Test
@@ -239,22 +230,19 @@ public class TestMapperReducerCleanup {
     
     Job job = Job.getInstance();
 
-    Path inputPath = createInput();
-    Path outputPath = getOutputPath();
-
     Configuration conf = new Configuration();
     FileSystem fs = FileSystem.getLocal(conf);
 
-    if (fs.exists(outputPath)) {
-      fs.delete(outputPath, true);
+    if (fs.exists(OUTPUT_PATH)) {
+      fs.delete(OUTPUT_PATH, true);
     }
 
     job.setMapperClass(FailingMapper.class);
     job.setInputFormatClass(TrackingTextInputFormat.class);
     job.setOutputFormatClass(TrackingTextOutputFormat.class);
     job.setNumReduceTasks(0);
-    FileInputFormat.addInputPath(job, inputPath);
-    FileOutputFormat.setOutputPath(job, outputPath);
+    FileInputFormat.addInputPath(job, INPUT_PATH);
+    FileOutputFormat.setOutputPath(job, OUTPUT_PATH);
 
     job.waitForCompletion(true);
 
@@ -270,13 +258,12 @@ public class TestMapperReducerCleanup {
     Job job = Job.getInstance();
 
     Path inputPath = createInput();
-    Path outputPath = getOutputPath();
 
     Configuration conf = new Configuration();
     FileSystem fs = FileSystem.getLocal(conf);
 
-    if (fs.exists(outputPath)) {
-      fs.delete(outputPath, true);
+    if (fs.exists(OUTPUT_PATH)) {
+      fs.delete(OUTPUT_PATH, true);
     }
 
     job.setMapperClass(TrackingTokenizerMapper.class);
@@ -287,7 +274,7 @@ public class TestMapperReducerCleanup {
     job.setOutputFormatClass(TrackingTextOutputFormat.class);
     job.setNumReduceTasks(1);
     FileInputFormat.addInputPath(job, inputPath);
-    FileOutputFormat.setOutputPath(job, outputPath);
+    FileOutputFormat.setOutputPath(job, OUTPUT_PATH);
 
     job.waitForCompletion(true);
 
@@ -303,14 +290,11 @@ public class TestMapperReducerCleanup {
     
     Job job = Job.getInstance();
 
-    Path inputPath = createInput();
-    Path outputPath = getOutputPath();
-
     Configuration conf = new Configuration();
     FileSystem fs = FileSystem.getLocal(conf);
 
-    if (fs.exists(outputPath)) {
-      fs.delete(outputPath, true);
+    if (fs.exists(OUTPUT_PATH)) {
+      fs.delete(OUTPUT_PATH, true);
     }
 
     job.setMapperClass(TrackingTokenizerMapper.class);
@@ -320,8 +304,8 @@ public class TestMapperReducerCleanup {
     job.setInputFormatClass(TrackingTextInputFormat.class);
     job.setOutputFormatClass(TrackingTextOutputFormat.class);
     job.setNumReduceTasks(1);
-    FileInputFormat.addInputPath(job, inputPath);
-    FileOutputFormat.setOutputPath(job, outputPath);
+    FileInputFormat.addInputPath(job, INPUT_PATH);
+    FileOutputFormat.setOutputPath(job, OUTPUT_PATH);
 
     job.waitForCompletion(true);
 

@@ -60,7 +60,7 @@ import org.junit.Test;
 
 import com.google.common.collect.HashMultiset;
 
-public class TestCombineFileInputFormat extends TestCase {
+public class TestMRCombineFileInputFormat extends TestCase {
 
   private static final String rack1[] = new String[] {
     "/r1"
@@ -1356,10 +1356,10 @@ public class TestCombineFileInputFormat extends TestCase {
 
     // if there are some parameters specified, then use those paths
     if (args.length != 0) {
-      TestCombineFileInputFormat test = new TestCombineFileInputFormat();
+      TestMRCombineFileInputFormat test = new TestMRCombineFileInputFormat();
       test.splitRealFiles(args);
     } else {
-      TestCombineFileInputFormat test = new TestCombineFileInputFormat();
+      TestMRCombineFileInputFormat test = new TestMRCombineFileInputFormat();
       test.testSplitPlacement();
     }
   }

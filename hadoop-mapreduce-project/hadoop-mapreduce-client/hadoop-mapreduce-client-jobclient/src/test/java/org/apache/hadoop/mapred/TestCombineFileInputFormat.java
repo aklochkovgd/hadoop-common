@@ -49,7 +49,7 @@ public class TestCombineFileInputFormat {
     }
   }
   private static Path workDir =
-    PathUtils.getTestPath(TestCombineFileInputFormat.class).makeQualified(localFs);
+      PathUtils.getTestPath(TestCombineFileInputFormat.class);
 
   private static void writeFile(FileSystem fs, Path name, 
                                 String contents) throws IOException {

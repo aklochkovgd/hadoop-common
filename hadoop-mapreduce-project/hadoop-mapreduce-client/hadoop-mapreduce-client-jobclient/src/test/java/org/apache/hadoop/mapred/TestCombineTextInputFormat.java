@@ -41,6 +41,7 @@ import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapred.lib.CombineTextInputFormat;
+import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.junit.Test;
 
@@ -60,10 +61,8 @@ public class TestCombineTextInputFormat {
     }
   }
 
-  @SuppressWarnings("deprecation")
-  private static Path workDir =
-    new Path(new Path(System.getProperty("test.build.data", "/tmp")),
-             "TestCombineTextInputFormat").makeQualified(localFs);
+  private static Path workDir = PathUtils.getTestPath(
+      TestCombineTextInputFormat.class);
 
   // A reporter that does nothing
   private static final Reporter voidReporter = Reporter.NULL;

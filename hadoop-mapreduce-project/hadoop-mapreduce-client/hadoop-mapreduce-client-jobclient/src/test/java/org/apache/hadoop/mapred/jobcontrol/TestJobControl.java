@@ -234,9 +234,7 @@ public class TestJobControl extends junit.framework.TestCase {
   public Job getCopyJob() throws Exception {
     Configuration defaults = new Configuration();
     FileSystem fs = FileSystem.get(defaults);
-    Path rootDataDir =
-        new Path(System.getProperty("test.build.data", "."),
-          "TestJobControlData");
+    Path rootDataDir = PathUtils.getTestPath(getClass());
     Path indir = new Path(rootDataDir, "indir");
     Path outdir_1 = new Path(rootDataDir, "outdir_1");
 
