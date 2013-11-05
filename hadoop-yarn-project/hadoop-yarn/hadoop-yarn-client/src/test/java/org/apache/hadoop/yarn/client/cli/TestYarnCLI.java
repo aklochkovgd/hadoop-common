@@ -877,8 +877,8 @@ public class TestYarnCLI {
     ApplicationCLI cli = createAndGetAppCLI();
     int result = cli.run(new String[] { "-status" });
     Assert.assertEquals(result, -1);
-    Assert.assertEquals("Missing argument for options\n"
-        + createApplicationCLIHelpMessage(), sysOutStream.toString());
+    Assert.assertEquals(String.format("Missing argument for options%n%1s",
+        createApplicationCLIHelpMessage()), sysOutStream.toString());
 
     sysOutStream.reset();
     NodeCLI nodeCLI = new NodeCLI();
@@ -887,8 +887,8 @@ public class TestYarnCLI {
     nodeCLI.setSysErrPrintStream(sysErr);
     result = nodeCLI.run(new String[] { "-status" });
     Assert.assertEquals(result, -1);
-    Assert.assertEquals("Missing argument for options\n"
-        + createNodeCLIHelpMessage(), sysOutStream.toString());
+    Assert.assertEquals(String.format("Missing argument for options%n%1s",
+        createNodeCLIHelpMessage()), sysOutStream.toString());
   }
 
   @Test(timeout=1000)
