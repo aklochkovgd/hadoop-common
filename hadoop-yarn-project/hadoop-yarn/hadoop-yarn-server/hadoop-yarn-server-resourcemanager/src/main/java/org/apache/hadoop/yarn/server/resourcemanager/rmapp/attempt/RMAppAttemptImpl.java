@@ -335,7 +335,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           EnumSet.of(RMAppAttemptState.RUNNING, RMAppAttemptState.FINAL_SAVING),
           RMAppAttemptEventType.CONTAINER_FINISHED,
           new ContainerFinishedTransition())
-      .addTransition(RMAppAttemptState.RUNNING, RMAppAttemptState.FAILED,
+      .addTransition(RMAppAttemptState.RUNNING, RMAppAttemptState.FINAL_SAVING,
           RMAppAttemptEventType.FAIL,
           new FinalSavingTransition(new AttemptFailedTransition(),
             RMAppAttemptState.FAILED))
