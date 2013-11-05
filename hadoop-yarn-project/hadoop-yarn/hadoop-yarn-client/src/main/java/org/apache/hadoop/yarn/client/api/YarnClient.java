@@ -104,8 +104,7 @@ public abstract class YarnClient extends AbstractService {
    *          {@link ApplicationAttemptId} of the attempt to fail.
    * @throws YarnException
    *           in case of errors or if YARN rejects the request due to
-   *           access-control restrictions, recovery not being non supported
-   *           or amount of attempts reached maximum configured value.
+   *           access-control restrictions.
    * @throws IOException
    * @see #getQueueAclsInfo()
    */

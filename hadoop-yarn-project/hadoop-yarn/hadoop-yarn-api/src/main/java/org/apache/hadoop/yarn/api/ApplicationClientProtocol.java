@@ -137,9 +137,6 @@ public interface ApplicationClientProtocol {
    * <p> In secure mode,the <code>ResourceManager</code> verifies access to the
    * application, queue etc. before failing the attempt.</p> 
    * 
-   * <p> The request may be rejected due to recovery not being supported or
-   * number of attempts reached maximum configured value.</p>
-   * 
    * <p>Currently, the <code>ResourceManager</code> returns an empty response
    * on success and throws an exception on rejecting the request.</p>
    * 
