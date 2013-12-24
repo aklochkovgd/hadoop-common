@@ -45,6 +45,7 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
+import org.apache.hadoop.yarn.api.records.ApplicationResourceUsageReport;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.NodeReport;
@@ -56,7 +57,6 @@ import org.apache.hadoop.yarn.exceptions.ApplicationNotFoundException;
 import org.apache.hadoop.yarn.util.Records;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.apache.commons.cli.Options;
 
 public class TestYarnCLI {
@@ -80,11 +80,15 @@ public class TestYarnCLI {
   public void testGetApplicationReport() throws Exception {
     ApplicationCLI cli = createAndGetAppCLI();
     ApplicationId applicationId = ApplicationId.newInstance(1234, 5);
+    ApplicationResourceUsageReport usageReport = 
+        ApplicationResourceUsageReport.newInstance(
+            2, 0, null, null, null, 123456, 4567);
     ApplicationReport newApplicationReport = ApplicationReport.newInstance(
         applicationId, ApplicationAttemptId.newInstance(applicationId, 1),
         "user", "queue", "appname", "host", 124, null,
         YarnApplicationState.FINISHED, "diagnostics", "url", 0, 0,
-        FinalApplicationStatus.SUCCEEDED, null, "N/A", 0.53789f, "YARN", null);
+        FinalApplicationStatus.SUCCEEDED, usageReport, "N/A", 0.53789f, "YARN", 
+        null);
     when(client.getApplicationReport(any(ApplicationId.class))).thenReturn(
         newApplicationReport);
     int result = cli.run(new String[] { "-status", applicationId.toString() });
@@ -106,6 +110,7 @@ public class TestYarnCLI {
     pw.println("\tTracking-URL : N/A");
     pw.println("\tRPC Port : 124");
     pw.println("\tAM Host : host");
+    pw.println("\tResources used : 123456 MB-seconds, 4567 vcore-seconds");
     pw.println("\tDiagnostics : diagnostics");
     pw.close();
     String appReportStr = baos.toString("UTF-8");

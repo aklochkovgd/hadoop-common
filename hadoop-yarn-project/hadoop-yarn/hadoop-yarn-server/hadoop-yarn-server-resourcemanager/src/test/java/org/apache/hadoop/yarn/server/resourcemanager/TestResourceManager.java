@@ -36,7 +36,7 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptState;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNode;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppRemovedSchedulerEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppFinishedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.NodeAddedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.NodeUpdateSchedulerEvent;
 import org.apache.hadoop.yarn.util.resource.Resources;
@@ -159,7 +159,7 @@ public class TestResourceManager {
     application.finishTask(t3);
     
     // Notify scheduler application is finished.
-    AppRemovedSchedulerEvent appRemovedEvent1 = new AppRemovedSchedulerEvent(
+    AppFinishedSchedulerEvent appRemovedEvent1 = new AppFinishedSchedulerEvent(
         application.getApplicationAttemptId(), RMAppAttemptState.FINISHED);
     resourceManager.getResourceScheduler().handle(appRemovedEvent1);
     

@@ -40,7 +40,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.http.HttpConfig;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
@@ -89,6 +88,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.Allocation;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerAppReport;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.YarnScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppAddedSchedulerEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppFinishedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppRemovedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.security.ClientToAMTokenSecretManagerInRM;
 import org.apache.hadoop.yarn.server.utils.BuilderUtils;
@@ -151,6 +151,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private FinalApplicationStatus finalStatus = null;
   private final StringBuilder diagnostics = new StringBuilder();
 
+  // Filled when the attempt is finished before evicting it from Scheduler
+  private long finalMemorySeconds = 0;
+  private long finalVcoreSeconds = 0;
+  
   private Configuration conf;
   private String user;
   
@@ -299,6 +303,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.STATUS_UPDATE,
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
               RMAppAttemptEventType.CONTAINER_FINISHED))
+      .addTransition(
+          RMAppAttemptState.FAILED, RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.APP_FINISHED,
+          new UpdateUsageMetricsTransition())
 
       // Transitions from FINISHING State
       .addTransition(RMAppAttemptState.FINISHING,
@@ -325,6 +333,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
               RMAppAttemptEventType.CONTAINER_FINISHED,
               RMAppAttemptEventType.KILL))
+      .addTransition(
+          RMAppAttemptState.FINISHED, RMAppAttemptState.FINISHED,
+          RMAppAttemptEventType.APP_FINISHED,
+          new UpdateUsageMetricsTransition())
 
       // Transitions from KILLED State
       .addTransition(
@@ -343,6 +355,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.KILL,
               RMAppAttemptEventType.STATUS_UPDATE))
+      .addTransition(
+          RMAppAttemptState.KILLED, RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.APP_FINISHED,
+          new UpdateUsageMetricsTransition())
               
       // Transitions from RECOVERED State
       .addTransition(
@@ -646,6 +662,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           scheduler.getSchedulerAppInfo(this.getAppAttemptId());
       Collection<RMContainer> liveContainers;
       Collection<RMContainer> reservedContainers;
+      long memorySeconds;
+      long vcoreSeconds;
       if (schedApp != null) {
         liveContainers = schedApp.getLiveContainers();
         reservedContainers = schedApp.getReservedContainers();
@@ -661,12 +679,18 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
             Resources.addTo(reservedResources, rc.getContainer().getResource());
           }
         }
+        memorySeconds = schedApp.getMemorySeconds();
+        vcoreSeconds = schedApp.getVcoreSeconds();
+      } else {
+        memorySeconds = finalMemorySeconds;
+        vcoreSeconds = finalVcoreSeconds;
       }
 
       return BuilderUtils.newApplicationResourceUsageReport(
           numUsedContainers, numReservedContainers,
           currentConsumption, reservedResources,
-          Resources.add(currentConsumption, reservedResources));
+          Resources.add(currentConsumption, reservedResources),
+          memorySeconds, vcoreSeconds);
     } finally {
       this.readLock.unlock();
     }
@@ -906,7 +930,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       }
 
       appAttempt.eventHandler.handle(appEvent);
-      appAttempt.eventHandler.handle(new AppRemovedSchedulerEvent(appAttemptId,
+      appAttempt.eventHandler.handle(new AppFinishedSchedulerEvent(appAttemptId,
         finalAttemptState));
 
       appAttempt.removeCredentials(appAttempt);
@@ -1233,6 +1257,30 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       appAttempt.justFinishedContainers.add(containerStatus);
       return RMAppAttemptState.FINISHING;
     }
+  }
+
+  private static final class UpdateUsageMetricsTransition extends
+      BaseTransition {
+
+    @Override
+    public void transition(RMAppAttemptImpl appAttempt, RMAppAttemptEvent event) {
+      ApplicationAttemptId appAttemptId = appAttempt.getAppAttemptId();
+      SchedulerAppReport schedApp = 
+          appAttempt.scheduler.getSchedulerAppInfo(appAttemptId);
+      if (schedApp != null) {
+        appAttempt.finalMemorySeconds = schedApp.getMemorySeconds();
+        appAttempt.finalVcoreSeconds = schedApp.getVcoreSeconds();
+      } else {
+        LOG.error("Attempt " + appAttemptId + " is not "
+            + "registered in Scheduler. No usage stats recorded");
+      }
+      
+      // let the scheduler evict the attempt
+      appAttempt.eventHandler.handle(new AppRemovedSchedulerEvent(appAttemptId));
+      
+      super.transition(appAttempt, event);
+    }
+
   }
 
   @Override

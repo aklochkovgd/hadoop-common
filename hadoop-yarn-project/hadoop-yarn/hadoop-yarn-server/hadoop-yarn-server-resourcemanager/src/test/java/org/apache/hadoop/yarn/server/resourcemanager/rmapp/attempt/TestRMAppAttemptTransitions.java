@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -37,6 +38,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,6 +50,7 @@ import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.yarn.MockApps;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.yarn.api.records.ApplicationResourceUsageReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
@@ -69,6 +73,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppEventType;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppFailedAttemptEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppRejectedEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptAppFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAcquiredEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerAllocatedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptContainerFinishedEvent;
@@ -79,6 +84,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAt
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptUnregistrationEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.ContainerAllocationExpirer;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.Allocation;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerAppReport;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.YarnScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppAddedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.SchedulerEvent;
@@ -91,7 +97,6 @@ import org.apache.hadoop.yarn.server.utils.BuilderUtils;
 import org.apache.hadoop.yarn.server.webproxy.ProxyUriUtils;
 import org.apache.hadoop.yarn.webapp.util.WebAppUtils;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -212,7 +217,7 @@ public class TestRMAppAttemptTransitions {
     RMStateStore store = mock(RMStateStore.class);
     ((RMContextImpl) rmContext).setStateStore(store);
     
-    scheduler = mock(YarnScheduler.class);
+    scheduler = mock(YarnScheduler.class);    
     masterService = mock(ApplicationMasterService.class);
     applicationMasterLauncher = mock(ApplicationMasterLauncher.class);
     
@@ -648,6 +653,44 @@ public class TestRMAppAttemptTransitions {
         true);
   }
   
+  @Test
+  public void testUsageReport() {
+    // scheduler has info on running apps
+    SchedulerAppReport appReport = mock(SchedulerAppReport.class);
+    when(appReport.getMemorySeconds()).thenReturn(123456L);
+    when(appReport.getVcoreSeconds()).thenReturn(55544L);
+    ApplicationAttemptId attemptId = applicationAttempt.getAppAttemptId();
+    when(scheduler.getSchedulerAppInfo(eq(attemptId)))
+        .thenReturn(appReport);
+
+    // start and finish the attempt
+    Container amContainer = allocateApplicationAttempt();
+    launchApplicationAttempt(amContainer);
+    runApplicationAttempt(amContainer, "host", 8042, "oldtrackingurl", false);
+    applicationAttempt.handle(new RMAppAttemptUnregistrationEvent(attemptId,
+        "", FinalApplicationStatus.SUCCEEDED, ""));
+    
+    // expect usage stats to come from the scheduler report
+    ApplicationResourceUsageReport report = 
+        applicationAttempt.getApplicationResourceUsageReport();
+    Assert.assertEquals(123456L, report.getMemorySeconds());
+    Assert.assertEquals(55544L, report.getVcoreSeconds());
+
+    // finish app attempt and remove it from scheduler 
+    when(appReport.getMemorySeconds()).thenReturn(223456L);
+    when(appReport.getVcoreSeconds()).thenReturn(75544L);
+    applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
+        attemptId, 
+        ContainerStatus.newInstance(
+            amContainer.getId(), ContainerState.COMPLETE, "", 0)));
+    applicationAttempt.handle(new RMAppAttemptAppFinishedEvent(attemptId));
+    when(scheduler.getSchedulerAppInfo(eq(attemptId))).thenReturn(null);
+
+    report = applicationAttempt.getApplicationResourceUsageReport();
+    Assert.assertEquals(223456, report.getMemorySeconds());
+    Assert.assertEquals(75544, report.getVcoreSeconds());
+  }
+
   @Test
   public void testUnmanagedAMUnexpectedRegistration() {
     unmanagedAM = true;

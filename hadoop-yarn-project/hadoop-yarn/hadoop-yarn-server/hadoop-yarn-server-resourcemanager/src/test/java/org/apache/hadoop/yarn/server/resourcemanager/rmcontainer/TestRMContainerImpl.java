@@ -76,8 +76,8 @@ public class TestRMContainerImpl {
 
     assertEquals(RMContainerState.NEW, rmContainer.getState());
 
-    rmContainer.handle(new RMContainerEvent(containerId,
-        RMContainerEventType.START));
+    rmContainer.handle(new RMContainerStartedEvent(containerId, 
+        System.currentTimeMillis()));
     drainDispatcher.await();
     assertEquals(RMContainerState.ALLOCATED, rmContainer.getState());
 
@@ -146,8 +146,8 @@ public class TestRMContainerImpl {
 
     assertEquals(RMContainerState.NEW, rmContainer.getState());
 
-    rmContainer.handle(new RMContainerEvent(containerId,
-        RMContainerEventType.START));
+    rmContainer.handle(new RMContainerStartedEvent(containerId, 
+        System.currentTimeMillis()));
     drainDispatcher.await();
     assertEquals(RMContainerState.ALLOCATED, rmContainer.getState());
 

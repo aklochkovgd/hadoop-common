@@ -1177,7 +1177,9 @@ ResourceManager REST API's.
           "elapsedTime" : 25196,
           "diagnostics" : "",
           "trackingUrl" : "http://host.domain.com:8088/proxy/application_1326815542473_0001/jobhistory/job/job_1326815542473_1_1",
-          "queue" : "default"
+          "queue" : "default",
+          "memorySeconds" : 151730,
+          "vcoreSeconds" : 103
        },
        {
           "finishedTime" : 1326815789546,
@@ -1195,7 +1197,9 @@ ResourceManager REST API's.
           "elapsedTime" : 148166,
           "diagnostics" : "",
           "trackingUrl" : "http://host.domain.com:8088/proxy/application_1326815542473_0002/jobhistory/job/job_1326815542473_2_2",
-          "queue" : "default"
+          "queue" : "default",
+          "memorySeconds" : 640064,
+          "vcoreSeconds" : 442
        } 
     ]
   }
@@ -1245,6 +1249,8 @@ ResourceManager REST API's.
     <amContainerLogs>http://host.domain.com:8042/node/containerlogs/container_1326815542473_0001
 _01_000001</amContainerLogs>
     <amHostHttpAddress>host.domain.com:8042</amHostHttpAddress>
+    <memorySeconds>151730</memorySeconds>
+    <vcoreSeconds>103</vcoreSeconds>
   </app>
   <app>
     <id>application_1326815542473_0002</id>
@@ -1264,6 +1270,8 @@ _01_000001</amContainerLogs>
     <elapsedTime>148166</elapsedTime>
     <amContainerLogs>http://host.domain.com:8042/node/containerlogs/container_1326815542473_0002_01_000001</amContainerLogs>
     <amHostHttpAddress>host.domain.com:8042</amHostHttpAddress>
+    <memorySeconds>640064</memorySeconds>
+    <vcoreSeconds>442</vcoreSeconds>
   </app>
 </apps>
 
@@ -1457,6 +1465,10 @@ _01_000001</amContainerLogs>
 *---------------+--------------+--------------------------------+
 | amHostHttpAddress | string | The nodes http address of the application master |
 *---------------+--------------+--------------------------------+
+| memorySeconds | long | The amount of memory the application has utilized (megabyte-seconds) |
+*---------------+--------------+--------------------------------+
+| vcoreSeconds | long | The amount of CPU resources the application has utilized (virtual core-seconds) |
+*---------------+--------------+--------------------------------+
 
 ** Response Examples
 
@@ -1498,7 +1510,9 @@ _01_000001</amContainerLogs>
       "elapsedTime" : 446748,
       "diagnostics" : "",
       "trackingUrl" : "http://host.domain.com:8088/proxy/application_1326821518301_0005/jobhistory/job/job_1326821518301_5_5",
-      "queue" : "a1"
+      "queue" : "a1",
+      "memorySeconds" : 151730,
+      "vcoreSeconds" : 103
    }
 }
 +---+
@@ -1542,6 +1556,8 @@ _01_000001</amContainerLogs>
   <elapsedTime>446748</elapsedTime>
   <amContainerLogs>http://host.domain.com:8042/node/containerlogs/container_1326821518301_0005_01_000001</amContainerLogs>
   <amHostHttpAddress>host.domain.com:8042</amHostHttpAddress>
+  <memorySeconds>151730</memorySeconds>
+  <vcoreSeconds>103</vcoreSeconds>
 </app>
 +---+
 
