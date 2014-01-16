@@ -115,6 +115,8 @@ public class AppBlock extends HtmlBlock {
       _("Started:", Times.format(app.getStartTime())).
       _("Elapsed:", StringUtils.formatTime(
         Times.elapsed(app.getStartTime(), app.getFinishTime()))).
+      _("Resources:", String.format("%d MB-seconds, %d vcore-seconds", 
+          app.getMemorySeconds(), app.getVcoreSeconds())).
       _("Tracking URL:", !app.isTrackingUrlReady() ?
         "#" : app.getTrackingUrlPretty(), app.getTrackingUI()).
       _("Diagnostics:", app.getNote());

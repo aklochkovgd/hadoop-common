@@ -35,11 +35,14 @@ public class SchedulerAppReport {
   private final Collection<RMContainer> live;
   private final Collection<RMContainer> reserved;
   private final boolean pending;
+  private long vcoreSeconds;
+  private long memorySeconds;
   
   public SchedulerAppReport(SchedulerApplication app) {
     this.live = app.getLiveContainers();
     this.reserved = app.getReservedContainers();
     this.pending = app.isPending();
+    app.fillUsageStats(this);
   }
   
   /**
@@ -65,4 +68,21 @@ public class SchedulerAppReport {
   public boolean isPending() {
     return pending;
   }
+
+  protected void setVcoreSeconds(long vcoreSeconds) {
+    this.vcoreSeconds = vcoreSeconds;
+  }
+  
+  protected void setMemorySeconds(long memorySeconds) {
+    this.memorySeconds = memorySeconds;
+  }
+  
+  public long getVcoreSeconds() {
+    return vcoreSeconds;
+  }
+
+  public long getMemorySeconds() {
+    return memorySeconds;
+  }
+  
 }

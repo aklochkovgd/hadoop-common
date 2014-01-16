@@ -26,6 +26,8 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.hadoop.http.HttpConfig;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.yarn.api.records.ApplicationReport;
+import org.apache.hadoop.yarn.api.records.ApplicationResourceUsageReport;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
 import org.apache.hadoop.yarn.server.resourcemanager.ResourceManager;
@@ -71,6 +73,8 @@ public class AppInfo {
   protected long elapsedTime;
   protected String amContainerLogs;
   protected String amHostHttpAddress;
+  protected long memorySeconds;
+  protected long vcoreSeconds;
 
   public AppInfo() {
   } // JAXB needs this
@@ -133,6 +137,13 @@ public class AppInfo {
             this.amHostHttpAddress = masterContainer.getNodeHttpAddress();
           }
         }
+        
+        ApplicationReport report = 
+            app.createAndGetApplicationReport(null, hasAccess);
+        ApplicationResourceUsageReport usageReport = 
+            report.getApplicationResourceUsageReport();
+        this.memorySeconds = usageReport.getMemorySeconds();
+        this.vcoreSeconds = usageReport.getVcoreSeconds();
       }
     }
   }
@@ -223,6 +234,14 @@ public class AppInfo {
 
   public String getApplicationType() {
     return this.applicationType;
+  }
+
+  public long getMemorySeconds() {
+    return memorySeconds;
+  }
+
+  public long getVcoreSeconds() {
+    return vcoreSeconds;
   }
 
 }

@@ -75,7 +75,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.QueueMetrics;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.TestCapacityScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppAddedSchedulerEvent;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppRemovedSchedulerEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppFinishedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.NodeAddedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.NodeRemovedSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.NodeUpdateSchedulerEvent;
@@ -768,7 +768,7 @@ public class TestFairScheduler {
     assertEquals(1, scheduler.getQueueManager().getLeafQueue("user1", true)
         .getAppSchedulables().size());
 
-    AppRemovedSchedulerEvent appRemovedEvent1 = new AppRemovedSchedulerEvent(
+    AppFinishedSchedulerEvent appRemovedEvent1 = new AppFinishedSchedulerEvent(
         createAppAttemptId(1, 1), RMAppAttemptState.FINISHED);
 
     // Now remove app

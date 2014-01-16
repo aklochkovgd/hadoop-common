@@ -16,21 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.yarn.server.resourcemanager.scheduler.event;
+package org.apache.hadoop.yarn.server.resourcemanager.rmcontainer;
 
-import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
+import org.apache.hadoop.yarn.api.records.ContainerId;
 
-public class AppRemovedSchedulerEvent extends SchedulerEvent {
+public class RMContainerStartedEvent extends RMContainerEvent {
 
-  private final ApplicationAttemptId applicationAttemptId;
-
-  public AppRemovedSchedulerEvent(ApplicationAttemptId applicationAttemptId) {
-    super(SchedulerEventType.APP_REMOVED);
-    this.applicationAttemptId = applicationAttemptId;
-  }
-
-  public ApplicationAttemptId getApplicationAttemptID() {
-    return this.applicationAttemptId;
+  public RMContainerStartedEvent(ContainerId containerId, long startTime) {
+    super(containerId, RMContainerEventType.START, startTime);
   }
 
 }

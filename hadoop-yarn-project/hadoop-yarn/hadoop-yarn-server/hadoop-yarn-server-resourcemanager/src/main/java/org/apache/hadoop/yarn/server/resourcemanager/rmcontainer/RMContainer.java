@@ -38,6 +38,8 @@ public interface RMContainer extends EventHandler<RMContainerEvent> {
 
   ContainerId getContainerId();
 
+  Long getStartTime();
+
   ApplicationAttemptId getApplicationAttemptId();
 
   RMContainerState getState();

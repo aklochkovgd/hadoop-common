@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,21 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.yarn.server.resourcemanager.scheduler.event;
+package org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event;
 
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEventType;
 
-public class AppRemovedSchedulerEvent extends SchedulerEvent {
+public class RMAppAttemptAppFinishedEvent extends RMAppAttemptEvent {
 
-  private final ApplicationAttemptId applicationAttemptId;
-
-  public AppRemovedSchedulerEvent(ApplicationAttemptId applicationAttemptId) {
-    super(SchedulerEventType.APP_REMOVED);
-    this.applicationAttemptId = applicationAttemptId;
+  public RMAppAttemptAppFinishedEvent(ApplicationAttemptId appAttemptId) {
+    super(appAttemptId, RMAppAttemptEventType.APP_FINISHED);
   }
-
-  public ApplicationAttemptId getApplicationAttemptID() {
-    return this.applicationAttemptId;
-  }
-
+  
 }
