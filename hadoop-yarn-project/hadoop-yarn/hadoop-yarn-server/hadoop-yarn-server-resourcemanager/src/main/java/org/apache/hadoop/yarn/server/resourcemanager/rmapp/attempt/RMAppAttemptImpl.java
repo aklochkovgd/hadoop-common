@@ -147,6 +147,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private FinalApplicationStatus finalStatus = null;
   private final StringBuilder diagnostics = new StringBuilder();
 
+  // An event which will be sent to the application as soon as 
+  // Scheduler provides final usage stats for the attempt
+  private RMAppEvent finalAppEvent;
+
   private Configuration conf;
   private final boolean isLastAttempt;
   private static final ExpiredTransition EXPIRED_TRANSITION =
@@ -156,6 +160,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   private RMAppAttemptState targetedFinalState;
   private RMAppAttemptState recoveredFinalState;
   private Object transitionTodo;
+
+  private long finalMemorySeconds = -1;
+  private long finalVcoreSeconds = -1;
 
   private static final StateMachineFactory<RMAppAttemptImpl,
                                            RMAppAttemptState,
@@ -345,7 +352,10 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.STATUS_UPDATE,
               RMAppAttemptEventType.CONTAINER_ALLOCATED))
-
+      .addTransition(RMAppAttemptState.FAILED, RMAppAttemptState.FAILED,
+          RMAppAttemptEventType.SCHEDULER_STATS,
+          new FetchSchedulerStatsTransition())
+              
       // Transitions from FINISHING State
       .addTransition(RMAppAttemptState.FINISHING,
           EnumSet.of(RMAppAttemptState.FINISHING, RMAppAttemptState.FINISHED),
@@ -373,6 +383,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.CONTAINER_ALLOCATED,
               RMAppAttemptEventType.CONTAINER_FINISHED,
               RMAppAttemptEventType.KILL))
+      .addTransition(RMAppAttemptState.FINISHED, RMAppAttemptState.FINISHED,
+          RMAppAttemptEventType.SCHEDULER_STATS,
+          new FetchSchedulerStatsTransition())
 
       // Transitions from KILLED State
       .addTransition(
@@ -389,6 +402,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               RMAppAttemptEventType.UNREGISTERED,
               RMAppAttemptEventType.KILL,
               RMAppAttemptEventType.STATUS_UPDATE))
+      .addTransition(RMAppAttemptState.KILLED, RMAppAttemptState.KILLED,
+          RMAppAttemptEventType.SCHEDULER_STATS,
+          new FetchSchedulerStatsTransition())
     .installTopology();
 
   public RMAppAttemptImpl(ApplicationAttemptId appAttemptId,
@@ -662,7 +678,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       if (report == null) {
         Resource none = Resource.newInstance(0, 0);
         report = ApplicationResourceUsageReport.newInstance(0, 0, none, none,
-            none);
+            none, finalMemorySeconds, finalVcoreSeconds);
       }
       return report;
     } finally {
@@ -995,14 +1011,13 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       // Tell the AMS. Unregister from the ApplicationMasterService
       appAttempt.masterService.unregisterAttempt(appAttemptId);
 
-      // Tell the application and the scheduler
+      // Tell the scheduler and remember what to tell the application
       ApplicationId applicationId = appAttemptId.getApplicationId();
-      RMAppEvent appEvent = null;
       boolean keepContainersAcrossAppAttempts = false;
       switch (finalAttemptState) {
         case FINISHED:
         {
-          appEvent = new RMAppFinishedAttemptEvent(applicationId,
+          appAttempt.finalAppEvent = new RMAppFinishedAttemptEvent(applicationId,
               appAttempt.getDiagnostics());
         }
         break;
@@ -1011,7 +1026,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           // don't leave the tracking URL pointing to a non-existent AM
           appAttempt.setTrackingUrlToRMAppPage();
           appAttempt.invalidateAMHostAndPort();
-          appEvent =
+          appAttempt.finalAppEvent =
               new RMAppFailedAttemptEvent(applicationId,
                   RMAppEventType.ATTEMPT_KILLED,
                   "Application killed by user.", false);
@@ -1028,7 +1043,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
               && !appAttempt.submissionContext.getUnmanagedAM()) {
             keepContainersAcrossAppAttempts = true;
           }
-          appEvent =
+          appAttempt.finalAppEvent =
               new RMAppFailedAttemptEvent(applicationId,
                 RMAppEventType.ATTEMPT_FAILED, appAttempt.getDiagnostics(),
                 keepContainersAcrossAppAttempts);
@@ -1042,7 +1057,6 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         break;
       }
 
-      appAttempt.eventHandler.handle(appEvent);
       appAttempt.eventHandler.handle(new AppAttemptRemovedSchedulerEvent(
         appAttemptId, finalAttemptState, keepContainersAcrossAppAttempts));
       appAttempt.removeCredentials(appAttempt);
@@ -1486,9 +1500,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
   private static class AMExpiredAtFinalSavingTransition extends
       BaseTransition {
+
     @Override
-    public void
-        transition(RMAppAttemptImpl appAttempt, RMAppAttemptEvent event) {
+    public void transition(RMAppAttemptImpl appAttempt, RMAppAttemptEvent event) {
       if (appAttempt.targetedFinalState.equals(RMAppAttemptState.FAILED)
           || appAttempt.targetedFinalState.equals(RMAppAttemptState.KILLED)) {
         // ignore Container_Finished Event if we were supposed to reach
@@ -1501,6 +1515,27 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       appAttempt.rememberTargetTransitions(event,
         new AMFinishedAfterFinalSavingTransition(
         appAttempt.eventCausingFinalSaving), RMAppAttemptState.FINISHED);
+    }
+  }
+
+  private static final class FetchSchedulerStatsTransition extends
+    BaseTransition {
+
+    @Override
+    public void transition(RMAppAttemptImpl appAttempt, RMAppAttemptEvent event) {
+      ApplicationAttemptId appAttemptId = appAttempt.getAppAttemptId();
+      ApplicationResourceUsageReport usageReport = 
+          appAttempt.scheduler.getAppResourceUsageReport(appAttemptId);
+      if (usageReport != null) {
+        appAttempt.finalMemorySeconds = usageReport.getMemorySeconds();
+        appAttempt.finalVcoreSeconds = usageReport.getVcoreSeconds();
+      } else {
+        LOG.error("Attempt " + appAttemptId + " is not "
+            + "registered in Scheduler. No usage stats recorded");
+      }
+
+      // Tell the application and let Scheduler evict the application state
+      appAttempt.eventHandler.handle(appAttempt.finalAppEvent);
     }
   }
 

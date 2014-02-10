@@ -292,7 +292,7 @@ public class RMAppImpl implements RMApp, Recoverable {
     DUMMY_APPLICATION_RESOURCE_USAGE_REPORT =
       BuilderUtils.newApplicationResourceUsageReport(-1, -1,
           Resources.createResource(-1, -1), Resources.createResource(-1, -1),
-          Resources.createResource(-1, -1));
+          Resources.createResource(-1, -1), -1, -1);
   private static final int DUMMY_APPLICATION_ATTEMPT_NUMBER = -1;
   
   public RMAppImpl(ApplicationId applicationId, RMContext rmContext,
@@ -532,6 +532,17 @@ public class RMAppImpl implements RMApp, Recoverable {
             }
           }
         }
+
+        long memorySeconds = 0;
+        long vcoreSeconds = 0;
+        for (RMAppAttempt appAttempt : this.attempts.values()) {
+          ApplicationResourceUsageReport report = 
+              appAttempt.getApplicationResourceUsageReport();
+          memorySeconds += report.getMemorySeconds();
+          vcoreSeconds += report.getVcoreSeconds();
+        }
+        appUsageReport.setMemorySeconds(memorySeconds);
+        appUsageReport.setVcoreSeconds(vcoreSeconds);
       }
 
       if (currentApplicationAttemptId == null) {

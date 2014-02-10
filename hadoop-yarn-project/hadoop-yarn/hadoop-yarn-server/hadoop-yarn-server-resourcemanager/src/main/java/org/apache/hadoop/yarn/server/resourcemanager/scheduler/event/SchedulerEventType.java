@@ -27,6 +27,7 @@ public enum SchedulerEventType {
 
   // Source: RMApp
   APP_ADDED,
+  APP_FINISHED,
   APP_REMOVED,
 
   // Source: RMAppAttempt

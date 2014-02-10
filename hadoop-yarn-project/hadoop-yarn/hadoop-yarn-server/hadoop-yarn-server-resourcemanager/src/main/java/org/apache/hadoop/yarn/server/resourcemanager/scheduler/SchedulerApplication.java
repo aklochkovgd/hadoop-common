@@ -53,5 +53,4 @@ public class SchedulerApplication {
   public void stop(RMAppState rmAppFinalState) {
     queue.getMetrics().finishApp(user, rmAppFinalState);
   }
-
 }

@@ -16,39 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt;
+package org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event;
 
-public enum RMAppAttemptEventType {
-  // Source: RMApp
-  START,
-  KILL,
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptEventType;
 
-  // Source: AMLauncher
-  LAUNCHED,
-  LAUNCH_FAILED,
+public class RMAppAttemptSchedulerStatsEvent extends RMAppAttemptEvent {
 
-  // Source: AMLivelinessMonitor
-  EXPIRE,
-  
-  // Source: ApplicationMasterService
-  REGISTERED,
-  STATUS_UPDATE,
-  UNREGISTERED,
-
-  // Source: Containers
-  CONTAINER_ACQUIRED,
-  CONTAINER_ALLOCATED,
-  CONTAINER_FINISHED,
-  
-  // Source: RMStateStore
-  ATTEMPT_NEW_SAVED,
-  ATTEMPT_UPDATE_SAVED,
-
-  // Source: Scheduler
-  ATTEMPT_ADDED,
-  SCHEDULER_STATS,
-  
-  // Source: RMAttemptImpl.recover
-  RECOVER
+  public RMAppAttemptSchedulerStatsEvent(ApplicationAttemptId appAttemptId) {
+    super(appAttemptId, RMAppAttemptEventType.SCHEDULER_STATS);
+  }
 
 }

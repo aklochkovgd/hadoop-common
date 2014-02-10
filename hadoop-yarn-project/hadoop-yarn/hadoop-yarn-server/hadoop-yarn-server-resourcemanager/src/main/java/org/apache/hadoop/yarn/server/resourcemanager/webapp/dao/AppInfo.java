@@ -33,7 +33,6 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.server.resourcemanager.ResourceManager;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMApp;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppState;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttempt;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Times;
@@ -77,6 +76,8 @@ public class AppInfo {
   protected int allocatedMB;
   protected int allocatedVCores;
   protected int runningContainers;
+  protected long memorySeconds;
+  protected long vcoreSeconds;
 
   public AppInfo() {
   } // JAXB needs this
@@ -146,6 +147,8 @@ public class AppInfo {
             allocatedMB = usedResources.getMemory();
             allocatedVCores = usedResources.getVirtualCores();
             runningContainers = resourceReport.getNumUsedContainers();
+            memorySeconds = resourceReport.getMemorySeconds();
+            vcoreSeconds = resourceReport.getVcoreSeconds();
           }
         }
       }
@@ -252,4 +255,11 @@ public class AppInfo {
     return this.allocatedVCores;
   }
   
+  public long getMemorySeconds() {
+    return memorySeconds;
+  }
+
+  public long getVcoreSeconds() {
+    return vcoreSeconds;
+  }
 }
